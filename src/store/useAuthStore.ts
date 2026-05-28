@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { onAuthStateChanged, signInWithPopup, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth';
 import { auth, provider } from '../lib/firebase';
 import { loadTransactions, loadImports, loadBudgets, loadAssets, loadDebts } from '../lib/db';
 import { useStore } from './useStore';
