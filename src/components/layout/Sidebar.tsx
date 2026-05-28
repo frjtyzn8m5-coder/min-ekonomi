@@ -33,14 +33,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   return (
-    <aside
-      className={[
-        'w-64 lg:w-56 h-screen bg-white border-r border-gray-100 flex flex-col',
-        'fixed left-0 top-0 z-30',
-        'transition-transform duration-200 ease-in-out',
-        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-      ].join(' ')}
-    >
+    <aside className={[
+      'w-64 lg:w-56 h-screen bg-white border-r border-gray-100 flex flex-col',
+      'fixed left-0 top-0 z-30',
+      'transition-transform duration-200 ease-in-out',
+      isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+    ].join(' ')}>
       {/* Logo + close */}
       <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
@@ -50,14 +48,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="min-w-0">
             <p className="font-semibold text-gray-900 text-sm leading-tight">Min Ekonomi</p>
             {txCount > 0 && (
-              <p className="text-[11px] text-gray-400 leading-tight">{txCount.toLocaleString('sv-SE')} transaktioner</p>
+              <p className="text-[11px] text-gray-400 leading-tight">{txCount.toLocaleString('sv-SE')} tr.</p>
             )}
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 flex-shrink-0"
-        >
+        <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
           <X size={18} />
         </button>
       </div>
@@ -68,4 +63,31 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <button
             key={p}
             onClick={() => navigate(p)}
-            classNam
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+              page === p
+                ? 'bg-blue-50 text-blue-600 font-medium'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+            }`}
+          >
+            <span className={page === p ? 'text-blue-600' : 'text-gray-400'}>{icon}</span>
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="px-4 py-4 border-t border-gray-100 space-y-1">
+        {user && (
+          <p className="text-[11px] text-gray-400 px-3 truncate">{user.email}</p>
+        )}
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-all"
+        >
+          <LogOut size={16} />
+          Logga ut
+        </button>
+      </div>
+    </aside>
+  );
+}
