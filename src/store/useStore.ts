@@ -47,6 +47,7 @@ interface AppState {
   tickerMappings: TickerMapping[];
   priceCache: Record<string, PriceData>;
   portfolioSnapshots: PortfolioSnapshot[];
+  assetClasses: string[];
   page: Page;
   filter: FilterState;
   pushSubscription: string | null;
@@ -66,6 +67,7 @@ interface AppState {
   setPriceCache: (p: Record<string, PriceData>) => void;
   setPortfolioSnapshots: (s: PortfolioSnapshot[]) => void;
   addPortfolioSnapshot: (s: PortfolioSnapshot) => void;
+  setAssetClasses: (classes: string[]) => void;
 
   // Local actions
   addTransactions: (txs: Transaction[]) => void;
@@ -107,6 +109,7 @@ export const useStore = create<AppState>()(
       tickerMappings: [],
       priceCache: {},
       portfolioSnapshots: [],
+      assetClasses: ['Aktier', 'Räntebärande', 'Råvaror', 'Fastigheter', 'Övrigt'],
       page: 'overview',
       filter: DEFAULT_FILTER,
       pushSubscription: null,
@@ -128,6 +131,7 @@ export const useStore = create<AppState>()(
       }),
       setPriceCache: (priceCache) => set({ priceCache }),
       setPortfolioSnapshots: (portfolioSnapshots) => set({ portfolioSnapshots }),
+      setAssetClasses: (assetClasses) => set({ assetClasses }),
       addPortfolioSnapshot: (snap) => set(s => {
         const existing = s.portfolioSnapshots.filter(x => x.date !== snap.date);
         return { portfolioSnapshots: [...existing, snap].sort((a, b) => a.date.localeCompare(b.date)) };
@@ -202,6 +206,7 @@ export const useStore = create<AppState>()(
         holdings: s.holdings,
         tickerMappings: s.tickerMappings,
         portfolioSnapshots: s.portfolioSnapshots,
+        assetClasses: s.assetClasses,
         pushSubscription: s.pushSubscription,
       }),
     }

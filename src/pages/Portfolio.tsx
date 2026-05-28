@@ -11,7 +11,7 @@ import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
-import { RefreshCw, Edit2, Check, X, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { RefreshCw, Edit2, Check, X, TrendingUp, TrendingDown, AlertCircle, Plus, Settings2 } from 'lucide-react';
 import type { TickerMapping, PriceData, PortfolioSnapshot } from '../types';
 
 const CHART_COLORS = [
@@ -20,9 +20,8 @@ const CHART_COLORS = [
   '#ff6961', '#0071e3',
 ];
 
-const PRICE_TTL_MS = 4 * 60 * 60 * 1000; // 4h cache
+const PRICE_TTL_MS = 4 * 60 * 60 * 1000;
 
-// FX pairs needed for non-SEK holdings
 const FX_PAIRS: Record<string, string> = {
   NOK: 'NOKSEK=X',
   EUR: 'EURSEK=X',
@@ -39,20 +38,126 @@ function formatDate(d: string) {
   return `${day}/${m}/${y.slice(2)}`;
 }
 
+// ── Asset class manager ────────────────────────────────────────────────────────
+
+function ClassManager({
+  assetClasses, onSetClasses,
+}: { assetClasses: string[]; onSetClasses: (c: string[]) => void }) {
+  const [newCls, setNewCls] = useState('');
+
+  const add = () => {
+    const v = newCls.trim();
+    if (!v || assetClasses.includes(v)) return;
+    onSetClasses([...assetClasses, v]);
+    setNewCls('');
+  };
+
+  const remove = (cls: string) => onSetClasses(assetClasses.filter(c => c !== cls));
+
+  return (
+    <div className="mt-3 p-3 bg-gray-50 rounded-xl space-y-2">
+      <div className="flex flex-wrap gap-1.5">
+        {assetClasses.map(cls => (
+          <span key={cls} className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2.5 py-0.5 text-xs text-gray-700">
+            {cls}
+            <button onClick={() => remove(cls)} className="text-gray-300 hover:text-red-400 ml-0.5">
+              <X size={9} />
+            </button>
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={newCls}
+          onChange={e => setNewCls(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && add()}
+          placeholder="Ny klass, t.ex. Ädelmetaller…"
+          className="flex-1 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-300"
+        />
+        <button onClick={add} className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs hover:bg-blue-600">
+          <Plus size={11} /> Lägg till
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Breakdown bar chart ────────────────────────────────────────────────────────
+
+function ClassBreakdown({
+  enriched, assetClasses, selectedClass, onSelect,
+}: {
+  enriched: any[];
+  assetClasses: string[];
+  selectedClass: string | null;
+  onSelect: (cls: string | null) => void;
+}) {
+  const totalSEK = enriched.reduce((s, h) => s + h.valueSEK, 0);
+  if (totalSEK === 0) return (
+    <p className="text-xs text-gray-400 text-center py-2">
+      Uppdatera kurser för att se fördelning per tillgångsslag.
+    </p>
+  );
+
+  const bars: { name: string; value: number; pct: number }[] = [];
+  for (const cls of assetClasses) {
+    const value = enriched.filter(h => h.assetClass === cls).reduce((s, h) => s + h.valueSEK, 0);
+    if (value > 0) bars.push({ name: cls, value, pct: (value / totalSEK) * 100 });
+  }
+  const untagged = enriched.filter(h => !h.assetClass && h.valueSEK > 0).reduce((s, h) => s + h.valueSEK, 0);
+  if (untagged > 0) bars.push({ name: 'Ej klassad', value: untagged, pct: (untagged / totalSEK) * 100 });
+  bars.sort((a, b) => b.value - a.value);
+
+  return (
+    <div className="space-y-1.5">
+      {bars.map((bar, i) => (
+        <button
+          key={bar.name}
+          onClick={() => onSelect(selectedClass === bar.name ? null : bar.name)}
+          className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors ${
+            selectedClass === bar.name ? 'bg-blue-50 ring-1 ring-blue-200' : 'hover:bg-gray-50'
+          }`}
+        >
+          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+          <span className="text-xs font-medium text-gray-700 w-28 flex-shrink-0 truncate">{bar.name}</span>
+          <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+            <div className="h-1.5 rounded-full transition-all"
+              style={{ width: `${bar.pct}%`, background: CHART_COLORS[i % CHART_COLORS.length] }} />
+          </div>
+          <span className="text-xs text-gray-500 flex-shrink-0 text-right w-28">
+            {formatSEK(bar.value)} <span className="text-gray-400">({bar.pct.toFixed(1)}%)</span>
+          </span>
+        </button>
+      ))}
+      {selectedClass && (
+        <button onClick={() => onSelect(null)} className="text-xs text-blue-500 hover:text-blue-700 pt-1 pl-2">
+          Visa alla innehav
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Main page ──────────────────────────────────────────────────────────────────
+
 export default function Portfolio() {
   const { user } = useAuthStore();
   const {
-    holdings, tickerMappings, priceCache, portfolioSnapshots,
+    holdings, tickerMappings, priceCache, portfolioSnapshots, assetClasses,
     setHoldings, setTickerMappings, upsertTickerMapping,
-    setPriceCache, setPortfolioSnapshots, addPortfolioSnapshot,
+    setPriceCache, setPortfolioSnapshots, addPortfolioSnapshot, setAssetClasses,
   } = useStore();
 
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
-  const [editTicker, setEditTicker] = useState<string | null>(null); // ISIN being edited
+  const [editTicker, setEditTicker] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [fxRates, setFxRates] = useState<Record<string, number>>({});
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [showClassManager, setShowClassManager] = useState(false);
+  const [searchStatus, setSearchStatus] = useState<'idle' | 'searching' | 'done'>('idle');
 
   // Load data from Firebase on mount
   useEffect(() => {
@@ -76,33 +181,48 @@ export default function Portfolio() {
     })();
   }, [user]);
 
-  // Auto-fetch tickers for holdings that don't have a mapping yet
+  // Auto-search Yahoo Finance for unmapped holdings
   useEffect(() => {
     if (!holdings.length || !user) return;
     const unmapped = holdings.filter(h => h.isin && !tickerMappings.find(m => m.isin === h.isin));
     if (!unmapped.length) return;
 
-    const isins = unmapped.map(h => h.isin).join(',');
-    fetch(`/api/openfigi?isins=${encodeURIComponent(isins)}`)
-      .then(r => r.json())
-      .then(async (data: Record<string, { ticker: string; name: string }>) => {
-        const newMappings: TickerMapping[] = Object.entries(data).map(([isin, v]) => ({
-          isin,
-          ticker: v.ticker,
-          name: v.name,
-          manual: false,
-        }));
-        const merged = [...tickerMappings];
-        for (const m of newMappings) {
-          if (!merged.find(x => x.isin === m.isin)) merged.push(m);
+    setSearchStatus('searching');
+    Promise.all(
+      unmapped.map(async (h) => {
+        const country = h.isin.slice(0, 2).toUpperCase();
+        try {
+          const resp = await fetch(`/api/search-ticker?q=${encodeURIComponent(h.name)}&country=${country}`);
+          if (!resp.ok) return null;
+          const results = await resp.json() as { symbol: string; shortname: string; quoteType: string; typeDisp: string; score: number }[];
+          if (!results.length || results[0].score < 3) return null;
+          const best = results[0];
+          return {
+            isin: h.isin,
+            ticker: best.symbol,
+            name: best.shortname || h.name,
+            manual: false,
+            quoteType: best.quoteType,
+            category: best.typeDisp,
+          } as TickerMapping;
+        } catch {
+          return null;
         }
-        setTickerMappings(merged);
-        await saveTickerMappings(user.uid, merged);
       })
-      .catch(() => {}); // Silent fail – user can add tickers manually
+    ).then(async (newMappings) => {
+      const valid = newMappings.filter(Boolean) as TickerMapping[];
+      if (!valid.length) { setSearchStatus('done'); return; }
+      const merged = [...tickerMappings];
+      for (const m of valid) {
+        if (!merged.find(x => x.isin === m.isin)) merged.push(m);
+      }
+      setTickerMappings(merged);
+      await saveTickerMappings(user.uid, merged).catch(() => {});
+      setSearchStatus('done');
+    }).catch(() => setSearchStatus('done'));
   }, [holdings]);
 
-  // Refresh prices
+  // Refresh prices + enrich category from Yahoo Finance
   const refreshPrices = async () => {
     if (!user || !tickerMappings.length) return;
     setRefreshing(true);
@@ -110,59 +230,73 @@ export default function Portfolio() {
     try {
       const tickers = tickerMappings.map(m => m.ticker).filter(Boolean);
       const neededFx = [...new Set(
-        holdings.map(h => h.currency).filter(c => c !== 'SEK' && FX_PAIRS[c])
-          .map(c => FX_PAIRS[c])
+        holdings.map(h => h.currency).filter(c => c !== 'SEK' && FX_PAIRS[c]).map(c => FX_PAIRS[c])
       )];
-
       const allSymbols = [...tickers, ...neededFx];
-      const resp = await fetch(
-        `/api/prices?tickers=${encodeURIComponent(allSymbols.join(','))}`
-      );
-      const data: Record<string, { price: number; currency: string; changePercent: number; name: string }> = await resp.json();
+      const resp = await fetch(`/api/prices?tickers=${encodeURIComponent(allSymbols.join(','))}`);
+      const data: Record<string, { price: number; currency: string; changePercent: number; name: string; category?: string; quoteType?: string }> = await resp.json();
       if (!resp.ok) throw new Error((data as any).error ?? `HTTP ${resp.status}`);
 
-      // Extract FX rates
       const newFx: Record<string, number> = { SEK: 1 };
       for (const [cur, pair] of Object.entries(FX_PAIRS)) {
         if (data[pair]) newFx[cur] = data[pair].price;
       }
       setFxRates(newFx);
 
-      // Build price cache keyed by ticker
       const now = Date.now();
       const newCache: Record<string, PriceData> = { ...priceCache };
+      const updatedMappings = [...tickerMappings];
+      let mappingsChanged = false;
+
       for (const [symbol, q] of Object.entries(data)) {
-        if (FX_PAIRS[symbol] || Object.values(FX_PAIRS).includes(symbol)) continue;
+        if (Object.values(FX_PAIRS).includes(symbol)) continue;
         newCache[symbol] = {
           ticker: symbol,
           price: q.price,
           currency: q.currency,
           changePercent: q.changePercent,
           fetchedAt: now,
+          category: q.category,
+          quoteType: q.quoteType,
         };
+        // Enrich TickerMapping with category from Yahoo Finance if not already set
+        if (q.category || q.quoteType) {
+          const idx = updatedMappings.findIndex(m => m.ticker === symbol);
+          if (idx >= 0 && (!updatedMappings[idx].category || !updatedMappings[idx].quoteType)) {
+            updatedMappings[idx] = {
+              ...updatedMappings[idx],
+              category: q.category || updatedMappings[idx].category,
+              quoteType: q.quoteType || updatedMappings[idx].quoteType,
+            };
+            mappingsChanged = true;
+          }
+        }
       }
+
       setPriceCache(newCache);
       await savePriceCache(user.uid, newCache);
+      if (mappingsChanged) {
+        setTickerMappings(updatedMappings);
+        await saveTickerMappings(user.uid, updatedMappings).catch(() => {});
+      }
 
-      // Take a portfolio snapshot
       const totalSEK = computeTotalSEK(newCache, newFx);
       if (totalSEK > 0) {
         const snap: PortfolioSnapshot = {
           date: new Date().toISOString().slice(0, 10),
           totalValueSEK: totalSEK,
           holdings: holdings.map(h => {
-            const tm = tickerMappings.find(x => x.isin === h.isin);
+            const tm = updatedMappings.find(x => x.isin === h.isin);
             const pd = tm ? newCache[tm.ticker] : undefined;
             const rate = newFx[h.currency] ?? 1;
-            const valueSEK = pd ? h.shares * pd.price * rate : 0;
-            return { isin: h.isin, name: h.name, valueSEK, shares: h.shares };
+            return { isin: h.isin, name: h.name, valueSEK: pd ? h.shares * pd.price * rate : 0, shares: h.shares };
           }),
         };
         addPortfolioSnapshot(snap);
         await savePortfolioSnapshot(user.uid, snap);
       }
-    } catch (e) {
-      setError('Kunde inte hämta kurser. Kontrollera ticker-mappningarna.');
+    } catch (e: any) {
+      setError('Kunde inte hämta kurser: ' + (e?.message ?? 'okänt fel'));
     } finally {
       setRefreshing(false);
     }
@@ -179,7 +313,34 @@ export default function Portfolio() {
     }, 0);
   }
 
-  // Computed values
+  const handleSetAssetClass = async (isin: string, assetClass: string) => {
+    if (!user) return;
+    const existing = tickerMappings.find(m => m.isin === isin);
+    if (!existing) return;
+    const updated = { ...existing, assetClass: assetClass || undefined };
+    upsertTickerMapping(updated);
+    const newMappings = [...tickerMappings.filter(x => x.isin !== isin), updated];
+    await saveTickerMappings(user.uid, newMappings).catch(() => {});
+  };
+
+  const saveTicker = async (isin: string) => {
+    if (!user || !editValue.trim()) return;
+    const holding = holdings.find(h => h.isin === isin);
+    const existing = tickerMappings.find(m => m.isin === isin);
+    const mapping: TickerMapping = {
+      ...(existing ?? {}),
+      isin,
+      ticker: editValue.trim().toUpperCase(),
+      name: holding?.name ?? isin,
+      manual: true,
+    };
+    upsertTickerMapping(mapping);
+    const updated = [...tickerMappings.filter(x => x.isin !== isin), mapping];
+    await saveTickerMappings(user.uid, updated);
+    setEditTicker(null);
+    setEditValue('');
+  };
+
   const enriched = useMemo(() => {
     return holdings.map(h => {
       const tm = tickerMappings.find(x => x.isin === h.isin);
@@ -193,6 +354,9 @@ export default function Portfolio() {
       return {
         ...h,
         ticker: tm?.ticker ?? '–',
+        category: tm?.category ?? pd?.category ?? '',
+        quoteType: tm?.quoteType ?? pd?.quoteType ?? '',
+        assetClass: tm?.assetClass ?? '',
         currentPrice,
         valueSEK,
         costSEK,
@@ -204,6 +368,10 @@ export default function Portfolio() {
       };
     }).sort((a, b) => b.valueSEK - a.valueSEK);
   }, [holdings, tickerMappings, priceCache, fxRates]);
+
+  const filteredEnriched = selectedClass
+    ? enriched.filter(h => h.assetClass === selectedClass || (selectedClass === 'Ej klassad' && !h.assetClass))
+    : enriched;
 
   const totalValueSEK = enriched.reduce((s, h) => s + h.valueSEK, 0);
   const totalCostSEK = enriched.reduce((s, h) => s + h.costSEK, 0);
@@ -223,22 +391,6 @@ export default function Portfolio() {
   const priceAgeMinutes = enriched[0]?.priceStale === false
     ? Math.floor((Date.now() - (priceCache[enriched[0].ticker]?.fetchedAt ?? 0)) / 60000)
     : null;
-
-  const saveTicker = async (isin: string) => {
-    if (!user || !editValue.trim()) return;
-    const holding = holdings.find(h => h.isin === isin);
-    const mapping: TickerMapping = {
-      isin,
-      ticker: editValue.trim().toUpperCase(),
-      name: holding?.name ?? isin,
-      manual: true,
-    };
-    upsertTickerMapping(mapping);
-    const updated = [...tickerMappings.filter(x => x.isin !== isin), mapping];
-    await saveTickerMappings(user.uid, updated);
-    setEditTicker(null);
-    setEditValue('');
-  };
 
   if (loading) {
     return (
@@ -267,9 +419,17 @@ export default function Portfolio() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Portfölj</h1>
-          {priceAgeMinutes !== null && (
-            <p className="text-[11px] text-gray-400 mt-0.5">Kurser uppdaterade för {priceAgeMinutes} min sedan</p>
-          )}
+          <div className="flex items-center gap-2 mt-0.5">
+            {priceAgeMinutes !== null && (
+              <p className="text-[11px] text-gray-400">Kurser uppdaterade för {priceAgeMinutes} min sedan</p>
+            )}
+            {searchStatus === 'searching' && (
+              <p className="text-[11px] text-blue-400 flex items-center gap-1">
+                <span className="w-2.5 h-2.5 border border-blue-400 border-t-transparent rounded-full animate-spin" />
+                Söker tickers…
+              </p>
+            )}
+          </div>
         </div>
         <button
           onClick={refreshPrices}
@@ -287,7 +447,7 @@ export default function Portfolio() {
         </div>
       )}
 
-      {/* Total value */}
+      {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-4 sm:col-span-1">
           <p className="text-xs text-gray-400 mb-1">Totalt värde</p>
@@ -298,7 +458,7 @@ export default function Portfolio() {
           </p>
         </Card>
         <Card className="p-4 sm:col-span-2">
-          <p className="text-xs text-gray-400 mb-2">Fördelning</p>
+          <p className="text-xs text-gray-400 mb-2">Fördelning per innehav</p>
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height={140}>
               <PieChart>
@@ -316,16 +476,54 @@ export default function Portfolio() {
         </Card>
       </div>
 
+      {/* Asset class breakdown */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-900">Tillgångsklasser</h2>
+          <button
+            onClick={() => setShowClassManager(v => !v)}
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600"
+          >
+            <Settings2 size={12} /> {showClassManager ? 'Stäng' : 'Hantera klasser'}
+          </button>
+        </div>
+        {showClassManager && (
+          <ClassManager assetClasses={assetClasses} onSetClasses={setAssetClasses} />
+        )}
+        <div className={showClassManager ? 'mt-3' : ''}>
+          <ClassBreakdown
+            enriched={enriched}
+            assetClasses={assetClasses}
+            selectedClass={selectedClass}
+            onSelect={setSelectedClass}
+          />
+        </div>
+        {totalValueSEK > 0 && enriched.some(h => !h.assetClass) && (
+          <p className="text-[11px] text-orange-500 mt-2 flex items-center gap-1">
+            <AlertCircle size={10} />
+            {enriched.filter(h => !h.assetClass).length} innehav saknar tillgångsklass — välj i tabellen nedan.
+          </p>
+        )}
+      </Card>
+
       {/* Holdings table */}
       <Card className="overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">Innehav</h2>
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-900">
+            Innehav
+            {selectedClass && (
+              <span className="ml-2 text-xs font-normal text-blue-500">
+                {selectedClass} · {filteredEnriched.length} st
+              </span>
+            )}
+          </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-[11px] text-gray-400 border-b border-gray-100">
                 <th className="text-left px-4 py-2">Värdepapper</th>
+                <th className="text-left px-3 py-2">Klass</th>
                 <th className="text-right px-3 py-2">Ticker</th>
                 <th className="text-right px-3 py-2">Antal</th>
                 <th className="text-right px-3 py-2">Kurs</th>
@@ -335,12 +533,32 @@ export default function Portfolio() {
               </tr>
             </thead>
             <tbody>
-              {enriched.map(h => (
+              {filteredEnriched.map(h => (
                 <tr key={h.isin} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  {/* Name + Yahoo category */}
                   <td className="px-4 py-2.5">
                     <p className="font-medium text-gray-900 text-[12px]">{h.name}</p>
-                    <p className="text-gray-400 text-[10px]">{h.isin}</p>
+                    <p className="text-gray-400 text-[10px]">
+                      {h.isin}
+                      {h.category && <span className="ml-1.5 text-gray-300">· {h.category}</span>}
+                    </p>
                   </td>
+
+                  {/* Asset class dropdown */}
+                  <td className="px-3 py-2.5">
+                    <select
+                      value={h.assetClass}
+                      onChange={e => handleSetAssetClass(h.isin, e.target.value)}
+                      className="text-[11px] border border-gray-200 rounded-lg px-1.5 py-0.5 text-gray-600 bg-white focus:outline-none focus:border-blue-300 max-w-[100px]"
+                    >
+                      <option value="">–</option>
+                      {assetClasses.map(cls => (
+                        <option key={cls} value={cls}>{cls}</option>
+                      ))}
+                    </select>
+                  </td>
+
+                  {/* Ticker (editable) */}
                   <td className="px-3 py-2.5 text-right">
                     {editTicker === h.isin ? (
                       <div className="flex items-center gap-1 justify-end">
@@ -349,11 +567,11 @@ export default function Portfolio() {
                           onChange={e => setEditValue(e.target.value)}
                           onKeyDown={e => e.key === 'Enter' && saveTicker(h.isin)}
                           placeholder="t.ex. AFRY.ST"
-                          className="w-24 border border-blue-300 rounded px-1.5 py-0.5 text-xs outline-none"
+                          className="w-28 border border-blue-300 rounded px-1.5 py-0.5 text-xs outline-none"
                           autoFocus
                         />
-                        <button onClick={() => saveTicker(h.isin)} className="text-green-500 hover:text-green-600"><Check size={12} /></button>
-                        <button onClick={() => setEditTicker(null)} className="text-gray-300 hover:text-gray-500"><X size={12} /></button>
+                        <button onClick={() => saveTicker(h.isin)} className="text-green-500"><Check size={12} /></button>
+                        <button onClick={() => setEditTicker(null)} className="text-gray-300"><X size={12} /></button>
                       </div>
                     ) : (
                       <button
@@ -365,6 +583,7 @@ export default function Portfolio() {
                       </button>
                     )}
                   </td>
+
                   <td className="px-3 py-2.5 text-right font-mono text-gray-700">
                     {h.shares % 1 === 0 ? h.shares : h.shares.toFixed(4)}
                   </td>
@@ -393,7 +612,8 @@ export default function Portfolio() {
         </div>
         {enriched.some(h => !h.hasTicker) && (
           <div className="px-4 py-2 bg-orange-50 border-t border-orange-100 text-[11px] text-orange-600 flex items-center gap-1">
-            <AlertCircle size={11} /> Klicka på orangea tickers för att ange dem manuellt – OpenFIGI hittade ingen automatisk matchning.
+            <AlertCircle size={11} />
+            Klicka på en orange ticker för att ange den manuellt — Yahoo Finance-sökning hittade ingen automatisk matchning.
           </div>
         )}
       </Card>
@@ -406,35 +626,15 @@ export default function Portfolio() {
             <LineChart data={historyData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <YAxis
-                tick={{ fontSize: 10 }}
-                tickFormatter={v => `${(v / 1000).toFixed(0)}k`}
-                width={40}
-              />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} width={40} />
               <Tooltip formatter={(v: number) => [formatSEK(v), 'Värde']} />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#007aff"
-                strokeWidth={2}
-                dot={{ r: 3, fill: '#007aff' }}
-                activeDot={{ r: 5 }}
-              />
+              <Line type="monotone" dataKey="value" stroke="#007aff" strokeWidth={2}
+                dot={{ r: 3, fill: '#007aff' }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
-          <p className="text-[10px] text-gray-400 mt-2">
-            Snapshots tas varje gång du klickar "Uppdatera kurser". Ladda upp Avanza-filer regelbundet för bättre historik.
-          </p>
         </Card>
       )}
 
-      {historyData.length === 1 && (
-        <Card className="p-4">
-          <p className="text-xs text-gray-400 text-center">
-            Historikdiagrammet visas när du har uppdaterat kurser vid minst 2 olika tillfällen.
-          </p>
-        </Card>
-      )}
     </div>
     </div>
   );

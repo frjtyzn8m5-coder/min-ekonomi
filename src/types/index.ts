@@ -96,9 +96,12 @@ export interface Holding {
 
 export interface TickerMapping {
   isin: string;
-  ticker: string;   // Yahoo Finance ticker, e.g. "AFRY.ST"
+  ticker: string;      // Yahoo Finance ticker, e.g. "AFRY.ST" or "0P0001IMY7.ST"
   name: string;
-  manual?: boolean; // user-overridden
+  manual?: boolean;    // user-overridden ticker
+  category?: string;   // Yahoo Finance fund category, e.g. "Equity Precious Metals"
+  quoteType?: string;  // MUTUALFUND | ETF | EQUITY
+  assetClass?: string; // user-defined class, e.g. "Ädelmetaller"
 }
 
 export interface PriceData {
@@ -107,6 +110,8 @@ export interface PriceData {
   currency: string;
   changePercent: number;
   fetchedAt: number; // unix ms
+  category?: string;
+  quoteType?: string;
 }
 
 export interface PortfolioSnapshot {

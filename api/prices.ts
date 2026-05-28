@@ -35,6 +35,8 @@ async function fetchSingleQuote(symbol: string): Promise<{
       currency: meta.currency ?? 'SEK',
       changePercent,
       name: meta.shortName ?? meta.longName ?? symbol,
+      category: meta.category ?? '',
+      quoteType: meta.quoteType ?? '',
     };
   } catch {
     return null;
@@ -55,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Fetch all symbols in parallel
   const results = await Promise.all(symbols.map(async (sym) => ({ sym, data: await fetchSingleQuote(sym) })));
 
-  const result: Record<string, { price: number; currency: string; changePercent: number; name: string }> = {};
+  const result: Record<string, { price: number; currency: string; changePercent: number; name: string; category: string; quoteType: string }> = {};
   let resolved = 0;
   for (const { sym, data } of results) {
     if (data) {
