@@ -88,7 +88,7 @@ export const useStore = create<AppState>()(
       page: 'overview',
       filter: DEFAULT_FILTER,
       pushSubscription: null,
-      syncStatus: 'idle',
+      syncStatus: 'idle' as SyncStatus,
       lastSyncedAt: null,
 
       addTransactions: (incoming) => {
@@ -99,16 +99,6 @@ export const useStore = create<AppState>()(
 
       addManualTransaction: (tx) => {
         set(s => ({ transactions: mergeTxs(s.transactions, [tx]) }));
-        scheduleSyncToCloud(get);
-      },
-
-      updateTransaction: (id, changes) => {
-        set(s => ({ transactions: s.transactions.map(t => t.id === id ? { ...t, ...changes } : t) }));
-        scheduleSyncToCloud(get);
-      },
-
-      deleteTransaction: (id) => {
-        set(s => ({ transactions: s.transactions.filter(t => t.id !== id) }));
         scheduleSyncToCloud(get);
       },
 
@@ -134,4 +124,93 @@ export const useStore = create<AppState>()(
         scheduleSyncToCloud(get);
       },
 
-      addDebtSnap
+      addDebtSnapshot: (snap) => {
+        set(s => {
+          const existing = s.debts.filter(d => d.month !== snap.month);
+          return { debts: [...existing, snap].sort((a, b) => a.month.localeCompare(b.month)) };
+        });
+        scheduleSyncToCloud(get);
+      },
+
+      setPage: (page) => set({ page }),
+
+      setFilter: (f) => set(s => ({ filter: { ...s.filter, ...f } })),
+
+      resetFilter: () => set({ filter: DEFAULT_FILTER }),
+
+      updateTransaction: (id, changes) => {
+        set(s => ({ transactions: s.transactions.map(t => t.id === id ? { ...t, ...changes } : t) }));
+        scheduleSyncToCloud(get);
+      },
+
+      deleteTransaction: (id) => {
+        set(s => ({ transactions: s.transactions.filter(t => t.id !== id) }));
+        scheduleSyncToCloud(get);
+      },
+
+      addReminder: (r) => set(s => ({ reminders: [...s.reminders, r] })),
+
+      updateReminder: (id, changes) => set(s => ({
+        reminders: s.reminders.map(r => r.id === id ? { ...r, ...changes } : r),
+      })),
+
+      deleteReminder: (id) => set(s => ({
+        reminders: s.reminders.filter(r => r.id !== id),
+      })),
+
+      setPushSubscription: (sub) => set({ pushSubscription: sub }),
+
+      syncToCloud: async () => {
+        const state = get();
+        set({ syncStatus: 'syncing' });
+        try {
+          await fetch('/api/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              transactions: state.transactions,
+              budgets: state.budgets,
+              assets: state.assets,
+              debts: state.debts,
+              _savedAt: Date.now(),
+            }),
+          });
+          set({ syncStatus: 'ok', lastSyncedAt: Date.now() });
+        } catch {
+          set({ syncStatus: 'error' });
+        }
+      },
+
+      loadFromCloud: async () => {
+        try {
+          const res = await fetch('/api/data');
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data) return;
+          const state = get();
+          if (data.transactions?.length) {
+            const merged = mergeTxs(state.transactions, data.transactions);
+            set({ transactions: merged });
+          }
+          if (data.budgets?.length) set({ budgets: data.budgets });
+          if (data.assets?.length) set({ assets: data.assets });
+          if (data.debts?.length) set({ debts: data.debts });
+          set({ syncStatus: 'ok', lastSyncedAt: Date.now() });
+        } catch {
+          set({ syncStatus: 'error' });
+        }
+      },
+    }),
+    {
+      name: 'ekonomi_v4',
+      partialize: (s) => ({
+        transactions: s.transactions,
+        budgets: s.budgets,
+        assets: s.assets,
+        debts: s.debts,
+        reminders: s.reminders,
+        pushSubscription: s.pushSubscription,
+      }),
+    }
+  )
+);
