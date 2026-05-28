@@ -159,7 +159,7 @@ export default function Import() {
   const [importLog, setImportLog] = useState<string[]>([]);
   const nonTransfer = transactions.filter(t=>!t.isTransfer);
   const transferCount = transactions.filter(t=>t.isTransfer).length;
-  const logImport = (label: string, count: number) => setImportLog(l=>[`${label}: ${count} importerade`,,...l]);
+  const logImport = (label: string, count: number) => setImportLog(l=>[`${label}: ${count} importerade`, ...l]);
 
   return (
     <div className="flex flex-col h-full overflow-auto">
