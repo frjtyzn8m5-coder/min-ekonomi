@@ -43,13 +43,18 @@ function ManualTxModal({ onClose }: ManualTxModalProps) {
     if (!form.description.trim() || !form.amount) return;
     const amt = parseFloat(form.amount);
     if (isNaN(amt)) return;
+    const finalAmt = form.isExpense ? -Math.abs(amt) : Math.abs(amt);
     addManualTransaction({
+      id: `manual_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       date: form.date,
       description: form.description.trim(),
-      amount: form.isExpense ? -Math.abs(amt) : Math.abs(amt),
+      amount: finalAmt,
       category: form.category,
       account: form.account,
       tags: form.tags,
+      type: finalAmt >= 0 ? 'income' : 'expense',
+      isTransfer: false,
+      source: 'manual',
     });
     onClose();
   };
