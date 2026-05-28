@@ -1,9 +1,31 @@
+import { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
-import { Wallet } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Wallet, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login() {
-  const { login } = useAuthStore();
+  const { login, register, error, clearError } = useAuthStore();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const switchMode = () => { setMode(m => m === 'login' ? 'register' : 'login'); clearError(); };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !password) return;
+    setLoading(true);
+    try {
+      if (mode === 'login') await login(username, password);
+      else await register(username, password);
+    } catch {
+      // error is set in store
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -13,31 +35,82 @@ export default function Login() {
         transition={{ duration: 0.3 }}
         className="w-full max-w-sm"
       >
-        <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-blue-500 flex items-center justify-center shadow-lg mb-5">
-            <Wallet size={32} className="text-white" />
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center shadow-lg mb-4">
+            <Wallet size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900">Min Ekonomi</h1>
-          <p className="text-sm text-gray-400 mt-1.5">Din personliga ekonomiöversikt</p>
+          <h1 className="text-xl font-semibold text-gray-900">Min Ekonomi</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            {mode === 'login' ? 'Logga in på ditt konto' : 'Skapa ett nytt konto'}
+          </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <button
-            onClick={() => login()}
-            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18">
-              <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18Z"/>
-              <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17Z"/>
-              <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07Z"/>
-              <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.31Z"/>
-            </svg>
-            Fortsätt med Google
-          </button>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+          {/* Mode tabs */}
+          <div className="flex rounded-xl border border-gray-200 overflow-hidden text-sm font-medium">
+            {(['login', 'register'] as const).map(m => (
+              <button key={m} onClick={() => { setMode(m); clearError(); }}
+                className={`flex-1 py-2.5 transition-colors ${
+                  mode === m ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'
+                }`}>
+                {m === 'login' ? 'Logga in' : 'Registrera'}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Username */}
+            <div className="relative">
+              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Användarnamn"
+                autoComplete="username"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type={showPw ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder={mode === 'register' ? 'Lösenord (minst 6 tecken)' : 'Lösenord'}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              />
+              <button type="button" onClick={() => setShowPw(v => !v)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+
+            {/* Error */}
+            <AnimatePresence>
+              {error && (
+                <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            <button type="submit" disabled={loading || !username.trim() || !password}
+              className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+              {loading && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {mode === 'login' ? 'Logga in' : 'Skapa konto'}
+            </button>
+          </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Dina ekonomidata lagras säkert i din Google-profil
+        <p className="text-center text-xs text-gray-400 mt-5">
+          Varje konto har sin egen separata data
         </p>
       </motion.div>
     </div>

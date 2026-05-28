@@ -78,7 +78,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Footer */}
       <div className="px-4 py-4 border-t border-gray-100 space-y-1">
         {user && (
-          <p className="text-[11px] text-gray-400 px-3 truncate">{user.email}</p>
+          <p className="text-[11px] text-gray-400 px-3 truncate">{user.email?.replace('@min-ekonomi.app', '')}</p>
         )}
         <button
           onClick={logout}
