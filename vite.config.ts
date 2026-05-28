@@ -3,6 +3,19 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-xlsx': ['xlsx'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-zustand': ['zustand'],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

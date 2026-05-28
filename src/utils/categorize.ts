@@ -7,25 +7,77 @@ interface Rule {
 }
 
 const RULES: Rule[] = [
-  { pattern: /\bLÖN\b|AIFM CAPITAL|SALARY|ARBETSGIVARE/i, category: 'Lön' },
+  // ── Income ──────────────────────────────────────────────────────────────────
+  { pattern: /\bLÖN\b|AIFM CAPITAL|SALARY|ARBETSGIVARE|LÖNEUTBETALNING/i, category: 'Lön' },
   { pattern: /STUDSTÖD|STUDIESTÖD|CSN.*BIDRAG|BIDRAG.*CSN/i, category: 'CSN Bidrag' },
   { pattern: /STUDIELÅN|CSN.*LÅN|LÅN.*CSN|TILLÄGGSLÅN/i, category: 'CSN Lån' },
-  { pattern: /UTDELNING|RÄNTA.*FOND|KURSVINST/i, category: 'Investeringsvinst' },
+  { pattern: /UTDELNING|RÄNTA.*FOND|KURSVINST|KAPITALVINST/i, category: 'Investeringsvinst' },
+
+  // ── Transfers (mark before expense rules) ───────────────────────────────────
   { pattern: /BENJAMIN SKÖ|SKÖLD BENJAM|95544998797|57233541345|50370098927|ÅTERFÖRT|INTERN ÖVERF|SWISH.*TILL.*MIG|KONTOÖVERF/i, category: 'Överföring', isTransfer: true },
   { pattern: /\bAVANZA\b/i, category: 'Överföring', isTransfer: true },
-  { pattern: /HYRA|RENT|BOSTADSRÄTTSFÖRE|HEMFÖRSÄKRING|EL|VATTENFALL|FORTUM|ELLEVIO/i, category: 'Boende' },
-  { pattern: /ICA|COOP|WILLYS|LIDL|HEMKÖP|NETTO|MAXI|CITY GROSS|MATVAROR/i, category: 'Mat' },
-  { pattern: /SYSTEMBOLAGET/i, category: 'Mat' },
-  { pattern: /MCDONALD|BURGER|MAX HAMBURGARE|SUBWAY|PIZZA|SUSHI|RESTAURANG|CAFÉ|COFFEE|WAYNES|STARBUCKS|FOODORA|WOLT|UBER EATS/i, category: 'Restaurang' },
-  { pattern: /SL |SJ |BUSS|TAXI|UBER|BOLT|PARKERING|TRAFIKEN|FLYG|RYANAIR|SAS |NORWEGIAN/i, category: 'Transport' },
-  { pattern: /TELIA|TELE2|TELENOR|COMVIQ|HALEBOP|THREE|3 SVERIGE|VIMLA|BREDBAND|BAHNHOF|BOXER/i, category: 'Telefon' },
-  { pattern: /SPOTIFY|NETFLIX|DISNEY\+|HBO|APPLE.*SUB|YOUTUBE|AMAZON PRIME|VIAPLAY|TV4|STORYTEL/i, category: 'Streaming' },
-  { pattern: /APOTEK|APOTEKET|ICA APOTEK|KRONANS APOTEK|LÄKARE|TANDLÄKARE|OPTIKER|GYM|TRÄNING|FRISKIS|SATS |ACTIC|NORDIC WELLNESS/i, category: 'Hälsa' },
-  { pattern: /H&M|ZARA|ASOS|LINDEX|KappAhl|UNIQLO|MONKI|WEEKDAY|COS |ARKET|STADION|SPORTAMORE/i, category: 'Kläder' },
-  { pattern: /STEAM|EPIC GAMES|BIOGRAF|BIO |MUSEUM|KONSERT|EVENTIM|TICKETMASTER/i, category: 'Aktiviteter' },
-  { pattern: /HOTEL|AIRBNB|BOOKING\.COM|EXPEDIA|TRIVAGO|VING |APOLLO |TICKET\b/i, category: 'Resor' },
-  { pattern: /AMAZON|ZALANDO|ELGIGANTEN|MEDIAMARKT|KOMPLETT|INET|WEBHALLEN|IKEA|CLAS OHLSON|BILTEMA|JULA/i, category: 'Handel' },
-  { pattern: /AUTOSPAR|SPARANDE|SAVINGS/i, category: 'Sparande' },
+
+  // ── Housing ──────────────────────────────────────────────────────────────────
+  { pattern: /HYRA|RENT\b|BOSTADSRÄTTSFÖRE|HEMFÖRSÄKRING|IF FÖRSÄKRING|TRYGG-HANSA|LÄNSFÖRSÄKRING|VATTENFALL|FORTUM|ELLEVIO|STOCKHOLM EXERGI|E\.ON|TELGE ENERGI/i, category: 'Boende' },
+
+  // ── Restaurants / take-away (must be before Mat to catch cafés etc.) ─────────
+  { pattern: /MCDONALD|MCDONALDS|BURGER KING|MAX HAMBURGARE|SUBWAY|FIVE GUYS|TGI|NANDOS/i, category: 'Restaurang' },
+  { pattern: /PIZZA|SUSHI|KEBAB|THAIRESTAURANG|RESTAURANG|BRASSERIE|BISTRO|TAVERNA|GRILL\b/i, category: 'Restaurang' },
+  { pattern: /CAFÉ|KAFFE|ESPRESSO|COFFEE|WAYNES|STARBUCKS|JAVA|ESPRESSOHOUSE|BARISTA|DA MATTEO/i, category: 'Restaurang' },
+  { pattern: /FOODORA|WOLT|UBER EATS|UBEREATS|JUST EAT|BOLT FOOD/i, category: 'Restaurang' },
+  { pattern: /\bBAR\b|\bPUB\b|\bKROG\b|NIGHTCLUB|NATTKLUBB|VINBAR|ÖLHALL/i, category: 'Restaurang' },
+  { pattern: /SALLADSBAR|LUNCH|SMÖRGÅSBAR|GATUKÖK|KEBABERI/i, category: 'Restaurang' },
+
+  // ── Groceries ────────────────────────────────────────────────────────────────
+  { pattern: /\bICA\b|COOP|WILLYS|LIDL|HEMKÖP|NETTO\b|MAXI\b|CITY GROSS|MATVAROR|SABIS|AXFOOD|MATHEM|MATSMART/i, category: 'Mat' },
+  { pattern: /SYSTEMBOLAGET|PRESSBYRÅ|7-ELEVEN|7ELEVEN|RESEBUTIK/i, category: 'Mat' },
+  { pattern: /SALUHALL|BONDENS MARKNAD|FRUKT|EKOLOGISK BUTIK/i, category: 'Mat' },
+
+  // ── Transport ────────────────────────────────────────────────────────────────
+  { pattern: /\bSL\b|STORSTOCKHOLMS|MTR EXPRESS|\bSJ\b|BUSS\b|TAXI|CABONLINE|SVERIGEBUSS|FLIXBUS/i, category: 'Transport' },
+  { pattern: /\bUBER\b|\bBOLT\b|PARKERING|APCOA|Q-PARK|EASYPARK|TRAFIKVERKET|TRAFIKEN/i, category: 'Transport' },
+  { pattern: /FLYG|RYANAIR|\bSAS\b|NORWEGIAN|WIZZ|EASYJET|FINNAIR|BRITISH AIRWAYS|LUFTHANSA/i, category: 'Transport' },
+  { pattern: /BILTVÄTT|SHELL|PREEM|ST1\b|OKQ8|CIRCLE K|BENSIN|DRIVMEDEL/i, category: 'Transport' },
+  { pattern: /VÄTGAS|ELBIL|LADDNING|VATTENFALL CHARGE|TESLA CHARGING/i, category: 'Transport' },
+
+  // ── Phone / Internet ──────────────────────────────────────────────────────────
+  { pattern: /TELIA|TELE2|TELENOR|COMVIQ|HALEBOP|THREE|3 SVERIGE|VIMLA|HALLON\b/i, category: 'Telefon' },
+  { pattern: /BREDBAND|BAHNHOF|BOXER|ITUX|OWNIT|ZITIUS|FIBER|COM HEM|COMHEM|TELE 2/i, category: 'Telefon' },
+
+  // ── Streaming / Subscriptions ─────────────────────────────────────────────────
+  { pattern: /SPOTIFY|NETFLIX|DISNEY\+|HBO\b|MAX\b.*STREAMING|APPLE.*SUB|YOUTUBE PREMIUM/i, category: 'Streaming' },
+  { pattern: /AMAZON PRIME|VIAPLAY|TV4 PLAY|STORYTEL|NEXTORY|READLY|TIDNING/i, category: 'Streaming' },
+  { pattern: /ADOBE|DROPBOX|ICLOUD|MICROSOFT 365|OFFICE 365|GITHUB|NOTION|FIGMA|CANVA/i, category: 'Streaming' },
+
+  // ── Health ────────────────────────────────────────────────────────────────────
+  { pattern: /APOTEK|APOTEKET|ICA APOTEK|KRONANS APOTEK|APOTEA|EUROAPOTEK|LÄKARE|DOKTOR/i, category: 'Hälsa' },
+  { pattern: /TANDLÄKARE|OPTIKER|SYNCENTRAL|TANDVÅRD|PSYKOLOG|TERAPEUT/i, category: 'Hälsa' },
+  { pattern: /\bGYM\b|TRÄNING|FRISKIS|SATS\b|ACTIC|NORDIC WELLNESS|CROSSFIT|YOGASTUDIO|PILATES/i, category: 'Hälsa' },
+  { pattern: /1177|VÅRDCENTRALEN|HUSLÄKARE|SJUKHUS|KAROLINSKA|SOPHIAHEMMET/i, category: 'Hälsa' },
+
+  // ── Clothes ──────────────────────────────────────────────────────────────────
+  { pattern: /H&M|ZARA|ASOS|LINDEX|KAPPAHL|UNIQLO|MONKI|WEEKDAY|\bCOS\b|ARKET|HOUDINI|PEAK PERFORMANCE/i, category: 'Kläder' },
+  { pattern: /STADION|SPORTAMORE|INTERSPORT|XXL\b|LÖPLABBET|DECATHLON|ADIDAS|NIKE\b/i, category: 'Kläder' },
+  { pattern: /FILIPPA K|ACNE|NUDIE|TIGER OF SWEDEN|GANT|RALPH LAUREN|TOMMY HILFIGER/i, category: 'Kläder' },
+
+  // ── Activities / Entertainment ────────────────────────────────────────────────
+  { pattern: /STEAM|EPIC GAMES|PLAYSTATION|XBOX|NINTENDO|APP STORE.*GAME/i, category: 'Aktiviteter' },
+  { pattern: /BIOGRAF|FILMSTADEN|SF BIO|CINEME|BIOPALATSET/i, category: 'Aktiviteter' },
+  { pattern: /MUSEUM|KONSERT|EVENTIM|TICKETMASTER|TICNET|STADION.*EVENT|KONSERTHUS/i, category: 'Aktiviteter' },
+  { pattern: /BOWLING|LASER|MINIGOLF|PAINTBALL|ESCAPE ROOM|KLÄTTERHALL/i, category: 'Aktiviteter' },
+
+  // ── Travel ───────────────────────────────────────────────────────────────────
+  { pattern: /HOTEL|HOTELL|AIRBNB|BOOKING\.COM|EXPEDIA|TRIVAGO|HOTELS\.COM/i, category: 'Resor' },
+  { pattern: /\bVING\b|\bAPOLLO\b|\bTICKET\b|CHARTERRESA|SEMESTERRESA|GLOBETROTTER/i, category: 'Resor' },
+
+  // ── Shopping / Electronics ───────────────────────────────────────────────────
+  { pattern: /AMAZON\b|ZALANDO|ELGIGANTEN|MEDIAMARKT|KOMPLETT|INET\b|WEBHALLEN/i, category: 'Handel' },
+  { pattern: /IKEA|CLAS OHLSON|BILTEMA|JULA|BAUHAUS|HORNBACH|K-RAUTA/i, category: 'Handel' },
+  { pattern: /BLOCKET|TRADERA|FACEBOOK.*MARKET|VINTED|SELLPY/i, category: 'Handel' },
+  { pattern: /APPLE STORE|APPLE\.COM|SAMSUNG|KJELL|DUSTIN/i, category: 'Handel' },
+
+  // ── Savings / Investments ─────────────────────────────────────────────────────
+  { pattern: /AUTOSPAR|SPARANDE|SAVINGS|SPARKONTO|FOND.*KÖPT|AKTIEKÖP/i, category: 'Sparande' },
 ];
 
 const TRANSFER_RX = /BENJAMIN SKÖ|SKÖLD BENJAM|95544998797|57233541345|50370098927|ÅTERFÖRT|INTERN ÖVERF|KONTOÖVERF|\bAVANZA\b/i;
@@ -64,24 +116,24 @@ export const ALL_CATEGORIES: Category[] = [
 ];
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  'Lön': '#34c759',
-  'CSN Bidrag': '#30d158',
-  'CSN Lån': '#ffd60a',
+  'Lön':             '#34c759',
+  'CSN Bidrag':      '#30d158',
+  'CSN Lån':         '#ffd60a',
   'Investeringsvinst': '#64d2ff',
-  'Övrigt Inkomst': '#5e5ce6',
-  'Mat': '#ff9f0a',
-  'Restaurang': '#ff6b35',
-  'Transport': '#007aff',
-  'Boende': '#5e5ce6',
-  'Telefon': '#64d2ff',
-  'Streaming': '#ff375f',
-  'Kläder': '#bf5af2',
-  'Hälsa': '#30d158',
-  'Aktiviteter': '#ff9f0a',
-  'Handel': '#ff6961',
-  'Resor': '#0071e3',
-  'Sparande': '#34c759',
-  'Investering': '#30d158',
-  'Övrigt Utgift': '#8e8e93',
-  'Överföring': '#c7c7cc',
+  'Övrigt Inkomst':  '#5e5ce6',
+  'Mat':             '#ff9f0a',
+  'Restaurang':      '#ff6b35',
+  'Transport':       '#007aff',
+  'Boende':          '#5e5ce6',
+  'Telefon':         '#64d2ff',
+  'Streaming':       '#ff375f',
+  'Kläder':          '#bf5af2',
+  'Hälsa':           '#30d158',
+  'Aktiviteter':     '#ff9f0a',
+  'Handel':          '#ff6961',
+  'Resor':           '#0071e3',
+  'Sparande':        '#34c759',
+  'Investering':     '#30d158',
+  'Övrigt Utgift':   '#8e8e93',
+  'Överföring':      '#c7c7cc',
 };

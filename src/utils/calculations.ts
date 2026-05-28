@@ -20,6 +20,7 @@ export function filterTxs(txs: Transaction[], f: FilterState): Transaction[] {
     if (f.search && !tx.description.toLowerCase().includes(f.search.toLowerCase())) return false;
     if (f.amountMin !== null && Math.abs(tx.amount) < f.amountMin) return false;
     if (f.amountMax !== null && Math.abs(tx.amount) > f.amountMax) return false;
+    if (f.tags?.length && !f.tags.some(tag => tx.tags?.includes(tag))) return false;
     return true;
   });
 }

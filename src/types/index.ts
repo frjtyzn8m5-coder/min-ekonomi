@@ -78,4 +78,5 @@ export interface FilterState {
   search: string;
   amountMin: number | null;
   amountMax: number | null;
+  tags: string[];
 }

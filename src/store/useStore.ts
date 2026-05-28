@@ -25,6 +25,7 @@ const DEFAULT_FILTER: FilterState = {
   search: '',
   amountMin: null,
   amountMax: null,
+  tags: [],
 };
 
 const DEFAULT_REMINDERS: Reminder[] = [
@@ -32,6 +33,11 @@ const DEFAULT_REMINDERS: Reminder[] = [
   { id: 'hyra', title: 'Betala hyra', emoji: '🏠', dayOfMonth: 25, time: '08:00', active: true },
   { id: 'ekonomi', title: 'Ekonomigenomgång', emoji: '📊', dayOfMonth: -2, time: '08:00', active: true },
 ];
+
+// Debounce timer for cloud sync
+let syncTimer: ReturnType<typeof setTimeout> | null = null;
+
+type SyncStatus = 'idle' | 'syncing' | 'ok' | 'error';
 
 interface AppState {
   transactions: Transaction[];
@@ -41,9 +47,12 @@ interface AppState {
   reminders: Reminder[];
   page: Page;
   filter: FilterState;
-  pushSubscription: string | null; // JSON-serialized PushSubscription
+  pushSubscription: string | null;
+  syncStatus: SyncStatus;
+  lastSyncedAt: number | null;
 
   addTransactions: (txs: Transaction[]) => void;
+  addManualTransaction: (tx: Transaction) => void;
   clearTransactions: () => void;
   updateBudget: (category: Category, limit: number) => void;
   addAssetSnapshot: (s: AssetSnapshot) => void;
@@ -52,10 +61,20 @@ interface AppState {
   setFilter: (f: Partial<FilterState>) => void;
   resetFilter: () => void;
   updateTransaction: (id: string, changes: Partial<Transaction>) => void;
+  deleteTransaction: (id: string) => void;
   addReminder: (r: Reminder) => void;
   updateReminder: (id: string, changes: Partial<Reminder>) => void;
   deleteReminder: (id: string) => void;
   setPushSubscription: (sub: string | null) => void;
+  syncToCloud: () => Promise<void>;
+  loadFromCloud: () => Promise<void>;
+}
+
+function scheduleSyncToCloud(getState: () => AppState) {
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    getState().syncToCloud();
+  }, 2000);
 }
 
 export const useStore = create<AppState>()(
@@ -69,39 +88,50 @@ export const useStore = create<AppState>()(
       page: 'overview',
       filter: DEFAULT_FILTER,
       pushSubscription: null,
+      syncStatus: 'idle',
+      lastSyncedAt: null,
 
       addTransactions: (incoming) => {
         const merged = mergeTxs(get().transactions, incoming);
         set({ transactions: merged });
+        scheduleSyncToCloud(get);
       },
-      clearTransactions: () => set({ transactions: [] }),
-      updateBudget: (category, limit) => set(s => ({
-        budgets: s.budgets.map(b => b.category === category ? { ...b, limit } : b)
-          .concat(s.budgets.find(b => b.category === category) ? [] : [{ category, limit }])
-      })),
-      addAssetSnapshot: (snap) => set(s => {
-        const existing = s.assets.filter(a => a.month !== snap.month);
-        return { assets: [...existing, snap].sort((a, b) => a.month.localeCompare(b.month)) };
-      }),
-      addDebtSnapshot: (snap) => set(s => {
-        const existing = s.debts.filter(d => d.month !== snap.month);
-        return { debts: [...existing, snap].sort((a, b) => a.month.localeCompare(b.month)) };
-      }),
-      setPage: (page) => set({ page }),
-      setFilter: (f) => set(s => ({ filter: { ...s.filter, ...f } })),
-      resetFilter: () => set({ filter: DEFAULT_FILTER }),
-      updateTransaction: (id, changes) => set(s => ({
-        transactions: s.transactions.map(t => t.id === id ? { ...t, ...changes } : t)
-      })),
-      addReminder: (r) => set(s => ({ reminders: [...s.reminders, r] })),
-      updateReminder: (id, changes) => set(s => ({
-        reminders: s.reminders.map(r => r.id === id ? { ...r, ...changes } : r)
-      })),
-      deleteReminder: (id) => set(s => ({
-        reminders: s.reminders.filter(r => r.id !== id)
-      })),
-      setPushSubscription: (sub) => set({ pushSubscription: sub }),
-    }),
-    { name: 'ekonomi_v4' }
-  )
-);
+
+      addManualTransaction: (tx) => {
+        set(s => ({ transactions: mergeTxs(s.transactions, [tx]) }));
+        scheduleSyncToCloud(get);
+      },
+
+      updateTransaction: (id, changes) => {
+        set(s => ({ transactions: s.transactions.map(t => t.id === id ? { ...t, ...changes } : t) }));
+        scheduleSyncToCloud(get);
+      },
+
+      deleteTransaction: (id) => {
+        set(s => ({ transactions: s.transactions.filter(t => t.id !== id) }));
+        scheduleSyncToCloud(get);
+      },
+
+      clearTransactions: () => {
+        set({ transactions: [] });
+        scheduleSyncToCloud(get);
+      },
+
+      updateBudget: (category, limit) => {
+        set(s => ({
+          budgets: s.budgets.some(b => b.category === category)
+            ? s.budgets.map(b => b.category === category ? { ...b, limit } : b)
+            : [...s.budgets, { category, limit }],
+        }));
+        scheduleSyncToCloud(get);
+      },
+
+      addAssetSnapshot: (snap) => {
+        set(s => {
+          const existing = s.assets.filter(a => a.month !== snap.month);
+          return { assets: [...existing, snap].sort((a, b) => a.month.localeCompare(b.month)) };
+        });
+        scheduleSyncToCloud(get);
+      },
+
+      addDebtSnap
