@@ -215,7 +215,7 @@ export async function parseFiles(files: File[]): Promise<Transaction[]> {
         const lower = text.toLowerCase();
         if (lower.includes('avanza')) {
           results.push(...parseAvanzaCSV(text));
-        } else if (lower.includes('transaktionsdatum') || lower.includes('bokföringsdag')) {
+        } else if (lower.includes('bokföringsdatum') || lower.includes('transaktionsdatum') || lower.includes('bokföringsdag')) {
           results.push(...parseSEBCSV(text, file.name.replace(/\.[^.]+$/, '')));
         } else if (lower.includes('transaktionsbelopp') || lower.includes('klarna')) {
           results.push(...parseKlarnaCSV(text));
