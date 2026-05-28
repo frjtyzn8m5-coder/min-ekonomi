@@ -1,0 +1,36 @@
+{
+  "name": "min-ekonomi",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "generate-vapid": "npx web-push generate-vapid-keys",
+    "generate-pin-hash": "node -e \"const c=require('crypto');const pin=process.argv[1];console.log('VITE_APP_PIN_HASH='+c.createHash('sha256').update(pin).digest('hex'))\" --"
+  },
+  "dependencies": {
+    "framer-motion": "^12.0.0",
+    "lucide-react": "^0.511.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "recharts": "^2.15.3",
+    "xlsx": "^0.18.5",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vercel/kv": "^3.0.0",
+    "@vercel/node": "^5.0.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12",
+    "vite-plugin-pwa": "^0.21.1",
+    "web-push": "^3.6.7",
+    "@types/web-push": "^3.6.3"
+  }
+}
