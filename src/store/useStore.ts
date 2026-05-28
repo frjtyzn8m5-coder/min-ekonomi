@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Category, Reminder, ImportBatch } from '../types';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot } from '../types';
 
 const DEFAULT_BUDGETS: BudgetGoal[] = [
   { category: 'Mat', limit: 2000 },
@@ -43,6 +43,10 @@ interface AppState {
   reminders: Reminder[];
   importBatches: ImportBatch[];
   ownAccounts: string[];
+  holdings: Holding[];
+  tickerMappings: TickerMapping[];
+  priceCache: Record<string, PriceData>;
+  portfolioSnapshots: PortfolioSnapshot[];
   page: Page;
   filter: FilterState;
   pushSubscription: string | null;
@@ -56,6 +60,12 @@ interface AppState {
   setOwnAccounts: (accounts: string[]) => void;
   addOwnAccount: (account: string) => void;
   removeOwnAccount: (account: string) => void;
+  setHoldings: (h: Holding[]) => void;
+  setTickerMappings: (m: TickerMapping[]) => void;
+  upsertTickerMapping: (m: TickerMapping) => void;
+  setPriceCache: (p: Record<string, PriceData>) => void;
+  setPortfolioSnapshots: (s: PortfolioSnapshot[]) => void;
+  addPortfolioSnapshot: (s: PortfolioSnapshot) => void;
 
   // Local actions
   addTransactions: (txs: Transaction[]) => void;
@@ -93,6 +103,10 @@ export const useStore = create<AppState>()(
       reminders: DEFAULT_REMINDERS,
       importBatches: [],
       ownAccounts: [],
+      holdings: [],
+      tickerMappings: [],
+      priceCache: {},
+      portfolioSnapshots: [],
       page: 'overview',
       filter: DEFAULT_FILTER,
       pushSubscription: null,
@@ -105,6 +119,19 @@ export const useStore = create<AppState>()(
       setOwnAccounts: (ownAccounts) => set({ ownAccounts }),
       addOwnAccount: (account) => set(s => ({ ownAccounts: [...new Set([...s.ownAccounts, account.trim()])] })),
       removeOwnAccount: (account) => set(s => ({ ownAccounts: s.ownAccounts.filter(a => a !== account) })),
+
+      setHoldings: (holdings) => set({ holdings }),
+      setTickerMappings: (tickerMappings) => set({ tickerMappings }),
+      upsertTickerMapping: (m) => set(s => {
+        const existing = s.tickerMappings.filter(x => x.isin !== m.isin);
+        return { tickerMappings: [...existing, m] };
+      }),
+      setPriceCache: (priceCache) => set({ priceCache }),
+      setPortfolioSnapshots: (portfolioSnapshots) => set({ portfolioSnapshots }),
+      addPortfolioSnapshot: (snap) => set(s => {
+        const existing = s.portfolioSnapshots.filter(x => x.date !== snap.date);
+        return { portfolioSnapshots: [...existing, snap].sort((a, b) => a.date.localeCompare(b.date)) };
+      }),
 
       addTransactions: (incoming) =>
         set(s => ({ transactions: mergeTxsLocal(s.transactions, incoming) })),
@@ -172,6 +199,9 @@ export const useStore = create<AppState>()(
         reminders: s.reminders,
         importBatches: s.importBatches,
         ownAccounts: s.ownAccounts,
+        holdings: s.holdings,
+        tickerMappings: s.tickerMappings,
+        portfolioSnapshots: s.portfolioSnapshots,
         pushSubscription: s.pushSubscription,
       }),
     }

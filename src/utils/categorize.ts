@@ -31,6 +31,7 @@ const RULES: Rule[] = [
   { pattern: /\bBAR\b|\bPUB\b|\bKROG\b|NIGHTCLUB|NATTKLUBB|VINBAR|ÖLHALL/i, category: 'Restaurang' },
   { pattern: /SALLADSBAR|LUNCH|SMÖRGÅSBAR|GATUKÖK|KEBABERI/i, category: 'Restaurang' },
   { pattern: /OMAMI|MOL OMAMI/i, category: 'Restaurang' },
+  { pattern: /RENINGSBORG|WH GOTEBORG|WH GÖTE/i, category: 'Restaurang' },
 
   // ── Groceries ────────────────────────────────────────────────────────────────
   { pattern: /\bICA\b|COOP|WILLYS|LIDL|HEMKÖP|NETTO\b|MAXI\b|CITY GROSS|MATVAROR|SABIS|AXFOOD|MATHEM|MATSMART/i, category: 'Mat' },
@@ -53,6 +54,7 @@ const RULES: Rule[] = [
   { pattern: /SPOTIFY|NETFLIX|DISNEY\+|HBO\b|MAX\b.*STREAMING|APPLE.*SUB|YOUTUBE PREMIUM/i, category: 'Streaming' },
   { pattern: /AMAZON PRIME|VIAPLAY|TV4 PLAY|STORYTEL|NEXTORY|READLY|TIDNING/i, category: 'Streaming' },
   { pattern: /ADOBE|DROPBOX|ICLOUD|MICROSOFT 365|OFFICE 365|GITHUB|NOTION|FIGMA|CANVA/i, category: 'Streaming' },
+  { pattern: /APPLE[\s.]COM|APPLE COM/i, category: 'Streaming' },
 
   // ── Health ────────────────────────────────────────────────────────────────────
   { pattern: /APOTEK|APOTEKET|ICA APOTEK|KRONANS APOTEK|APOTEA|EUROAPOTEK|LÄKARE|DOKTOR/i, category: 'Hälsa' },
@@ -82,9 +84,11 @@ const RULES: Rule[] = [
 
   // ── Shopping / Electronics ───────────────────────────────────────────────────
   { pattern: /AMAZON\b|ZALANDO|ELGIGANTEN|MEDIAMARKT|KOMPLETT|INET\b|WEBHALLEN/i, category: 'Handel' },
-  { pattern: /IKEA|CLAS OHLSON|BILTEMA|JULA|BAUHAUS|HORNBACH|K-RAUTA/i, category: 'Handel' },
+  { pattern: /IKEA|CLAS OHLSON|BILTEMA|JULA|BAUHAUS|HORNBACH|K-RAUTA|JYSK/i, category: 'Handel' },
   { pattern: /BLOCKET|TRADERA|FACEBOOK.*MARKET|VINTED|SELLPY/i, category: 'Handel' },
-  { pattern: /APPLE STORE|APPLE\.COM|SAMSUNG|KJELL|DUSTIN/i, category: 'Handel' },
+  { pattern: /APPLE STORE|SAMSUNG|KJELL|DUSTIN/i, category: 'Handel' },
+  { pattern: /BLOMSTER|BLOMLAND|BLOMMOR|MAJORNAS BLO/i, category: 'Handel' },
+  { pattern: /KLARNA BANK/i, category: 'Handel' },
 
   // ── Savings / Investments ─────────────────────────────────────────────────────
   { pattern: /AUTOSPAR|SPARANDE|SAVINGS|SPARKONTO|FOND.*KÖPT|AKTIEKÖP/i, category: 'Sparande' },

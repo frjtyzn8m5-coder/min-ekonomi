@@ -6,21 +6,24 @@ import { updateTransactionDoc } from '../lib/db';
 import { Card } from '../components/ui/Card';
 import { Plus, Trash2, Zap, Check } from 'lucide-react';
 
+// Bank account numbers: 8–14 digits that do NOT start with 46 (those are Swish/phone)
+const BANK_ACCOUNT_RX = /^\d{8,14}$/;
 const SWISH_RX = /^46[0-9]{9}$/;
-const NUMBER_RX = /^\d{7,}$/;
 
 function detectCandidates(transactions: ReturnType<typeof useStore.getState>['transactions'], ownAccounts: string[]): string[] {
-  const counts: Record<string, { pos: number; neg: number }> = {};
+  const counts: Record<string, { pos: number; neg: number; totalAbs: number }> = {};
   for (const tx of transactions) {
     const d = tx.description.trim();
-    if (!NUMBER_RX.test(d)) continue;
-    if (!counts[d]) counts[d] = { pos: 0, neg: 0 };
+    if (!BANK_ACCOUNT_RX.test(d)) continue;
+    if (SWISH_RX.test(d)) continue; // skip phone numbers
+    if (!counts[d]) counts[d] = { pos: 0, neg: 0, totalAbs: 0 };
     if (tx.amount >= 0) counts[d].pos++;
     else counts[d].neg++;
+    counts[d].totalAbs += Math.abs(tx.amount);
   }
   return Object.entries(counts)
-    .filter(([num, c]) => !ownAccounts.includes(num) && (c.pos > 0 || c.neg > 1) && SWISH_RX.test(num))
-    .sort((a, b) => (b[1].pos + b[1].neg) - (a[1].pos + a[1].neg))
+    .filter(([num, c]) => !ownAccounts.includes(num) && (c.pos >= 1 || c.neg >= 1))
+    .sort((a, b) => b[1].totalAbs - a[1].totalAbs)
     .map(([num]) => num);
 }
 

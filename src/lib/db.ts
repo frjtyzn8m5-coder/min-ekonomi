@@ -2,7 +2,7 @@ import {
   collection, doc, setDoc, getDoc, getDocs, deleteDoc, writeBatch, query, orderBy
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, ImportBatch } from '../types';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot } from '../types';
 
 const userCol = (uid: string, col: string) => collection(db, 'users', uid, col);
 const userDoc = (uid: string, col: string, id: string) => doc(db, 'users', uid, col, id);
@@ -88,6 +88,44 @@ export async function saveDebt(uid: string, snap: DebtSnapshot) {
 export async function loadDebts(uid: string): Promise<DebtSnapshot[]> {
   const snap = await getDocs(query(userCol(uid, 'debts'), orderBy('month')));
   return snap.docs.map(d => d.data() as DebtSnapshot);
+}
+
+// ── Portfolio ─────────────────────────────────────────────────────────────────
+
+export async function saveHoldings(uid: string, holdings: Holding[]) {
+  await setDoc(doc(db, 'users', uid, 'portfolio', 'holdings'), { holdings, updatedAt: Date.now() });
+}
+
+export async function loadHoldings(uid: string): Promise<Holding[]> {
+  const snap = await getDoc(doc(db, 'users', uid, 'portfolio', 'holdings'));
+  return snap.exists() ? (snap.data().holdings as Holding[]) : [];
+}
+
+export async function saveTickerMappings(uid: string, mappings: TickerMapping[]) {
+  await setDoc(doc(db, 'users', uid, 'portfolio', 'tickers'), { mappings });
+}
+
+export async function loadTickerMappings(uid: string): Promise<TickerMapping[]> {
+  const snap = await getDoc(doc(db, 'users', uid, 'portfolio', 'tickers'));
+  return snap.exists() ? (snap.data().mappings as TickerMapping[]) : [];
+}
+
+export async function savePriceCache(uid: string, prices: Record<string, PriceData>) {
+  await setDoc(doc(db, 'users', uid, 'portfolio', 'priceCache'), { prices, savedAt: Date.now() });
+}
+
+export async function loadPriceCache(uid: string): Promise<Record<string, PriceData>> {
+  const snap = await getDoc(doc(db, 'users', uid, 'portfolio', 'priceCache'));
+  return snap.exists() ? (snap.data().prices as Record<string, PriceData>) : {};
+}
+
+export async function savePortfolioSnapshot(uid: string, snap: PortfolioSnapshot) {
+  await setDoc(userDoc(uid, 'portfolioSnapshots', snap.date), snap);
+}
+
+export async function loadPortfolioSnapshots(uid: string): Promise<PortfolioSnapshot[]> {
+  const snaps = await getDocs(query(userCol(uid, 'portfolioSnapshots'), orderBy('date')));
+  return snaps.docs.map(d => d.data() as PortfolioSnapshot);
 }
 
 // ── Own Accounts (for transfer detection) ────────────────────────────────────

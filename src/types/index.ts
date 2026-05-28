@@ -68,7 +68,7 @@ export interface Reminder {
   lastSentMonth?: string; // YYYY-MM – håller koll på att inte skicka dubbelt
 }
 
-export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders' | 'settings';
+export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders' | 'settings' | 'portfolio';
 
 export interface FilterState {
   months: string[];
@@ -81,6 +81,38 @@ export interface FilterState {
   tags: string[];
   dateFrom: string | null;
   dateTo: string | null;
+}
+
+// ── Portfolio ────────────────────────────────────────────────────────────────
+
+export interface Holding {
+  isin: string;
+  name: string;
+  shares: number;
+  avgBuyPrice: number; // weighted avg in instrument currency
+  currency: string;    // instrument currency
+  account: string;     // Avanza account id
+}
+
+export interface TickerMapping {
+  isin: string;
+  ticker: string;   // Yahoo Finance ticker, e.g. "AFRY.ST"
+  name: string;
+  manual?: boolean; // user-overridden
+}
+
+export interface PriceData {
+  ticker: string;
+  price: number;
+  currency: string;
+  changePercent: number;
+  fetchedAt: number; // unix ms
+}
+
+export interface PortfolioSnapshot {
+  date: string;       // YYYY-MM-DD
+  totalValueSEK: number;
+  holdings: { isin: string; name: string; valueSEK: number; shares: number }[];
 }
 
 export interface ImportBatch {

@@ -2,8 +2,9 @@ import { useState, useCallback, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { parseFiles } from '../utils/parsers';
+import { computeHoldings } from '../utils/parseHoldings';
 import { formatSEK } from '../utils/calculations';
-import { saveTxBatch, saveImport, deleteImport } from '../lib/db';
+import { saveTxBatch, saveImport, deleteImport, saveHoldings } from '../lib/db';
 import type { Transaction, ImportBatch } from '../types';
 import { Upload, FileText, Check, X, Trash2, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +18,7 @@ interface PendingUpload {
   dateFrom: string;
   dateTo: string;
   account: string;
+  avanzaContent?: string; // raw CSV for holdings computation
 }
 
 function PendingCard({ upload, onSave, onDiscard }: {
@@ -247,7 +249,7 @@ function ExportButton() {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Import() {
-  const { importBatches, addImportBatch, removeImportBatch } = useStore();
+  const { importBatches, addImportBatch, removeImportBatch, setHoldings } = useStore();
   const { user } = useAuthStore();
   const [pending, setPending] = useState<PendingUpload[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -261,8 +263,15 @@ export default function Import() {
         const dates = txs.map(t => t.date).sort();
         const accounts = [...new Set(txs.map(t => t.account))];
         const uploadId = `import_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
-        // Tag each tx with importId
         const taggedTxs = txs.map(t => ({ ...t, importId: uploadId } as Transaction & { importId: string }));
+
+        // If this looks like an Avanza file, store raw content for holdings
+        const name = file.name.toLowerCase();
+        let avanzaContent: string | undefined;
+        if (name.includes('avanza') || name.includes('transaktioner')) {
+          avanzaContent = await file.text();
+        }
+
         setPending(prev => [...prev, {
           id: uploadId,
           filename: file.name,
@@ -270,6 +279,7 @@ export default function Import() {
           dateFrom: dates[0],
           dateTo: dates[dates.length - 1],
           account: accounts.join(', '),
+          avanzaContent,
         }]);
       } catch (e: any) {
         setError(`Kunde inte tolka ${file.name}: ${e.message}`);
@@ -291,6 +301,16 @@ export default function Import() {
     await saveTxBatch(user.uid, upload.transactions, upload.id);
     await saveImport(user.uid, imp);
     addImportBatch(imp, upload.transactions);
+
+    // If Avanza file – compute and save holdings
+    if (upload.avanzaContent) {
+      const holdings = computeHoldings(upload.avanzaContent);
+      if (holdings.length) {
+        setHoldings(holdings);
+        await saveHoldings(user.uid, holdings);
+      }
+    }
+
     setPending(prev => prev.filter(p => p.id !== upload.id));
   };
 

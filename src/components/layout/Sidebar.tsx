@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import type { Page } from '../../types';
 import {
   LayoutDashboard, ListFilter, BarChart3, Target,
-  TrendingUp, Upload, Wallet, Bell, LogOut, X, Settings,
+  TrendingUp, Upload, Wallet, Bell, LogOut, X, Settings, PieChart,
 } from 'lucide-react';
 
 const NAV: { page: Page; label: string; icon: ReactNode }[] = [
@@ -13,6 +13,7 @@ const NAV: { page: Page; label: string; icon: ReactNode }[] = [
   { page: 'analytics',    label: 'Analys',        icon: <BarChart3 size={18} /> },
   { page: 'budget',       label: 'Budget',        icon: <Target size={18} /> },
   { page: 'networth',     label: 'Förmögenhet',   icon: <TrendingUp size={18} /> },
+  { page: 'portfolio',    label: 'Portfölj',      icon: <PieChart size={18} /> },
   { page: 'import',       label: 'Importera',     icon: <Upload size={18} /> },
   { page: 'reminders',    label: 'Påminnelser',   icon: <Bell size={18} /> },
   { page: 'settings',     label: 'Inställningar', icon: <Settings size={18} /> },
