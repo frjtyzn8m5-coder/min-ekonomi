@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../store/useStore';
+import { useAuthStore } from '../store/useAuthStore';
+import { updateTransactionDoc, deleteTransaction as dbDeleteTx, saveTxBatch } from '../lib/db';
 import { filterTxs, formatSEK, formatMonth, allMonths } from '../utils/calculations';
 import { ALL_CATEGORIES, CATEGORY_COLORS } from '../utils/categorize';
 import { Card } from '../components/ui/Card';
@@ -177,6 +179,7 @@ interface TxRowProps {
 
 function TxRow({ tx }: TxRowProps) {
   const { updateTransaction, deleteTransaction } = useStore();
+  const { user } = useAuthStore();
   const [expanded, setExpanded] = useState(false);
   const [edit, setEdit] = useState({
     description: tx.description,
@@ -187,12 +190,8 @@ function TxRow({ tx }: TxRowProps) {
   });
 
   const saveEdit = () => {
-    updateTransaction(tx.id, {
-      description: edit.description,
-      category: edit.category,
-      date: edit.date,
-      tags: edit.tags,
-    });
+    updateTransaction(tx.id, { description: edit.description, category: edit.category, date: edit.date, tags: edit.tags });
+    if (user) updateTransactionDoc(user.uid, tx.id, { description: edit.description, category: edit.category, date: edit.date, tags: edit.tags });
     setExpanded(false);
   };
 
@@ -294,7 +293,7 @@ function TxRow({ tx }: TxRowProps) {
                   className="px-3 py-1.5 border border-gray-200 text-gray-500 text-xs rounded-lg hover:bg-gray-50">
                   Avbryt
                 </button>
-                <button onClick={() => deleteTransaction(tx.id)}
+                <button onClick={() => { deleteTransaction(tx.id); if (user) dbDeleteTx(user.uid, tx.id); }}
                   className="ml-auto flex items-center gap-1 px-3 py-1.5 text-red-400 hover:text-red-600 text-xs">
                   <Trash2 size={12} /> Ta bort
                 </button>

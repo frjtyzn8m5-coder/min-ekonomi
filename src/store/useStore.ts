@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Category, Reminder } from '../types';
-import { mergeTxs } from '../utils/parsers';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Category, Reminder, ImportBatch } from '../types';
 
 const DEFAULT_BUDGETS: BudgetGoal[] = [
   { category: 'Mat', limit: 2000 },
@@ -34,23 +33,25 @@ const DEFAULT_REMINDERS: Reminder[] = [
   { id: 'ekonomi', title: 'Ekonomigenomgång', emoji: '📊', dayOfMonth: -2, time: '08:00', active: true },
 ];
 
-// Debounce timer for cloud sync
-let syncTimer: ReturnType<typeof setTimeout> | null = null;
-
-type SyncStatus = 'idle' | 'syncing' | 'ok' | 'error';
-
 interface AppState {
   transactions: Transaction[];
   budgets: BudgetGoal[];
   assets: AssetSnapshot[];
   debts: DebtSnapshot[];
   reminders: Reminder[];
+  importBatches: ImportBatch[];
   page: Page;
   filter: FilterState;
   pushSubscription: string | null;
-  syncStatus: SyncStatus;
-  lastSyncedAt: number | null;
 
+  // Firebase setters (called after loading from Firestore)
+  setFirebaseTransactions: (txs: Transaction[]) => void;
+  setFirebaseBudgets: (b: BudgetGoal[]) => void;
+  setFirebaseAssets: (a: AssetSnapshot[]) => void;
+  setFirebaseDebts: (d: DebtSnapshot[]) => void;
+  setImportBatches: (imp: ImportBatch[]) => void;
+
+  // Local actions
   addTransactions: (txs: Transaction[]) => void;
   addManualTransaction: (tx: Transaction) => void;
   clearTransactions: () => void;
@@ -62,144 +63,94 @@ interface AppState {
   resetFilter: () => void;
   updateTransaction: (id: string, changes: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
+  addImportBatch: (imp: ImportBatch, txs: Transaction[]) => void;
+  removeImportBatch: (importId: string) => void;
   addReminder: (r: Reminder) => void;
   updateReminder: (id: string, changes: Partial<Reminder>) => void;
   deleteReminder: (id: string) => void;
   setPushSubscription: (sub: string | null) => void;
-  syncToCloud: () => Promise<void>;
-  loadFromCloud: () => Promise<void>;
 }
 
-function scheduleSyncToCloud(getState: () => AppState) {
-  if (syncTimer) clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => {
-    getState().syncToCloud();
-  }, 2000);
+function mergeTxsLocal(existing: Transaction[], incoming: Transaction[]): Transaction[] {
+  const map = new Map(existing.map(t => [t.id, t]));
+  for (const tx of incoming) map.set(tx.id, tx);
+  return [...map.values()].sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export const useStore = create<AppState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       transactions: [],
       budgets: DEFAULT_BUDGETS,
       assets: [],
       debts: [],
       reminders: DEFAULT_REMINDERS,
+      importBatches: [],
       page: 'overview',
       filter: DEFAULT_FILTER,
       pushSubscription: null,
-      syncStatus: 'idle' as SyncStatus,
-      lastSyncedAt: null,
 
-      addTransactions: (incoming) => {
-        const merged = mergeTxs(get().transactions, incoming);
-        set({ transactions: merged });
-        scheduleSyncToCloud(get);
-      },
+      setFirebaseTransactions: (txs) => set({ transactions: txs }),
+      setFirebaseBudgets: (budgets) => set({ budgets }),
+      setFirebaseAssets: (assets) => set({ assets }),
+      setFirebaseDebts: (debts) => set({ debts }),
+      setImportBatches: (importBatches) => set({ importBatches }),
 
-      addManualTransaction: (tx) => {
-        set(s => ({ transactions: mergeTxs(s.transactions, [tx]) }));
-        scheduleSyncToCloud(get);
-      },
+      addTransactions: (incoming) =>
+        set(s => ({ transactions: mergeTxsLocal(s.transactions, incoming) })),
 
-      clearTransactions: () => {
-        set({ transactions: [] });
-        scheduleSyncToCloud(get);
-      },
+      addManualTransaction: (tx) =>
+        set(s => ({ transactions: mergeTxsLocal(s.transactions, [tx]) })),
 
-      updateBudget: (category, limit) => {
+      clearTransactions: () => set({ transactions: [], importBatches: [] }),
+
+      updateBudget: (category, limit) =>
         set(s => ({
           budgets: s.budgets.some(b => b.category === category)
             ? s.budgets.map(b => b.category === category ? { ...b, limit } : b)
             : [...s.budgets, { category, limit }],
-        }));
-        scheduleSyncToCloud(get);
-      },
+        })),
 
-      addAssetSnapshot: (snap) => {
+      addAssetSnapshot: (snap) =>
         set(s => {
           const existing = s.assets.filter(a => a.month !== snap.month);
           return { assets: [...existing, snap].sort((a, b) => a.month.localeCompare(b.month)) };
-        });
-        scheduleSyncToCloud(get);
-      },
+        }),
 
-      addDebtSnapshot: (snap) => {
+      addDebtSnapshot: (snap) =>
         set(s => {
           const existing = s.debts.filter(d => d.month !== snap.month);
           return { debts: [...existing, snap].sort((a, b) => a.month.localeCompare(b.month)) };
-        });
-        scheduleSyncToCloud(get);
-      },
+        }),
 
       setPage: (page) => set({ page }),
-
       setFilter: (f) => set(s => ({ filter: { ...s.filter, ...f } })),
-
       resetFilter: () => set({ filter: DEFAULT_FILTER }),
 
-      updateTransaction: (id, changes) => {
-        set(s => ({ transactions: s.transactions.map(t => t.id === id ? { ...t, ...changes } : t) }));
-        scheduleSyncToCloud(get);
-      },
+      updateTransaction: (id, changes) =>
+        set(s => ({ transactions: s.transactions.map(t => t.id === id ? { ...t, ...changes } : t) })),
 
-      deleteTransaction: (id) => {
-        set(s => ({ transactions: s.transactions.filter(t => t.id !== id) }));
-        scheduleSyncToCloud(get);
-      },
+      deleteTransaction: (id) =>
+        set(s => ({ transactions: s.transactions.filter(t => t.id !== id) })),
+
+      addImportBatch: (imp, txs) =>
+        set(s => ({
+          importBatches: [imp, ...s.importBatches],
+          transactions: mergeTxsLocal(s.transactions, txs),
+        })),
+
+      removeImportBatch: (importId) =>
+        set(s => ({
+          importBatches: s.importBatches.filter(i => i.id !== importId),
+          transactions: s.transactions.filter(t => (t as any).importId !== importId),
+        })),
 
       addReminder: (r) => set(s => ({ reminders: [...s.reminders, r] })),
-
-      updateReminder: (id, changes) => set(s => ({
-        reminders: s.reminders.map(r => r.id === id ? { ...r, ...changes } : r),
-      })),
-
-      deleteReminder: (id) => set(s => ({
-        reminders: s.reminders.filter(r => r.id !== id),
-      })),
-
+      updateReminder: (id, changes) =>
+        set(s => ({ reminders: s.reminders.map(r => r.id === id ? { ...r, ...changes } : r) })),
+      deleteReminder: (id) =>
+        set(s => ({ reminders: s.reminders.filter(r => r.id !== id) })),
       setPushSubscription: (sub) => set({ pushSubscription: sub }),
-
-      syncToCloud: async () => {
-        const state = get();
-        set({ syncStatus: 'syncing' });
-        try {
-          await fetch('/api/data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              transactions: state.transactions,
-              budgets: state.budgets,
-              assets: state.assets,
-              debts: state.debts,
-              _savedAt: Date.now(),
-            }),
-          });
-          set({ syncStatus: 'ok', lastSyncedAt: Date.now() });
-        } catch {
-          set({ syncStatus: 'error' });
-        }
-      },
-
-      loadFromCloud: async () => {
-        try {
-          const res = await fetch('/api/data');
-          if (!res.ok) return;
-          const data = await res.json();
-          if (!data) return;
-          const state = get();
-          if (data.transactions?.length) {
-            const merged = mergeTxs(state.transactions, data.transactions);
-            set({ transactions: merged });
-          }
-          if (data.budgets?.length) set({ budgets: data.budgets });
-          if (data.assets?.length) set({ assets: data.assets });
-          if (data.debts?.length) set({ debts: data.debts });
-          set({ syncStatus: 'ok', lastSyncedAt: Date.now() });
-        } catch {
-          set({ syncStatus: 'error' });
-        }
-      },
     }),
     {
       name: 'ekonomi_v4',
@@ -209,6 +160,7 @@ export const useStore = create<AppState>()(
         assets: s.assets,
         debts: s.debts,
         reminders: s.reminders,
+        importBatches: s.importBatches,
         pushSubscription: s.pushSubscription,
       }),
     }

@@ -80,3 +80,13 @@ export interface FilterState {
   amountMax: number | null;
   tags: string[];
 }
+
+export interface ImportBatch {
+  id: string;
+  filename: string;
+  uploadedAt: number;
+  txCount: number;
+  dateFrom: string;
+  dateTo: string;
+  account: string;
+}

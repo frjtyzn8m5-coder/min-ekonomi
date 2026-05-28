@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
+import { useAuthStore } from '../store/useAuthStore';
+import { saveAsset, saveDebt } from '../lib/db';
 import { formatSEK, formatMonth } from '../utils/calculations';
 import { Card, CardHeader, EmptyState } from '../components/ui/Card';
 import {
@@ -87,6 +89,7 @@ function SnapshotForm({ month, type, existing, onSave, onCancel }: SnapshotFormP
 
 export default function NetWorth() {
   const { assets, debts, addAssetSnapshot, addDebtSnapshot } = useStore();
+  const { user } = useAuthStore();
   const [showAssetForm, setShowAssetForm] = useState(false);
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [csnMonthlyRate, setCsnMonthlyRate] = useState(8500);
@@ -237,7 +240,7 @@ export default function NetWorth() {
                 } />
               {showAssetForm && (
                 <SnapshotForm month={new Date().toISOString().slice(0, 7)} type="asset"
-                  onSave={(d) => { addAssetSnapshot(d); setShowAssetForm(false); }}
+                  onSave={async (d) => { addAssetSnapshot(d); if (user) await saveAsset(user.uid, d); setShowAssetForm(false); }}
                   onCancel={() => setShowAssetForm(false)} />
               )}
               {assets.length === 0 && !showAssetForm && (
@@ -274,7 +277,7 @@ export default function NetWorth() {
                 } />
               {showDebtForm && (
                 <SnapshotForm month={new Date().toISOString().slice(0, 7)} type="debt"
-                  onSave={(d) => { addDebtSnapshot(d); setShowDebtForm(false); }}
+                  onSave={async (d) => { addDebtSnapshot(d); if (user) await saveDebt(user.uid, d); setShowDebtForm(false); }}
                   onCancel={() => setShowDebtForm(false)} />
               )}
               {debts.length === 0 && !showDebtForm && (

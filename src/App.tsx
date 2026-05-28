@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useStore } from './store/useStore';
 import { useAuthStore } from './store/useAuthStore';
 import Sidebar from './components/layout/Sidebar';
@@ -31,7 +31,7 @@ const PAGE_LABELS: Record<string, string> = {
   reminders: 'Påminnelser',
 };
 
-const pages = {
+const pages: Record<string, any> = {
   overview: Overview,
   transactions: Transactions,
   analytics: Analytics,
@@ -43,14 +43,26 @@ const pages = {
 
 export default function App() {
   const { page } = useStore();
-  const { isAuthenticated } = useAuthStore();
+  const { user, loading, initAuth } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!isAuthenticated) return (
-    <Suspense fallback={null}>
-      <Login />
-    </Suspense>
-  );
+  useEffect(() => { initAuth(); }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Suspense fallback={null}>
+        <Login />
+      </Suspense>
+    );
+  }
 
   const PageComponent = pages[page];
 
@@ -58,44 +70,34 @@ export default function App() {
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile backdrop */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 z-20 bg-black/30 lg:hidden"
+          onClick={() => setSidebarOpen(false)} />
       )}
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 lg:ml-56 overflow-auto flex flex-col min-w-0">
+      <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
         {/* Mobile top bar */}
-        <div className="lg:hidden sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"
-          >
-            <Menu size={20} />
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 flex-shrink-0">
+          <button onClick={() => setSidebarOpen(true)}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
+            <Menu size={18} className="text-gray-600" />
           </button>
           <span className="text-sm font-semibold text-gray-900">
-            {PAGE_LABELS[page] || 'Min Ekonomi'}
+            {PAGE_LABELS[page] || page}
           </span>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={page}
-            {...PAGE_TRANSITION}
-            className="flex-1 flex flex-col min-h-0"
-          >
-            <Suspense fallback={
-              <div className="flex-1 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            }>
-              <PageComponent />
-            </Suspense>
-          </motion.div>
-        </AnimatePresence>
-      </main>
+        <main className="flex-1 overflow-auto flex flex-col">
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /></div>}>
+            <AnimatePresence mode="wait">
+              <motion.div key={page} {...PAGE_TRANSITION} className="flex-1 flex flex-col min-h-0">
+                <PageComponent />
+              </motion.div>
+            </AnimatePresence>
+          </Suspense>
+        </main>
+      </div>
     </div>
   );
 }

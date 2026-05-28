@@ -24,7 +24,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { page, setPage, transactions } = useStore();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
   const txCount = transactions.filter(t => !t.isTransfer).length;
 
   const navigate = (p: Page) => {
@@ -68,28 +68,4 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <button
             key={p}
             onClick={() => navigate(p)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-              page === p
-                ? 'bg-blue-50 text-blue-600 font-medium'
-                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            <span className={page === p ? 'text-blue-600' : 'text-gray-400'}>{icon}</span>
-            {label}
-          </button>
-        ))}
-      </nav>
-
-      {/* Footer */}
-      <div className="px-4 py-4 border-t border-gray-100">
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-all"
-        >
-          <LogOut size={16} />
-          Logga ut
-        </button>
-      </div>
-    </aside>
-  );
-}
+            classNam

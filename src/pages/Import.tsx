@@ -1,359 +1,364 @@
-import { useState, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useStore } from '../store/useStore';
-import { parseSEBCSV, parseSEBXLSX, parseAvanzaCSV, parseAvanzaXLSX, parseKlarnaCSV, parseCSNCSV } from '../utils/parsers';
-import { Card, CardHeader } from '../components/ui/Card';
-import { Upload, CheckCircle, AlertCircle, Trash2, Copy, Plus, FileSpreadsheet, Download, Bug } from 'lucide-react';
-import { getMonthlyData, formatSEK, formatMonth } from '../utils/calculations';
-import { motion } from 'framer-motion';
+import { useAuthStore } from '../store/useAuthStore';
+import { parseFiles } from '../utils/parsers';
+import { formatSEK } from '../utils/calculations';
+import { saveTxBatch, saveImport, deleteImport } from '../lib/db';
+import type { Transaction, ImportBatch } from '../types';
+import { Upload, FileText, Check, X, Trash2, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-type SimpleFileType = 'seb_csv' | 'seb_xlsx' | 'klarna' | 'csn';
-interface SimpleConfig { type: SimpleFileType; label: string; description: string; accept: string; format: string; color: string; }
+// ── Pending upload card ────────────────────────────────────────────────────────
 
-const SIMPLE_TYPES: SimpleConfig[] = [
-  { type: 'seb_csv',  label: 'SEB Konto (CSV)',       description: 'Kontoutdrag från SEB — transaktionskonto / privatkonto',  accept: '.csv',       format: 'Bokföringsdatum;Valutadatum;...;Text;Belopp;Saldo', color: 'text-green-600 bg-green-50' },
-  { type: 'seb_xlsx', label: 'SEB Lönekonto (Excel)',  description: 'Excel-fil från SEB — lönekonto eller annat SEB-konto',   accept: '.xlsx,.xls', format: 'Samma kolumner som CSV men i Excel-format',          color: 'text-blue-600 bg-blue-50' },
-  { type: 'klarna',   label: 'Klarna (CSV)',           description: 'GDPR-export: Klarna-appen → Inställningar → Integritet', accept: '.csv',       format: 'date,merchant,amount',                              color: 'text-pink-600 bg-pink-50' },
-  { type: 'csn',      label: 'CSN (CSV)',              description: 'Export av CSN-utbetalningar',                            accept: '.csv',       format: 'datum;typ;belopp',                                  color: 'text-orange-600 bg-orange-50' },
-];
-
-function SimpleDropZone({ config, onParsed }: { config: SimpleConfig; onParsed: (label: string, count: number) => void }) {
-  const { addTransactions, transactions } = useStore();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle');
-  const [message, setMessage] = useState('');
-  const [dragging, setDragging] = useState(false);
-  const existingCount = transactions.filter(t => t.source === config.type).length;
-
-  const handleFile = async (file: File) => {
-    setStatus('loading');
-    try {
-      let parsed;
-      if (config.type === 'seb_csv')  parsed = parseSEBCSV(await file.text());
-      else if (config.type === 'seb_xlsx') parsed = parseSEBXLSX(await file.arrayBuffer());
-      else if (config.type === 'klarna')   parsed = parseKlarnaCSV(await file.text());
-      else                                 parsed = parseCSNCSV(await file.text());
-      addTransactions(parsed);
-      setStatus('success');
-      setMessage(`${parsed.length} transaktioner`);
-      onParsed(config.label, parsed.length);
-    } catch (e) {
-      setStatus('error');
-      setMessage('Parsningsfel: ' + String(e));
-    }
-  };
-
-  return (
-    <div className={`border-2 border-dashed rounded-xl p-4 cursor-pointer transition-all ${
-      dragging ? 'border-blue-400 bg-blue-50' :
-      status === 'success' ? 'border-green-300 bg-green-50' :
-      status === 'error'   ? 'border-red-300 bg-red-50' :
-      'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-    }`}
-      onClick={() => inputRef.current?.click()}
-      onDragOver={e => { e.preventDefault(); setDragging(true); }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}>
-      <input ref={inputRef} type="file" accept={config.accept} className="hidden"
-        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-      <div className="flex items-start gap-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${config.color}`}>
-          {status === 'success' ? <CheckCircle size={15} /> : status === 'error' ? <AlertCircle size={15} /> : <Upload size={15} />}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-800">{config.label}</p>
-            {existingCount > 0 && <span className="text-[11px] text-gray-400">{existingCount} importerade</span>}
-          </div>
-          <p className="text-xs text-gray-500 mt-0.5">{config.description}</p>
-          {message
-            ? <p className={`text-xs mt-1 font-medium ${status === 'success' ? 'text-green-600' : 'text-red-500'}`}>{message}</p>
-            : <p className="text-[10px] text-gray-400 mt-1 font-mono">{config.format}</p>}
-        </div>
-      </div>
-    </div>
-  );
+interface PendingUpload {
+  id: string;
+  filename: string;
+  transactions: Transaction[];
+  dateFrom: string;
+  dateTo: string;
+  account: string;
 }
 
-interface AvanzaFile { id: string; name: string; count: number; error?: string; }
+function PendingCard({ upload, onSave, onDiscard }: {
+  upload: PendingUpload;
+  onSave: () => Promise<void>;
+  onDiscard: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const income  = upload.transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+  const expense = upload.transactions.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
 
-function AvanzaDropZone({ onParsed }: { onParsed: (label: string, count: number) => void }) {
-  const { addTransactions, transactions } = useStore();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<AvanzaFile[]>([]);
-  const [dragging, setDragging] = useState(false);
-  const avanzaTotal = transactions.filter(t => t.source === 'avanza').length;
-  const avanzaAccounts = [...new Set(transactions.filter(t => t.source === 'avanza').map(t => t.account))];
-
-  const handleFiles = async (fileList: FileList) => {
-    for (const file of Array.from(fileList)) {
-      const fid = `${file.name}-${Date.now()}`;
-      try {
-        const isXLSX = /\.(xlsx|xls)$/i.test(file.name);
-        const parsed = isXLSX ? parseAvanzaXLSX(await file.arrayBuffer()) : parseAvanzaCSV(await file.text());
-        addTransactions(parsed);
-        setFiles(prev => [...prev, { id: fid, name: file.name, count: parsed.length }]);
-        onParsed(`Avanza (${file.name})`, parsed.length);
-      } catch (e) {
-        setFiles(prev => [...prev, { id: fid, name: file.name, count: 0, error: String(e) }]);
-      }
-    }
+  const handle = async () => {
+    setSaving(true);
+    await onSave();
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 bg-purple-50 border-b border-purple-100">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
-            <FileSpreadsheet size={14} />
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      className="bg-white rounded-2xl border-2 border-blue-200 shadow-sm overflow-hidden"
+    >
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <FileText size={18} className="text-blue-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{upload.filename}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{upload.dateFrom} → {upload.dateTo} · {upload.account}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-800">Avanza — flera konton</p>
-            <p className="text-xs text-gray-500">CSV eller Excel, ett eller flera konton</p>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+              {upload.transactions.length} tr.
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {avanzaTotal > 0 && (
-            <span className="text-[11px] text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full font-medium">
-              {avanzaTotal} rader · {avanzaAccounts.length} konton
-            </span>
-          )}
-          <button onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-1.5 text-xs font-medium text-purple-600 bg-white border border-purple-200 px-3 py-1.5 rounded-lg hover:bg-purple-50">
-            <Plus size={12} /> Lägg till fil
+
+        <div className="flex gap-4 mt-3 text-xs">
+          <span className="text-green-600">+{formatSEK(income)}</span>
+          <span className="text-gray-500">−{formatSEK(expense)}</span>
+        </div>
+
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={handle}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white text-xs font-semibold rounded-xl transition-colors"
+          >
+            {saving ? (
+              <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Check size={13} />
+            )}
+            {saving ? 'Sparar...' : 'Spara'}
+          </button>
+          <button
+            onClick={onDiscard}
+            className="px-3 py-2 border border-gray-200 text-gray-500 hover:bg-gray-50 text-xs rounded-xl transition-colors"
+          >
+            <X size={13} />
           </button>
         </div>
       </div>
-      <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" multiple className="hidden"
-        onChange={e => { if (e.target.files?.length) handleFiles(e.target.files); }} />
-      <div className={`p-4 ${dragging ? 'bg-purple-50' : 'bg-white'}`}
-        onDragOver={e => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}>
-        {avanzaAccounts.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {avanzaAccounts.map(a => (
-              <span key={a} className="text-[11px] font-medium bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-100">{a}</span>
-            ))}
-          </div>
-        )}
-        {files.length > 0 && (
-          <div className="space-y-1 mb-3">
-            {files.map(f => (
-              <div key={f.id} className="flex items-center gap-2 text-xs">
-                {f.error ? <AlertCircle size={12} className="text-red-400" /> : <CheckCircle size={12} className="text-green-500" />}
-                <span className="text-gray-600 truncate">{f.name}</span>
-                {f.error ? <span className="text-red-400 ml-auto">{f.error}</span> : <span className="text-gray-400 ml-auto">{f.count} rader</span>}
-              </div>
-            ))}
-          </div>
-        )}
-        <div onClick={() => inputRef.current?.click()}
-          className={`border-2 border-dashed rounded-lg p-3 text-center cursor-pointer ${
-            dragging ? 'border-purple-400 bg-purple-50' : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
-          }`}>
-          <Upload size={16} className="mx-auto mb-1 text-gray-300" />
-          <p className="text-xs text-gray-400">Dra och släpp filer, eller <span className="text-purple-500 font-medium">klicka för att välja</span></p>
-        </div>
-        <div className="mt-3 flex items-start gap-2 bg-blue-50 rounded-lg px-3 py-2">
-          <CheckCircle size={12} className="text-blue-500 mt-0.5 flex-shrink-0" />
-          <p className="text-[11px] text-blue-700"><strong>Överföringar matchas automatiskt.</strong> Insättningar och uttag räknas aldrig som utgifter.</p>
-        </div>
+
+      {upload.transactions.length > 0 && (
+        <>
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="w-full px-4 py-2 bg-gray-50 text-xs text-gray-500 flex items-center justify-center gap-1 hover:bg-gray-100"
+          >
+            {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+            {expanded ? 'Dölj' : 'Förhandsgranska'}
+          </button>
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="divide-y divide-gray-50 max-h-52 overflow-y-auto">
+                  {upload.transactions.slice(0, 20).map(tx => (
+                    <div key={tx.id} className="flex items-center justify-between px-4 py-2">
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-700 truncate max-w-[200px]">{tx.description}</p>
+                        <p className="text-[10px] text-gray-400">{tx.date} · {tx.category}</p>
+                      </div>
+                      <span className={`text-xs font-medium flex-shrink-0 ml-2 ${tx.amount >= 0 ? 'text-green-600' : 'text-gray-700'}`}>
+                        {tx.amount >= 0 ? '+' : ''}{formatSEK(tx.amount)}
+                      </span>
+                    </div>
+                  ))}
+                  {upload.transactions.length > 20 && (
+                    <p className="text-center text-xs text-gray-400 py-2">
+                      +{upload.transactions.length - 20} fler...
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
+    </motion.div>
+  );
+}
+
+// ── Saved import card ─────────────────────────────────────────────────────────
+
+function SavedCard({ imp, onDelete }: { imp: ImportBatch; onDelete: () => Promise<void> }) {
+  const [deleting, setDeleting] = useState(false);
+  const [confirm, setConfirm] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    await onDelete();
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3">
+      <div className="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+        <Check size={16} className="text-green-500" />
       </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-800 truncate">{imp.filename}</p>
+        <p className="text-xs text-gray-400 mt-0.5">
+          {imp.txCount} transaktioner · {imp.dateFrom} → {imp.dateTo}
+        </p>
+      </div>
+      {confirm ? (
+        <div className="flex gap-1.5 flex-shrink-0">
+          <button onClick={handleDelete} disabled={deleting}
+            className="text-xs px-2.5 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50">
+            {deleting ? '...' : 'Ja, ta bort'}
+          </button>
+          <button onClick={() => setConfirm(false)}
+            className="text-xs px-2.5 py-1.5 border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50">
+            Avbryt
+          </button>
+        </div>
+      ) : (
+        <button onClick={() => setConfirm(true)}
+          className="flex-shrink-0 p-2 text-gray-300 hover:text-red-400 transition-colors">
+          <Trash2 size={15} />
+        </button>
+      )}
     </div>
   );
 }
 
-function CopyToClaudeButton() {
-  const { transactions } = useStore();
-  const [copied, setCopied] = useState(false);
+// ── Drop zone ─────────────────────────────────────────────────────────────────
 
-  const generate = () => {
-    const monthly = getMonthlyData(transactions);
-    const last3 = monthly.slice(-3);
-    const accounts = [...new Set(transactions.filter(t => t.source === 'avanza').map(t => t.account))];
-    const lines = [
-      '# Min ekonomi — analys för Claude', '',
-      accounts.length > 0 ? `Avanza-konton: ${accounts.join(', ')}` : '',
-      '', '## Månadsöversikt (senaste 3 månader)',
-      ...last3.map(m => [
-        `### ${formatMonth(m.month)}`,
-        `- Inkomst: ${formatSEK(m.income)}`,
-        `- Utgifter: ${formatSEK(m.expenses)}`,
-        `- Kassaflöde: ${formatSEK(m.cashflow)}`,
-        'Utgifter per kategori:',
-        ...Object.entries(m.byCategory).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([k, v]) => `  - ${k}: ${formatSEK(v)}`),
-        '',
-      ].join('\n')),
-      `Totalt: ${transactions.filter(t => !t.isTransfer).length} transaktioner`,
-      '', '## Fråga', 'Analysera min ekonomi. Vad sticker ut? Var kan jag spara? Vilka trender ser du?',
-    ].filter(l => l !== null);
-    return lines.join('\n');
-  };
+function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const copy = async () => {
-    await navigator.clipboard.writeText(generate());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    onFiles(Array.from(e.dataTransfer.files));
+  }, [onFiles]);
 
   return (
-    <button onClick={copy}
-      className="flex items-center gap-2 bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-gray-800">
-      {copied ? <CheckCircle size={14} className="text-green-400" /> : <Copy size={14} />}
-      {copied ? 'Kopierat!' : 'Kopiera till Claude'}
-    </button>
+    <div
+      onDragOver={e => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+      onClick={() => inputRef.current?.click()}
+      className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
+        dragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+      }`}
+    >
+      <input ref={inputRef} type="file" multiple accept=".csv,.xlsx,.xls"
+        className="hidden" onChange={e => e.target.files && onFiles(Array.from(e.target.files))} />
+      <Upload size={32} className={`mx-auto mb-3 ${dragging ? 'text-blue-400' : 'text-gray-300'}`} />
+      <p className="text-sm font-medium text-gray-600">Dra hit eller klicka för att välja filer</p>
+      <p className="text-xs text-gray-400 mt-1">SEB CSV/XLSX · Avanza · Klarna · CSN</p>
+    </div>
   );
 }
 
+// ── Export ────────────────────────────────────────────────────────────────────
+
 function ExportButton() {
-  const { transactions, budgets, assets, debts, reminders } = useStore();
+  const { transactions, budgets, assets, debts } = useStore();
   const [open, setOpen] = useState(false);
 
-  const downloadJSON = () => {
-    const data = {
-      exportedAt: new Date().toISOString(),
-      transactions,
-      budgets,
-      assets,
-      debts,
-      reminders,
-      summary: {
-        totalTransactions: transactions.filter(t => !t.isTransfer).length,
-        months: [...new Set(transactions.map(t => t.date.slice(0, 7)))].sort(),
-      },
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ekonomi-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const exportCSV = () => {
+    const BOM = '﻿';
+    const headers = 'Datum,Beskrivning,Belopp,Kategori,Konto,Källa';
+    const rows = transactions.map(t =>
+      `${t.date},"${t.description.replace(/"/g, '""')}",${t.amount},${t.category},${t.account},${t.source}`
+    );
+    const blob = new Blob([BOM + [headers, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `ekonomi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
     setOpen(false);
   };
 
-  const downloadCSV = () => {
-    const rows = transactions.filter(t => !t.isTransfer);
-    const header = 'datum,beskrivning,belopp,kategori,konto,källa,taggar';
-    const lines = rows
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .map(t => [
-        t.date,
-        `"${t.description.replace(/"/g, '""')}"`,
-        t.amount.toFixed(2),
-        t.category,
-        `"${t.account}"`,
-        t.source,
-        (t.tags ?? []).join(';'),
-      ].join(','));
-    const csv = [header, ...lines].join('\n');
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `transaktioner-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const exportJSON = () => {
+    const data = { transactions, budgets, assets, debts, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `ekonomi_debug_${new Date().toISOString().slice(0,10)}.json`; a.click();
     setOpen(false);
   };
 
   return (
     <div className="relative">
       <button onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 text-gray-600 bg-white border border-gray-200 text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-gray-50">
-        <Download size={14} /> Exportera
+        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5">
+        <Download size={13} /> Exportera
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 bg-white border border-gray-100 rounded-xl shadow-lg z-10 overflow-hidden min-w-40">
-          <button onClick={downloadCSV} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-            <Download size={13} className="text-green-500" /> CSV (transaktioner)
-          </button>
-          <button onClick={downloadJSON} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-50">
-            <Bug size={13} className="text-purple-500" /> JSON (all data, debug)
-          </button>
+        <div className="absolute right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 w-36">
+          <button onClick={exportCSV} className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50">CSV</button>
+          <button onClick={exportJSON} className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50">JSON (debug)</button>
         </div>
       )}
     </div>
   );
 }
 
+// ── Main page ─────────────────────────────────────────────────────────────────
+
 export default function Import() {
-  const { transactions, clearTransactions } = useStore();
-  const [importLog, setImportLog] = useState<string[]>([]);
-  const nonTransfer = transactions.filter(t => !t.isTransfer);
-  const transferCount = transactions.filter(t => t.isTransfer).length;
-  const logImport = (label: string, count: number) => setImportLog(l => [`${label}: ${count} importerade`, ...l]);
+  const { importBatches, addImportBatch, removeImportBatch } = useStore();
+  const { user } = useAuthStore();
+  const [pending, setPending] = useState<PendingUpload[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFiles = async (files: File[]) => {
+    setError(null);
+    for (const file of files) {
+      try {
+        const txs = await parseFiles([file]);
+        if (!txs.length) continue;
+        const dates = txs.map(t => t.date).sort();
+        const accounts = [...new Set(txs.map(t => t.account))];
+        const uploadId = `import_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+        // Tag each tx with importId
+        const taggedTxs = txs.map(t => ({ ...t, importId: uploadId } as Transaction & { importId: string }));
+        setPending(prev => [...prev, {
+          id: uploadId,
+          filename: file.name,
+          transactions: taggedTxs,
+          dateFrom: dates[0],
+          dateTo: dates[dates.length - 1],
+          account: accounts.join(', '),
+        }]);
+      } catch (e: any) {
+        setError(`Kunde inte tolka ${file.name}: ${e.message}`);
+      }
+    }
+  };
+
+  const handleSave = async (upload: PendingUpload) => {
+    if (!user) return;
+    const imp: ImportBatch = {
+      id: upload.id,
+      filename: upload.filename,
+      uploadedAt: Date.now(),
+      txCount: upload.transactions.length,
+      dateFrom: upload.dateFrom,
+      dateTo: upload.dateTo,
+      account: upload.account,
+    };
+    await saveTxBatch(user.uid, upload.transactions, upload.id);
+    await saveImport(user.uid, imp);
+    addImportBatch(imp, upload.transactions);
+    setPending(prev => prev.filter(p => p.id !== upload.id));
+  };
+
+  const handleDelete = async (importId: string) => {
+    if (!user) return;
+    await deleteImport(user.uid, importId);
+    removeImportBatch(importId);
+  };
+
+  const newTxCount = pending.reduce((s, p) => s + p.transactions.length, 0);
 
   return (
-    <div className="flex flex-col h-full overflow-auto">
-      <div className="px-4 lg:px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+    <div className="p-4 lg:p-6 space-y-6 max-w-2xl mx-auto w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Importera data</h1>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {nonTransfer.length > 0
-              ? `${nonTransfer.length} transaktioner · ${transferCount} överföringar (exkluderade)`
-              : 'Ingen data importerad ännu'}
-          </p>
+          <h1 className="text-xl font-semibold text-gray-900">Importera</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Ladda upp kontoutdrag</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {nonTransfer.length > 0 && <CopyToClaudeButton />}
-          {nonTransfer.length > 0 && <ExportButton />}
-          {transactions.length > 0 && (
-            <button onClick={() => { if (confirm('Rensa all data?')) clearTransactions(); }}
-              className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 px-3 py-2.5 rounded-xl border border-red-200 hover:bg-red-50">
-              <Trash2 size={14} /> Rensa
-            </button>
-          )}
-        </div>
+        <ExportButton />
       </div>
 
-      <div className="p-4 lg:p-6 space-y-4">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <Card>
-            <CardHeader title="Ladda upp filer" subtitle="Alla filer processas lokalt — ingen data skickas till servern" />
-            <div className="space-y-3">
-              <AvanzaDropZone onParsed={logImport} />
-              {SIMPLE_TYPES.map(cfg => <SimpleDropZone key={cfg.type} config={cfg} onParsed={logImport} />)}
-            </div>
-          </Card>
-        </motion.div>
+      {/* Drop zone */}
+      <DropZone onFiles={handleFiles} />
 
-        {importLog.length > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Card>
-              <CardHeader title="Importlogg" />
-              <div className="space-y-1">
-                {importLog.map((log, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircle size={12} className="text-green-500 flex-shrink-0" />{log}
-                  </div>
-                ))}
-              </div>
-            </Card>
+      {error && (
+        <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{error}</p>
+      )}
+
+      {/* Pending uploads */}
+      <AnimatePresence>
+        {pending.length > 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-700">
+                Väntar på sparande
+                <span className="ml-2 text-xs font-normal text-blue-500">{newTxCount} nya transaktioner</span>
+              </h2>
+              <button onClick={() => setPending([])}
+                className="text-xs text-gray-400 hover:text-gray-600">
+                Rensa alla
+              </button>
+            </div>
+            {pending.map(upload => (
+              <PendingCard
+                key={upload.id}
+                upload={upload}
+                onSave={() => handleSave(upload)}
+                onDiscard={() => setPending(prev => prev.filter(p => p.id !== upload.id))}
+              />
+            ))}
           </motion.div>
         )}
+      </AnimatePresence>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card>
-            <CardHeader title="Hur exporterar jag?" subtitle="Guide för varje källa" />
-            <div className="space-y-4">
-              {[
-                { title: 'SEB', steps: ['Logga in på seb.se', 'Konto → välj konto → Kontoutdrag', 'Välj datumintervall → Exportera CSV eller Excel', 'Upprepa för varje SEB-konto'] },
-                { title: 'Avanza', steps: ['Logga in på avanza.se', 'Min ekonomi → Transaktioner', 'Välj konto i dropdown (ISK, KF, etc.)', 'Välj datumintervall → Exportera CSV', 'Upprepa för varje konto'] },
-                { title: 'Klarna', steps: ['Öppna Klarna-appen', 'Inställningar → Integritet → Ladda ner min data', 'Välj transaktionsdata → ladda ner CSV'] },
-                { title: 'CSN', steps: ['Logga in på csn.se', 'Mina sidor → Mina lån och bidrag → Utbetalningar', 'Exportera som CSV'] },
-              ].map(({ title, steps }) => (
-                <div key={title}>
-                  <p className="font-semibold text-gray-800 text-sm mb-1.5">{title}</p>
-                  <ol className="list-decimal list-inside space-y-0.5">
-                    {steps.map((s, i) => <li key={i} className="text-xs text-gray-500">{s}</li>)}
-                  </ol>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
-      </div>
+      {/* Saved imports */}
+      {importBatches.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-gray-700">Sparade uppladdningar</h2>
+          {importBatches.map(imp => (
+            <SavedCard
+              key={imp.id}
+              imp={imp}
+              onDelete={() => handleDelete(imp.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

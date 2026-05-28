@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { getMonthlyData, formatSEK, formatMonth, allMonths } from '../utils/calculations';
 import { CATEGORY_COLORS, EXPENSE_CATEGORIES } from '../utils/categorize';
@@ -7,7 +6,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Upload, ArrowRight, Cloud, CloudOff, Loader } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Upload, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const FADE = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
@@ -30,32 +29,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-function SyncBadge() {
-  const { syncStatus, lastSyncedAt } = useStore();
-  if (syncStatus === 'idle') return null;
-  const timeStr = lastSyncedAt
-    ? new Date(lastSyncedAt).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
-    : '';
-  return (
-    <div className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full ${
-      syncStatus === 'syncing' ? 'text-blue-500 bg-blue-50' :
-      syncStatus === 'ok'      ? 'text-green-600 bg-green-50' :
-                                 'text-red-500 bg-red-50'
-    }`}>
-      {syncStatus === 'syncing' ? <Loader size={11} className="animate-spin" /> :
-       syncStatus === 'ok'      ? <Cloud size={11} /> :
-                                  <CloudOff size={11} />}
-      {syncStatus === 'syncing' ? 'Synkar...' :
-       syncStatus === 'ok'      ? `Synkad ${timeStr}` :
-                                  'Synkfel'}
-    </div>
-  );
-}
+
 
 export default function Overview() {
-  const { transactions, setPage, loadFromCloud } = useStore();
-
-  useEffect(() => { loadFromCloud(); }, []);
+  const { transactions, setPage } = useStore();
 
   if (!transactions.length) {
     return (
@@ -114,7 +91,6 @@ export default function Overview() {
             {monthlyData.length} månader · {transactions.filter(t => !t.isTransfer).length} transaktioner
           </p>
         </div>
-        <SyncBadge />
       </motion.div>
 
       {/* KPI row */}

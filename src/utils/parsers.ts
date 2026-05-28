@@ -204,3 +204,37 @@ export function mergeTxs(existing: Transaction[], incoming: Transaction[]): Tran
   const ids = new Set(existing.map(t => t.id));
   return [...existing, ...incoming.filter(t => !ids.has(t.id))];
 }
+
+export async function parseFiles(files: File[]): Promise<Transaction[]> {
+  const results: Transaction[] = [];
+  for (const file of files) {
+    const name = file.name.toLowerCase();
+    try {
+      if (name.endsWith('.csv')) {
+        const text = await file.text();
+        const lower = text.toLowerCase();
+        if (lower.includes('avanza')) {
+          results.push(...parseAvanzaCSV(text));
+        } else if (lower.includes('transaktionsdatum') || lower.includes('bokföringsdag')) {
+          results.push(...parseSEBCSV(text, file.name.replace(/\.[^.]+$/, '')));
+        } else if (lower.includes('transaktionsbelopp') || lower.includes('klarna')) {
+          results.push(...parseKlarnaCSV(text));
+        } else if (lower.includes('csn') || lower.includes('studielån')) {
+          results.push(...parseCSNCSV(text));
+        } else {
+          results.push(...parseSEBCSV(text, file.name.replace(/\.[^.]+$/, '')));
+        }
+      } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+        const buf = await file.arrayBuffer();
+        if (name.includes('avanza')) {
+          results.push(...parseAvanzaXLSX(buf));
+        } else {
+          results.push(...parseSEBXLSX(buf, file.name.replace(/\.[^.]+$/, '')));
+        }
+      }
+    } catch (e) {
+      console.error('Parse error for', file.name, e);
+    }
+  }
+  return results;
+}

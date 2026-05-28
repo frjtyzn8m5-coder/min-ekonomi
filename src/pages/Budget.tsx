@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
+import { useAuthStore } from '../store/useAuthStore';
+import { saveBudgets } from '../lib/db';
 import { getMonthlyData, formatSEK, formatMonth, allMonths } from '../utils/calculations';
 import { EXPENSE_CATEGORIES, CATEGORY_COLORS } from '../utils/categorize';
 import { Card, CardHeader, EmptyState } from '../components/ui/Card';
