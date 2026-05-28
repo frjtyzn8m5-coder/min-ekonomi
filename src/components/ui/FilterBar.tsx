@@ -3,7 +3,9 @@ import { useStore } from '../../store/useStore';
 import { allMonths } from '../../utils/calculations';
 import { ALL_CATEGORIES } from '../../utils/categorize';
 import { formatMonth } from '../../utils/calculations';
-import { X, Search, SlidersHorizontal, Tag } from 'lucide-react';
+import { X, Search, SlidersHorizontal, Tag, ChevronDown, Calendar } from 'lucide-react';
+
+const MONTHS_DEFAULT_SHOW = 6;
 
 function getRecentMonths(n: number): string[] {
   const months: string[] = [];
@@ -28,6 +30,7 @@ function getCurrentYearMonths(): string[] {
 export default function FilterBar() {
   const { transactions, filter, setFilter, resetFilter } = useStore();
   const [showMore, setShowMore] = useState(false);
+  const [showAllMonths, setShowAllMonths] = useState(false);
 
   const availableMonths = allMonths(transactions);
   const accounts = [...new Set(transactions.map(t => t.account))].sort();
@@ -35,7 +38,12 @@ export default function FilterBar() {
 
   const hasFilter = filter.months.length || filter.categories.length ||
     filter.accounts.length || filter.type !== 'all' || filter.search ||
-    filter.amountMin !== null || filter.amountMax !== null || filter.tags?.length;
+    filter.amountMin !== null || filter.amountMax !== null || filter.tags?.length ||
+    filter.dateFrom || filter.dateTo;
+
+  const visibleMonths = showAllMonths
+    ? availableMonths
+    : availableMonths.slice(-MONTHS_DEFAULT_SHOW);
 
   const toggleMonth = (m: string) => {
     const months = filter.months.includes(m)
@@ -130,7 +138,13 @@ export default function FilterBar() {
       {availableMonths.length > 0 && (
         <div className="flex gap-1.5 flex-wrap items-center">
           <span className="text-[11px] text-gray-400 flex-shrink-0">Månad:</span>
-          {availableMonths.map(m => (
+          {availableMonths.length > MONTHS_DEFAULT_SHOW && !showAllMonths && (
+            <button onClick={() => setShowAllMonths(true)}
+              className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-400 hover:bg-gray-200 flex items-center gap-0.5">
+              +{availableMonths.length - MONTHS_DEFAULT_SHOW} <ChevronDown size={10} />
+            </button>
+          )}
+          {visibleMonths.map(m => (
             <button key={m} onClick={() => toggleMonth(m)}
               className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition-all ${
                 filter.months.includes(m) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -138,6 +152,12 @@ export default function FilterBar() {
               {formatMonth(m)}
             </button>
           ))}
+          {showAllMonths && availableMonths.length > MONTHS_DEFAULT_SHOW && (
+            <button onClick={() => setShowAllMonths(false)}
+              className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-400 hover:bg-gray-200">
+              Visa färre
+            </button>
+          )}
         </div>
       )}
 
@@ -185,6 +205,17 @@ export default function FilterBar() {
               ))}
             </div>
           )}
+
+          <div className="flex gap-2 items-center flex-wrap">
+            <span className="text-[11px] text-gray-400 flex-shrink-0 flex items-center gap-1"><Calendar size={10} /> Datum:</span>
+            <input type="date" value={filter.dateFrom ?? ''}
+              onChange={e => setFilter({ dateFrom: e.target.value || null, months: [] })}
+              className="border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-blue-400" />
+            <span className="text-[11px] text-gray-400">–</span>
+            <input type="date" value={filter.dateTo ?? ''}
+              onChange={e => setFilter({ dateTo: e.target.value || null, months: [] })}
+              className="border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-blue-400" />
+          </div>
 
           <div className="flex gap-2 items-center">
             <span className="text-[11px] text-gray-400 flex-shrink-0">Belopp:</span>

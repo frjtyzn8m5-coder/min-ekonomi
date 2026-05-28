@@ -25,6 +25,8 @@ const DEFAULT_FILTER: FilterState = {
   amountMin: null,
   amountMax: null,
   tags: [],
+  dateFrom: null,
+  dateTo: null,
 };
 
 const DEFAULT_REMINDERS: Reminder[] = [
@@ -40,6 +42,7 @@ interface AppState {
   debts: DebtSnapshot[];
   reminders: Reminder[];
   importBatches: ImportBatch[];
+  ownAccounts: string[];
   page: Page;
   filter: FilterState;
   pushSubscription: string | null;
@@ -50,6 +53,9 @@ interface AppState {
   setFirebaseAssets: (a: AssetSnapshot[]) => void;
   setFirebaseDebts: (d: DebtSnapshot[]) => void;
   setImportBatches: (imp: ImportBatch[]) => void;
+  setOwnAccounts: (accounts: string[]) => void;
+  addOwnAccount: (account: string) => void;
+  removeOwnAccount: (account: string) => void;
 
   // Local actions
   addTransactions: (txs: Transaction[]) => void;
@@ -86,6 +92,7 @@ export const useStore = create<AppState>()(
       debts: [],
       reminders: DEFAULT_REMINDERS,
       importBatches: [],
+      ownAccounts: [],
       page: 'overview',
       filter: DEFAULT_FILTER,
       pushSubscription: null,
@@ -95,6 +102,9 @@ export const useStore = create<AppState>()(
       setFirebaseAssets: (assets) => set({ assets }),
       setFirebaseDebts: (debts) => set({ debts }),
       setImportBatches: (importBatches) => set({ importBatches }),
+      setOwnAccounts: (ownAccounts) => set({ ownAccounts }),
+      addOwnAccount: (account) => set(s => ({ ownAccounts: [...new Set([...s.ownAccounts, account.trim()])] })),
+      removeOwnAccount: (account) => set(s => ({ ownAccounts: s.ownAccounts.filter(a => a !== account) })),
 
       addTransactions: (incoming) =>
         set(s => ({ transactions: mergeTxsLocal(s.transactions, incoming) })),
@@ -161,6 +171,7 @@ export const useStore = create<AppState>()(
         debts: s.debts,
         reminders: s.reminders,
         importBatches: s.importBatches,
+        ownAccounts: s.ownAccounts,
         pushSubscription: s.pushSubscription,
       }),
     }

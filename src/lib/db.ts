@@ -1,5 +1,5 @@
 import {
-  collection, doc, setDoc, getDocs, deleteDoc, writeBatch, query, orderBy
+  collection, doc, setDoc, getDoc, getDocs, deleteDoc, writeBatch, query, orderBy
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, ImportBatch } from '../types';
@@ -88,4 +88,16 @@ export async function saveDebt(uid: string, snap: DebtSnapshot) {
 export async function loadDebts(uid: string): Promise<DebtSnapshot[]> {
   const snap = await getDocs(query(userCol(uid, 'debts'), orderBy('month')));
   return snap.docs.map(d => d.data() as DebtSnapshot);
+}
+
+// ── Own Accounts (for transfer detection) ────────────────────────────────────
+
+export async function saveOwnAccounts(uid: string, accounts: string[]) {
+  await setDoc(doc(db, 'users', uid, 'settings', 'ownAccounts'), { accounts });
+}
+
+export async function loadOwnAccounts(uid: string): Promise<string[]> {
+  const snap = await getDoc(doc(db, 'users', uid, 'settings', 'ownAccounts'));
+  if (!snap.exists()) return [];
+  return (snap.data().accounts as string[]) || [];
 }

@@ -13,6 +13,8 @@ export function filterTxs(txs: Transaction[], f: FilterState): Transaction[] {
   return txs.filter(tx => {
     if (tx.isTransfer) return false;
     if (f.months.length && !f.months.includes(getMonth(tx.date))) return false;
+    if (f.dateFrom && tx.date < f.dateFrom) return false;
+    if (f.dateTo && tx.date > f.dateTo) return false;
     if (f.categories.length && !f.categories.includes(tx.category)) return false;
     if (f.accounts.length && !f.accounts.includes(tx.account)) return false;
     if (f.type === 'income' && tx.amount < 0) return false;

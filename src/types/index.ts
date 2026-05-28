@@ -68,7 +68,7 @@ export interface Reminder {
   lastSentMonth?: string; // YYYY-MM – håller koll på att inte skicka dubbelt
 }
 
-export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders';
+export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders' | 'settings';
 
 export interface FilterState {
   months: string[];
@@ -79,6 +79,8 @@ export interface FilterState {
   amountMin: number | null;
   amountMax: number | null;
   tags: string[];
+  dateFrom: string | null;
+  dateTo: string | null;
 }
 
 export interface ImportBatch {

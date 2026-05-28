@@ -12,6 +12,7 @@ const Budget       = lazy(() => import('./pages/Budget'));
 const NetWorth     = lazy(() => import('./pages/NetWorth'));
 const Import       = lazy(() => import('./pages/Import'));
 const Reminders    = lazy(() => import('./pages/Reminders'));
+const Settings     = lazy(() => import('./pages/Settings'));
 const Login        = lazy(() => import('./pages/Login'));
 
 const PAGE_TRANSITION = {
@@ -29,6 +30,7 @@ const PAGE_LABELS: Record<string, string> = {
   networth: 'Förmögenhet',
   import: 'Importera',
   reminders: 'Påminnelser',
+  settings: 'Inställningar',
 };
 
 const pages: Record<string, any> = {
@@ -39,6 +41,7 @@ const pages: Record<string, any> = {
   networth: NetWorth,
   import: Import,
   reminders: Reminders,
+  settings: Settings,
 };
 
 export default function App() {
