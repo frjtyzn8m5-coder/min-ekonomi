@@ -42,6 +42,11 @@ function parseAvanzaRows(content: string): AvanzaRow[] {
   return rows;
 }
 
+// Only these transaction types actually change the share count
+const SHARE_CHANGING_TYPES = new Set([
+  'Köp', 'Sälj', 'Byte', 'Inlösen', 'Avskiljning', 'Värdepappersuttag',
+]);
+
 export function computeHoldings(content: string): Holding[] {
   const rows = parseAvanzaRows(content);
 
@@ -50,6 +55,7 @@ export function computeHoldings(content: string): Holding[] {
 
   for (const row of rows) {
     if (!row.isin) continue;
+    if (!SHARE_CHANGING_TYPES.has(row.type)) continue; // skip Utdelning, Insättning, etc.
     const antal = parseNum(row.antal);
     if (antal === 0) continue;
 

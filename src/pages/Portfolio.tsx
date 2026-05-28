@@ -119,6 +119,7 @@ export default function Portfolio() {
         `/api/prices?tickers=${encodeURIComponent(allSymbols.join(','))}`
       );
       const data: Record<string, { price: number; currency: string; changePercent: number; name: string }> = await resp.json();
+      if (!resp.ok) throw new Error((data as any).error ?? `HTTP ${resp.status}`);
 
       // Extract FX rates
       const newFx: Record<string, number> = { SEK: 1 };
@@ -259,7 +260,8 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
+    <div className="flex-1 overflow-auto">
+    <div className="max-w-5xl mx-auto w-full p-4 lg:p-6 space-y-5">
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -433,6 +435,7 @@ export default function Portfolio() {
           </p>
         </Card>
       )}
+    </div>
     </div>
   );
 }

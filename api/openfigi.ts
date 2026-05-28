@@ -25,6 +25,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     LN: '.L',   // London
     GF: '.F',   // Frankfurt
     US: '',     // NYSE/NASDAQ (no suffix)
+    UN: '',     // NYSE
+    UQ: '',     // NASDAQ
+    UA: '',     // NYSE American
+  };
+
+  // Preferred exchange codes by ISIN country prefix
+  const ISIN_PREFERRED_EXCH: Record<string, string[]> = {
+    SE: ['SS', 'ST'],
+    NO: ['NO', 'OL'],
+    FI: ['HE'],
+    DK: ['DC'],
+    DE: ['GF', 'GS'],
+    GB: ['LN'],
+    US: ['US', 'UN', 'UQ', 'UA'],
   };
 
   const result: Record<string, { ticker: string; name: string }> = {};
@@ -43,14 +57,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const items: any[] = json[i]?.data ?? [];
         if (!items.length) return;
 
-        // Prefer equity/ETF over fund units, and prefer the main exchange listing
-        const preferred = items.find(x =>
-          x.securityType2 === 'Common Stock' || x.securityType2 === 'ETP'
-        ) ?? items[0];
+        const countryCode = isin.slice(0, 2).toUpperCase();
+        const preferredExchs = ISIN_PREFERRED_EXCH[countryCode] ?? [];
 
-        const suffix = EXCH_SUFFIX[preferred.exchCode ?? ''] ?? '';
-        const ticker = `${preferred.ticker}${suffix}`;
-        result[isin] = { ticker, name: preferred.name ?? isin };
+        // Score items: prefer correct exchange + equity/ETP type + reasonable ticker length
+        const scored = items
+          .filter(x => EXCH_SUFFIX[x.exchCode ?? ''] !== undefined) // only known exchanges
+          .map(x => {
+            const tickerStr: string = x.ticker ?? '';
+            let score = 0;
+            if (preferredExchs.includes(x.exchCode)) score += 10;
+            if (x.securityType2 === 'Common Stock') score += 5;
+            if (x.securityType2 === 'ETP') score += 4;
+            if (x.marketSector === 'Equity') score += 3;
+            // Penalise very long tickers (>8 chars) – likely internal codes, not exchange tickers
+            if (tickerStr.length <= 8) score += 2;
+            if (tickerStr.length > 10) score -= 5;
+            // Penalise tickers containing spaces or lower-case (not typical exchange tickers)
+            if (/\s/.test(tickerStr) || /[a-z]/.test(tickerStr)) score -= 10;
+            return { item: x, score };
+          })
+          .sort((a, b) => b.score - a.score);
+
+        // Fall back to any item if nothing passed the filter
+        const allScored = items.map(x => {
+          const tickerStr: string = x.ticker ?? '';
+          let score = 0;
+          if (preferredExchs.includes(x.exchCode)) score += 10;
+          if (x.securityType2 === 'Common Stock') score += 5;
+          if (x.securityType2 === 'ETP') score += 4;
+          if (x.marketSector === 'Equity') score += 3;
+          if (tickerStr.length <= 8) score += 2;
+          if (tickerStr.length > 10) score -= 5;
+          if (/\s/.test(tickerStr) || /[a-z]/.test(tickerStr)) score -= 10;
+          return { item: x, score };
+        }).sort((a, b) => b.score - a.score);
+
+        const best = (scored[0] ?? allScored[0])?.item;
+        if (!best) return;
+
+        const suffix = EXCH_SUFFIX[best.exchCode ?? ''] ?? '';
+        const ticker = `${best.ticker}${suffix}`;
+        // Only store if ticker looks usable (not empty, not too long)
+        if (ticker && ticker.length <= 15) {
+          result[isin] = { ticker, name: best.name ?? isin };
+        }
       });
     } catch {
       // If OpenFIGI fails for a chunk, just skip – caller handles missing mappings
