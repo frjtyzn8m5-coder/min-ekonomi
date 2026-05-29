@@ -1,26 +1,22 @@
 import { create } from 'zustand';
 import {
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   type User,
 } from 'firebase/auth';
+
 import { auth } from '../lib/firebase';
 import { loadTransactions, loadImports, loadBudgets, loadAssets, loadDebts } from '../lib/db';
 import { useStore } from './useStore';
-
-// Internally we append this domain so Firebase is happy with "email" format
-const DOMAIN = '@min-ekonomi.app';
-const toEmail = (username: string) => username.toLowerCase().trim() + DOMAIN;
 
 interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
   initAuth: () => void;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -41,6 +37,17 @@ async function loadUserData(uid: string) {
   if (debts.length)   store.setFirebaseDebts(debts);
 }
 
+const handleSignInError = (e: any, set: (s: Partial<AuthState>) => void) => {
+  const msg =
+    e.code === 'auth/popup-closed-by-user'     ? 'Inloggning avbröts.' :
+    e.code === 'auth/popup-blocked'             ? 'Popup blockerades av webbläsaren.' :
+    e.code === 'auth/account-exists-with-different-credential'
+                                               ? 'Det finns redan ett konto med den e-postadressen.' :
+    e.code === 'auth/cancelled-popup-request'  ? null : // silent – user opened multiple popups
+    'Inloggning misslyckades. Försök igen.';
+  if (msg) set({ error: msg });
+};
+
 export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   loading: true,
@@ -53,40 +60,19 @@ export const useAuthStore = create<AuthState>()((set) => ({
     });
   },
 
-  login: async (username, password) => {
+  signInWithGoogle: async () => {
     set({ error: null });
     try {
-      await signInWithEmailAndPassword(auth, toEmail(username), password);
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } catch (e: any) {
-      const msg =
-        e.code === 'auth/invalid-credential' ? 'Fel användarnamn eller lösenord.' :
-        e.code === 'auth/user-not-found'      ? 'Användaren finns inte.' :
-        e.code === 'auth/wrong-password'      ? 'Fel lösenord.' :
-        e.code === 'auth/too-many-requests'   ? 'För många försök. Vänta en stund.' :
-        'Inloggning misslyckades.';
-      set({ error: msg });
-      throw e;
-    }
-  },
-
-  register: async (username, password) => {
-    set({ error: null });
-    try {
-      await createUserWithEmailAndPassword(auth, toEmail(username), password);
-    } catch (e: any) {
-      const msg =
-        e.code === 'auth/email-already-in-use' ? 'Användarnamnet är redan taget.' :
-        e.code === 'auth/weak-password'         ? 'Lösenordet måste vara minst 6 tecken.' :
-        e.code === 'auth/invalid-email'         ? 'Ogiltigt användarnamn.' :
-        'Registrering misslyckades.';
-      set({ error: msg });
+      handleSignInError(e, set);
       throw e;
     }
   },
 
   logout: async () => {
     await signOut(auth);
-    // Clear local data on logout
     const store = useStore.getState();
     store.setFirebaseTransactions([]);
     store.setFirebaseBudgets([]);
