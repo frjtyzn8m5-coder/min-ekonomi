@@ -233,13 +233,16 @@ export default function Portfolio() {
     }).catch(() => setSearchStatus('done'));
   }, [holdings]);
 
-  // Refresh prices + enrich category from Yahoo Finance
-  const refreshPrices = async () => {
-    if (!user || !tickerMappings.length) return;
+  // Refresh prices + enrich category from Yahoo Finance.
+  // Phase 2: auto re-maps non-manual tickers that returned no price data.
+  const refreshPrices = async (mappingsOverride?: TickerMapping[]) => {
+    if (!user) return;
+    const currentMappings = mappingsOverride ?? tickerMappings;
+    if (!currentMappings.length) return;
     setRefreshing(true);
     setError('');
     try {
-      const tickers = tickerMappings.map(m => m.ticker).filter(Boolean);
+      const tickers = currentMappings.map(m => m.ticker).filter(Boolean);
       const neededFx = [...new Set(
         holdings.map(h => h.currency).filter(c => c !== 'SEK' && FX_PAIRS[c]).map(c => FX_PAIRS[c])
       )];
@@ -256,7 +259,7 @@ export default function Portfolio() {
 
       const now = Date.now();
       const newCache: Record<string, PriceData> = { ...priceCache };
-      const updatedMappings = [...tickerMappings];
+      let updatedMappings = [...currentMappings];
       let mappingsChanged = false;
 
       for (const [symbol, q] of Object.entries(data)) {
@@ -270,7 +273,6 @@ export default function Portfolio() {
           category: q.category,
           quoteType: q.quoteType,
         };
-        // Enrich TickerMapping with category from Yahoo Finance if not already set
         if (q.category || q.quoteType) {
           const idx = updatedMappings.findIndex(m => m.ticker === symbol);
           if (idx >= 0 && (!updatedMappings[idx].category || !updatedMappings[idx].quoteType)) {
@@ -283,6 +285,55 @@ export default function Portfolio() {
           }
         }
       }
+
+      // ── Phase 2: re-map tickers that returned no price data ──────────────────
+      const fxSymbols = new Set(Object.values(FX_PAIRS));
+      const failed = updatedMappings.filter(
+        m => m.ticker && !m.manual && !data[m.ticker] && !fxSymbols.has(m.ticker)
+      );
+
+      if (failed.length) {
+        const remapped = await Promise.all(
+          failed.map(async (tm) => {
+            const holding = holdings.find(h => h.isin === tm.isin);
+            if (!holding) return null;
+            const country = tm.isin.slice(0, 2).toUpperCase();
+            try {
+              const r = await fetch(
+                `/api/search-ticker?q=${encodeURIComponent(holding.name)}&country=${country}&isin=${encodeURIComponent(tm.isin)}`
+              );
+              if (!r.ok) return null;
+              const results = await r.json() as { symbol: string; shortname: string; quoteType: string; typeDisp: string; score: number }[];
+              if (!results.length || results[0].score < 3) return null;
+              const best = results[0];
+              if (best.symbol === tm.ticker) return null; // same ticker, skip
+              return { ...tm, ticker: best.symbol, name: best.shortname || tm.name, quoteType: best.quoteType, category: best.typeDisp } as TickerMapping;
+            } catch { return null; }
+          })
+        );
+
+        const valid = remapped.filter(Boolean) as TickerMapping[];
+        if (valid.length) {
+          for (const v of valid) {
+            const idx = updatedMappings.findIndex(m => m.isin === v.isin);
+            if (idx >= 0) updatedMappings[idx] = v;
+          }
+          mappingsChanged = true;
+
+          // Fetch prices for the newly mapped tickers
+          const newTickers = valid.map(v => v.ticker).filter(Boolean);
+          try {
+            const r2 = await fetch(`/api/prices?tickers=${encodeURIComponent(newTickers.join(','))}`);
+            if (r2.ok) {
+              const data2: Record<string, any> = await r2.json();
+              for (const [symbol, q] of Object.entries(data2)) {
+                newCache[symbol] = { ticker: symbol, price: q.price, currency: q.currency, changePercent: q.changePercent, fetchedAt: now, category: q.category, quoteType: q.quoteType };
+              }
+            }
+          } catch { /* best-effort */ }
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────────
 
       setPriceCache(newCache);
       await savePriceCache(user.uid, newCache);
@@ -311,6 +362,15 @@ export default function Portfolio() {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  // Clears all non-manual ticker mappings and re-searches from scratch via Morningstar
+  const resetTickers = async () => {
+    if (!user || refreshing) return;
+    const cleared = tickerMappings.filter(m => m.manual);
+    setTickerMappings(cleared);
+    await saveTickerMappings(user.uid, cleared).catch(() => {});
+    // The auto-search useEffect will re-trigger for now-unmapped holdings
   };
 
   // Always keep the ref pointing at the latest refreshPrices closure
@@ -472,14 +532,24 @@ export default function Portfolio() {
             )}
           </div>
         </div>
-        <button
-          onClick={refreshPrices}
-          disabled={refreshing || !tickerMappings.length}
-          className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-40 transition-all"
-        >
-          <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-          Uppdatera kurser
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={resetTickers}
+            disabled={refreshing || searchStatus === 'searching'}
+            title="Rensar alla automatiska ticker-mappningar och söker om via Morningstar"
+            className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 disabled:opacity-40 transition-all"
+          >
+            Återsök tickers
+          </button>
+          <button
+            onClick={() => refreshPrices()}
+            disabled={refreshing || !tickerMappings.length}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-40 transition-all"
+          >
+            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+            Uppdatera kurser
+          </button>
+        </div>
       </div>
 
       {error && (
