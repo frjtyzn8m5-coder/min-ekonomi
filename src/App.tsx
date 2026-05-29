@@ -102,9 +102,9 @@ export default function App() {
           </span>
         </div>
 
-        <main className="flex-1 overflow-auto flex flex-col">
-          <div className="flex-1 flex flex-col w-full">
-            <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /></div>}>
+        <main className="flex-1 overflow-auto">
+          <div className="min-h-full flex flex-col max-w-screen-2xl mx-auto w-full">
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /></div>}>
               <AnimatePresence mode="wait">
                 <motion.div key={page} {...PAGE_TRANSITION} className="flex-1 flex flex-col min-h-0">
                   <PageComponent />

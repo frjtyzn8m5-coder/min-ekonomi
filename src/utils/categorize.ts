@@ -226,23 +226,14 @@ export function smartCategorize(txs: Transaction[]): Transaction[] {
     const absAmt = Math.abs(tx.amount);
 
     if (tx.amount < 0) {
-      // Bill-splitting: small Swish next to a restaurant visit
-      if (absAmt < 400 && nearbyCats.includes('Restaurang')) {
-        result[origIdx].category = 'Restaurang';
-        return;
-      }
-      // Grocery splitting: small Swish next to grocery shopping
-      if (absAmt < 200 && nearbyCats.includes('Mat')) {
-        result[origIdx].category = 'Mat';
-        return;
-      }
-      // Large Swish (> 1 000 kr): shared rent, deposit, equipment purchase, etc.
-      if (absAmt > 1000) {
+      // Large Swish (> 2 000 kr): likely shared rent, deposit, or big purchase — not social
+      if (absAmt > 2000) {
         result[origIdx].category = 'Övrigt Utgift';
         return;
       }
+      // Everything else: default to Aktiviteter (social outings, splitting bills, etc.)
     }
-    // Incoming Swish: keep as Aktiviteter (recipient is paying you back)
+    // Incoming Swish: keep as Aktiviteter (someone paying you back)
   });
 
   return result;
