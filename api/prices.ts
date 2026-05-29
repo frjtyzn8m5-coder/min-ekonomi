@@ -6,6 +6,7 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 // For FX pairs (e.g. NOKSEK=X) the same endpoint works fine.
 async function fetchSingleQuote(symbol: string): Promise<{
   price: number; currency: string; changePercent: number; name: string;
+  category: string; quoteType: string;
 } | null> {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
