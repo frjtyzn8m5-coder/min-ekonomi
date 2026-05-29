@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot } from '../types';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot } from '../types';
 
 const DEFAULT_BUDGETS: BudgetGoal[] = [
   { category: 'Mat', limit: 2000 },
@@ -48,6 +48,7 @@ interface AppState {
   priceCache: Record<string, PriceData>;
   portfolioSnapshots: PortfolioSnapshot[];
   assetClasses: string[];
+  module: Module;
   page: Page;
   filter: FilterState;
   pushSubscription: string | null;
@@ -76,6 +77,7 @@ interface AppState {
   updateBudget: (category: Category, limit: number) => void;
   addAssetSnapshot: (s: AssetSnapshot) => void;
   addDebtSnapshot: (s: DebtSnapshot) => void;
+  setModule: (m: Module) => void;
   setPage: (p: Page) => void;
   setFilter: (f: Partial<FilterState>) => void;
   resetFilter: () => void;
@@ -110,6 +112,7 @@ export const useStore = create<AppState>()(
       priceCache: {},
       portfolioSnapshots: [],
       assetClasses: ['Aktier', 'Räntebärande', 'Råvaror', 'Fastigheter', 'Övrigt'],
+      module: 'economy',
       page: 'overview',
       filter: DEFAULT_FILTER,
       pushSubscription: null,
@@ -164,6 +167,7 @@ export const useStore = create<AppState>()(
           return { debts: [...existing, snap].sort((a, b) => a.month.localeCompare(b.month)) };
         }),
 
+      setModule: (module) => set({ module }),
       setPage: (page) => set({ page }),
       setFilter: (f) => set(s => ({ filter: { ...s.filter, ...f } })),
       resetFilter: () => set({ filter: DEFAULT_FILTER }),

@@ -70,6 +70,8 @@ export interface Reminder {
 
 export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders' | 'settings' | 'portfolio';
 
+export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
+
 export interface FilterState {
   months: string[];
   categories: Category[];
