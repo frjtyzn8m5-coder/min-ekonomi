@@ -364,13 +364,56 @@ export default function Portfolio() {
     }
   };
 
-  // Clears all non-manual ticker mappings and re-searches from scratch via Morningstar
-  const resetTickers = async () => {
-    if (!user || refreshing) return;
-    const cleared = tickerMappings.filter(m => m.manual);
-    setTickerMappings(cleared);
-    await saveTickerMappings(user.uid, cleared).catch(() => {});
-    // The auto-search useEffect will re-trigger for now-unmapped holdings
+  // Re-searches all non-manual tickers via Morningstar/Yahoo and updates mappings
+  // without wiping anything first – safe to run at any time.
+  const remapAllTickers = async () => {
+    if (!user || refreshing || searchStatus === 'searching') return;
+    setSearchStatus('searching');
+    try {
+      const toSearch = holdings.filter(h => {
+        const tm = tickerMappings.find(m => m.isin === h.isin);
+        return !tm?.manual; // skip manually-set tickers
+      });
+      if (!toSearch.length) return;
+
+      const found = await Promise.all(
+        toSearch.map(async (h) => {
+          const country = h.isin.slice(0, 2).toUpperCase();
+          try {
+            const resp = await fetch(
+              `/api/search-ticker?q=${encodeURIComponent(h.name)}&country=${country}&isin=${encodeURIComponent(h.isin)}`
+            );
+            if (!resp.ok) return null;
+            const results = await resp.json() as { symbol: string; shortname: string; quoteType: string; typeDisp: string; score: number }[];
+            if (!results.length || results[0].score < 3) return null;
+            const best = results[0];
+            return {
+              isin: h.isin,
+              ticker: best.symbol,
+              name: best.shortname || h.name,
+              manual: false,
+              quoteType: best.quoteType,
+              category: best.typeDisp,
+            } as TickerMapping;
+          } catch { return null; }
+        })
+      );
+
+      const valid = found.filter(Boolean) as TickerMapping[];
+      if (!valid.length) return;
+
+      // Merge: update existing + add new, never remove
+      const updated = [...tickerMappings];
+      for (const m of valid) {
+        const idx = updated.findIndex(x => x.isin === m.isin);
+        if (idx >= 0) updated[idx] = m;
+        else updated.push(m);
+      }
+      setTickerMappings(updated);
+      await saveTickerMappings(user.uid, updated).catch(() => {});
+    } finally {
+      setSearchStatus('done');
+    }
   };
 
   // Always keep the ref pointing at the latest refreshPrices closure
@@ -534,12 +577,17 @@ export default function Portfolio() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={resetTickers}
+            onClick={remapAllTickers}
             disabled={refreshing || searchStatus === 'searching'}
-            title="Rensar alla automatiska ticker-mappningar och söker om via Morningstar"
+            title="Söker om alla automatiska tickers via Morningstar och Yahoo – befintliga manuella tickers rörs inte"
             className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 disabled:opacity-40 transition-all"
           >
-            Återsök tickers
+            {searchStatus === 'searching' ? (
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+                Söker…
+              </span>
+            ) : 'Återsök tickers'}
           </button>
           <button
             onClick={() => refreshPrices()}

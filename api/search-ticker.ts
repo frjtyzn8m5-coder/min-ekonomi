@@ -2,7 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-// Preferred Yahoo Finance exchange suffixes by ISIN country prefix
 const PREFERRED_SUFFIXES: Record<string, string[]> = {
   SE: ['.ST'],
   NO: ['.OL'],
@@ -13,23 +12,21 @@ const PREFERRED_SUFFIXES: Record<string, string[]> = {
   US: ['', '.NYSE', '.NASDAQ'],
   LU: ['.ST', '.PA', '.L', '.DE', '.F', ''],
   IE: ['.L', '.AS', '.ST', ''],
-  JE: ['.L'],  // Jersey-domiciled (WisdomTree etc.)
+  JE: ['.L'],
   FR: ['.PA'],
 };
 
-// Morningstar exchange → Yahoo Finance suffix mapping
 const MS_EXCHANGE_SUFFIX: Record<string, string> = {
-  XSTO: '.ST',  // Stockholm
-  XOSL: '.OL',  // Oslo
-  XHEL: '.HE',  // Helsinki
-  XCSE: '.CO',  // Copenhagen
-  XLON: '.L',   // London
-  XETR: '.DE',  // Frankfurt
-  XPAR: '.PA',  // Paris
-  XAMS: '.AS',  // Amsterdam
+  XSTO: '.ST',
+  XOSL: '.OL',
+  XHEL: '.HE',
+  XCSE: '.CO',
+  XLON: '.L',
+  XETR: '.DE',
+  XPAR: '.PA',
+  XAMS: '.AS',
 };
 
-// Morningstar security type → Yahoo quoteType
 const MS_TYPE_MAP: Record<string, string> = {
   FO: 'MUTUALFUND',
   ET: 'ETF',
@@ -48,9 +45,6 @@ export interface SearchResult {
 }
 
 // ── Morningstar ISIN lookup ────────────────────────────────────────────────────
-// Returns a high-confidence SearchResult when the ISIN maps directly to a
-// Morningstar fund/security. Morningstar IDs are exactly what Yahoo Finance
-// uses as tickers for Swedish/Nordic mutual funds (e.g. "0P0001IMY7.ST").
 
 async function lookupMorningstar(isin: string, countryCode: string): Promise<SearchResult | null> {
   try {
@@ -67,11 +61,20 @@ async function lookupMorningstar(isin: string, countryCode: string): Promise<Sea
 
     const text = await resp.text();
 
-    // Strip JSONP wrapper – matches any callback name: someFunc({...})
-    const jsonMatch = text.match(/\w[\w.]*\s*\(\s*(\{[\s\S]*\})\s*\)/);
-    if (!jsonMatch) return null;
+    // Morningstar sometimes returns plain JSON, sometimes JSONP – handle both
+    let data: any = null;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // Strip JSONP wrapper: anyFuncName({...}) or anyFuncName ({...})
+      const m = text.match(/\w[\w$.]*\s*\(\s*(\{[\s\S]*\})\s*\)\s*;?\s*$/);
+      if (m) {
+        try { data = JSON.parse(m[1]); } catch { /* give up */ }
+      }
+    }
 
-    const data = JSON.parse(jsonMatch[1]);
+    if (!data) return null;
+
     const rows: any[] = data?.rows ?? [];
     if (!rows.length) return null;
 
@@ -79,22 +82,20 @@ async function lookupMorningstar(isin: string, countryCode: string): Promise<Sea
     const msId: string = first.i ?? '';
     if (!msId) return null;
 
-    // Determine Yahoo Finance suffix from Morningstar exchange/country
     const exchange: string = first.e ?? '';
     const msCountry: string = first.r ?? countryCode;
-    let suffix = MS_EXCHANGE_SUFFIX[exchange] ?? PREFERRED_SUFFIXES[msCountry]?.[0] ?? '.ST';
+    const suffix = MS_EXCHANGE_SUFFIX[exchange] ?? PREFERRED_SUFFIXES[msCountry]?.[0] ?? '.ST';
 
     const ticker = `${msId}${suffix}`;
     const msType: string = first.t ?? '';
-    const quoteType = MS_TYPE_MAP[msType] ?? 'MUTUALFUND';
 
     return {
       symbol: ticker,
       shortname: first.n ?? '',
-      quoteType,
+      quoteType: MS_TYPE_MAP[msType] ?? 'MUTUALFUND',
       typeDisp: first.et ?? msType,
       exchDisp: exchange,
-      score: 15,  // Direct ISIN match → highest confidence
+      score: 15,
       source: 'morningstar',
     };
   } catch {
@@ -102,7 +103,7 @@ async function lookupMorningstar(isin: string, countryCode: string): Promise<Sea
   }
 }
 
-// ── Yahoo Finance text search ──────────────────────────────────────────────────
+// ── Yahoo Finance search ───────────────────────────────────────────────────────
 
 async function searchYahoo(q: string, country: string): Promise<SearchResult[]> {
   const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&lang=en-US&region=SE&quotesCount=8&newsCount=0&enableFuzzyQuery=false&enableCb=false&enableNavLinks=false`;
@@ -113,7 +114,6 @@ async function searchYahoo(q: string, country: string): Promise<SearchResult[]> 
 
   const json = await resp.json() as any;
   const quotes: any[] = json?.quotes ?? [];
-
   const preferred = PREFERRED_SUFFIXES[country] ?? ['.ST'];
 
   return quotes
@@ -138,11 +138,16 @@ async function searchYahoo(q: string, country: string): Promise<SearchResult[]> 
         source: 'yahoo',
       };
     })
-    .sort((a: SearchResult, b: SearchResult) => b.score - a.score);
+    .sort((a, b) => b.score - a.score);
 }
 
 // ── Handler ────────────────────────────────────────────────────────────────────
-// GET /api/search-ticker?q=AuAg+Silver+Bullet&country=SE&isin=SE0003883888
+// GET /api/search-ticker?q=SEB+Sverige+Indexnära&country=SE&isin=SE0002593673
+//
+// Priority:
+//  1. Morningstar ISIN lookup     – most reliable for Nordic funds
+//  2. Yahoo search by ISIN        – catches stocks/ETFs Morningstar misses
+//  3. Yahoo search by name        – general fallback
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -150,28 +155,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const q = String(req.query.q ?? '').trim();
-  const isin = String(req.query.isin ?? '').trim().toUpperCase();
+  const q      = String(req.query.q      ?? '').trim();
+  const isin   = String(req.query.isin   ?? '').trim().toUpperCase();
   const country = String(req.query.country ?? 'SE').toUpperCase();
 
   if (!q && !isin) return res.status(400).json({ error: 'q or isin required' });
 
   try {
-    // 1. Try Morningstar first when we have an ISIN (most reliable for Nordic funds)
+    const results: SearchResult[] = [];
+
+    // 1. Morningstar (primary for Nordic mutual funds)
     if (isin) {
-      const msResult = await lookupMorningstar(isin, country);
-      if (msResult) {
-        // Return Morningstar hit + any Yahoo results merged, Morningstar first
-        const yahooResults = await searchYahoo(q || isin, country).catch(() => []);
-        const combined = [msResult, ...yahooResults.filter(r => r.symbol !== msResult.symbol)];
-        return res.status(200).json(combined.slice(0, 5));
+      const ms = await lookupMorningstar(isin, country);
+      if (ms) results.push(ms);
+    }
+
+    // 2. Yahoo search by ISIN – good for stocks/ETFs on Yahoo but not Morningstar
+    if (isin && results.length === 0) {
+      const byIsin = await searchYahoo(isin, country);
+      // Only accept if the result has the correct exchange suffix (strong match)
+      const preferred = PREFERRED_SUFFIXES[country] ?? ['.ST'];
+      const good = byIsin.filter(r =>
+        r.score >= 5 && preferred.some(sfx => r.symbol.endsWith(sfx))
+      );
+      results.push(...good.slice(0, 3));
+    }
+
+    // 3. Yahoo search by name (always run, merge after Morningstar result)
+    if (q) {
+      const byName = await searchYahoo(q, country);
+      for (const r of byName) {
+        if (!results.find(x => x.symbol === r.symbol)) results.push(r);
       }
     }
 
-    // 2. Fall back to Yahoo Finance text search
-    if (!q) return res.status(200).json([]);
-    const yahooResults = await searchYahoo(q, country);
-    return res.status(200).json(yahooResults.slice(0, 5));
+    // Sort: Morningstar first (score 15), then by score desc
+    results.sort((a, b) => b.score - a.score);
+
+    return res.status(200).json(results.slice(0, 5));
   } catch (e: any) {
     return res.status(500).json({ error: String(e?.message ?? e) });
   }
