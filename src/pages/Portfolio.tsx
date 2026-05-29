@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import {
@@ -159,6 +159,17 @@ export default function Portfolio() {
   const [showClassManager, setShowClassManager] = useState(false);
   const [searchStatus, setSearchStatus] = useState<'idle' | 'searching' | 'done'>('idle');
 
+  // Refs used by auto-refresh intervals to always access latest state/fn
+  const hasAutoRefreshed = useRef(false);
+  const refreshingRef = useRef(false);
+  const refreshPricesRef = useRef<() => Promise<void>>(async () => {});
+
+  // Keep refreshingRef in sync so interval callbacks always see current value
+  useEffect(() => { refreshingRef.current = refreshing; }, [refreshing]);
+
+  // Reset auto-refresh flag on each new login session
+  useEffect(() => { hasAutoRefreshed.current = false; }, [user?.uid]);
+
   // Load data from Firebase on mount
   useEffect(() => {
     if (!user) return;
@@ -192,7 +203,7 @@ export default function Portfolio() {
       unmapped.map(async (h) => {
         const country = h.isin.slice(0, 2).toUpperCase();
         try {
-          const resp = await fetch(`/api/search-ticker?q=${encodeURIComponent(h.name)}&country=${country}`);
+          const resp = await fetch(`/api/search-ticker?q=${encodeURIComponent(h.name)}&country=${country}&isin=${encodeURIComponent(h.isin)}`);
           if (!resp.ok) return null;
           const results = await resp.json() as { symbol: string; shortname: string; quoteType: string; typeDisp: string; score: number }[];
           if (!results.length || results[0].score < 3) return null;
@@ -301,6 +312,36 @@ export default function Portfolio() {
       setRefreshing(false);
     }
   };
+
+  // Always keep the ref pointing at the latest refreshPrices closure
+  useEffect(() => { refreshPricesRef.current = refreshPrices; });
+
+  // Auto-refresh on login: fires once when holdings + tickers are ready and prices are stale/missing
+  useEffect(() => {
+    if (!user || !holdings.length || !tickerMappings.length) return;
+    if (hasAutoRefreshed.current || refreshingRef.current) return;
+
+    const now = Date.now();
+    const needsRefresh = tickerMappings.some(m => {
+      const pd = priceCache[m.ticker];
+      return !pd || (now - pd.fetchedAt) > PRICE_TTL_MS;
+    });
+
+    if (needsRefresh) {
+      hasAutoRefreshed.current = true;
+      refreshPricesRef.current();
+    }
+  }, [tickerMappings, holdings, user]);
+
+  // Periodic auto-refresh every 15 minutes while the page is open
+  useEffect(() => {
+    if (!user) return;
+    const INTERVAL_MS = 15 * 60 * 1000;
+    const id = setInterval(() => {
+      if (!refreshingRef.current) refreshPricesRef.current();
+    }, INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [user]);
 
   function computeTotalSEK(cache: Record<string, PriceData>, fx: Record<string, number>) {
     return holdings.reduce((sum, h) => {
