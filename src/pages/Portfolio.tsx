@@ -444,7 +444,9 @@ export default function Portfolio() {
   }, [user]);
 
   // Fetch index history for comparison chart
-  const earliestSnapshotDate = portfolioSnapshots.length >= 2 ? portfolioSnapshots[0]?.date : undefined;
+  const earliestSnapshotDate = portfolioSnapshots.length >= 2
+    ? [...portfolioSnapshots].sort((a, b) => a.date.localeCompare(b.date))[0]?.date
+    : undefined;
   useEffect(() => {
     if (!earliestSnapshotDate) return;
     fetch(`/api/index-history?from=${earliestSnapshotDate}`)
@@ -890,8 +892,12 @@ export default function Portfolio() {
                     <td className="px-3 py-2.5 text-right font-medium text-gray-900">
                       {h.valueSEK > 0 ? formatSEK(h.valueSEK) : '–'}
                     </td>
-                    <td className={`px-3 py-2.5 text-right font-medium ${h.gainSEK >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                      {h.costSEK > 0 ? <>{formatSEK(h.gainSEK)}<span className="text-[10px] ml-1 opacity-70">({formatPct(h.gainPct)})</span></> : '–'}
+                    <td className={`px-3 py-2.5 text-right font-medium ${h.valueSEK === 0 && h.costSEK > 0 ? 'text-gray-400' : h.gainSEK >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      {h.costSEK > 0 && h.valueSEK > 0
+                        ? <>{formatSEK(h.gainSEK)}<span className="text-[10px] ml-1 opacity-70">({formatPct(h.gainPct)})</span></>
+                        : h.costSEK > 0
+                          ? <span className="text-[11px] text-orange-400">Ingen kurs</span>
+                          : '–'}
                     </td>
                     <td className={`px-3 py-2.5 text-right ${h.changePercent >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {h.currentPrice > 0 ? formatPct(h.changePercent) : '–'}
@@ -943,6 +949,9 @@ export default function Portfolio() {
           </ResponsiveContainer>
           {!indexHistory && (
             <p className="text-[11px] text-gray-400 text-center mt-2">Laddar indexdata…</p>
+          )}
+          {comparisonChartData.length < 5 && (
+            <p className="text-[11px] text-gray-400 text-center mt-1">Jämförelsen blir mer meningsfull med fler sparade snapshots — kurser sparas automatiskt vid varje uppdatering.</p>
           )}
         </Card>
       )}
