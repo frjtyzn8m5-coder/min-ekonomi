@@ -162,6 +162,10 @@ export default function Portfolio() {
   const [showClassManager, setShowClassManager] = useState(false);
   const [searchStatus, setSearchStatus] = useState<'idle' | 'searching' | 'done'>('idle');
   const [remapCount, setRemapCount] = useState<number | null>(null);
+  const [indexHistory, setIndexHistory] = useState<{
+    omxs30: { date: string; pct: number }[];
+    nasdaq: { date: string; pct: number }[];
+  } | null>(null);
 
   // Account filter & rename
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]); // empty = all
@@ -439,6 +443,16 @@ export default function Portfolio() {
     return () => clearInterval(id);
   }, [user]);
 
+  // Fetch index history for comparison chart
+  const earliestSnapshotDate = portfolioSnapshots.length >= 2 ? portfolioSnapshots[0]?.date : undefined;
+  useEffect(() => {
+    if (!earliestSnapshotDate) return;
+    fetch(`/api/index-history?from=${earliestSnapshotDate}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setIndexHistory(data); })
+      .catch(() => {});
+  }, [earliestSnapshotDate]);
+
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function computeTotalSEK(cache: Record<string, PriceData>, fx: Record<string, number>) {
@@ -538,13 +552,13 @@ export default function Portfolio() {
     return arr.sort((a, b) => b.valueSEK - a.valueSEK);
   }, [enriched]);
 
-  // Filtered by account + class (for table)
+  // Table data: aggregate by ISIN when "All accounts" selected, per-account when filtered
   const filteredEnriched = useMemo(() => {
-    let r = enriched;
-    if (selectedAccounts.length > 0) r = r.filter(h => selectedAccounts.includes(h.account));
+    // Use aggregated (no duplicate ISINs) when no account filter is active
+    let r: any[] = selectedAccounts.length === 0 ? aggregatedEnriched : enriched.filter(h => selectedAccounts.includes(h.account));
     if (selectedClass) r = r.filter(h => h.assetClass === selectedClass || (selectedClass === 'Ej klassad' && !h.assetClass));
     return r;
-  }, [enriched, selectedAccounts, selectedClass]);
+  }, [enriched, aggregatedEnriched, selectedAccounts, selectedClass]);
 
   // Use aggregated enriched for class breakdown (no double-counting)
   const enrichedForClass = useMemo(() => {
@@ -570,6 +584,36 @@ export default function Portfolio() {
   }, [aggregatedEnriched]);
 
   const historyData = portfolioSnapshots.map(s => ({ date: formatDate(s.date), value: s.totalValueSEK }));
+
+  // % return series for comparison chart
+  const portfolioPctData = useMemo(() => {
+    if (portfolioSnapshots.length < 2) return [];
+    const sorted = [...portfolioSnapshots].sort((a, b) => a.date.localeCompare(b.date));
+    const base = sorted[0].totalValueSEK;
+    if (!base) return [];
+    return sorted.map(s => ({ date: s.date, portfolio: parseFloat(((s.totalValueSEK - base) / base * 100).toFixed(2)) }));
+  }, [portfolioSnapshots]);
+
+  const comparisonChartData = useMemo(() => {
+    if (!portfolioPctData.length) return [];
+    const map = new Map<string, { date: string; portfolio?: number; omxs30?: number; nasdaq?: number }>();
+    for (const p of portfolioPctData) map.set(p.date, { date: p.date, portfolio: p.portfolio });
+    if (indexHistory) {
+      for (const d of indexHistory.omxs30) {
+        const e = map.get(d.date) ?? { date: d.date };
+        e.omxs30 = parseFloat(d.pct.toFixed(2));
+        map.set(d.date, e);
+      }
+      for (const d of indexHistory.nasdaq) {
+        const e = map.get(d.date) ?? { date: d.date };
+        e.nasdaq = parseFloat(d.pct.toFixed(2));
+        map.set(d.date, e);
+      }
+    }
+    return [...map.values()]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(d => ({ ...d, date: formatDate(d.date) }));
+  }, [portfolioPctData, indexHistory]);
 
   const priceAgeMinutes = (() => {
     const first = enriched[0];
@@ -774,7 +818,7 @@ export default function Portfolio() {
             <thead>
               <tr className="text-[11px] text-gray-400 border-b border-gray-100">
                 <th className="text-left px-4 py-2">Värdepapper</th>
-                {allAccounts.length > 1 && selectedAccounts.length !== 1 && <th className="text-left px-3 py-2">Konto</th>}
+                {allAccounts.length > 1 && selectedAccounts.length > 0 && <th className="text-left px-3 py-2">Konto</th>}
                 <th className="text-left px-3 py-2">Klass</th>
                 <th className="text-right px-3 py-2">Ticker</th>
                 <th className="text-right px-3 py-2">Antal</th>
@@ -786,7 +830,7 @@ export default function Portfolio() {
             </thead>
             <tbody>
               {filteredEnriched.map(h => {
-                const rowKey = `${h.isin}::${h.account}`;
+                const rowKey = selectedAccounts.length === 0 ? h.isin : `${h.isin}::${h.account}`;
                 return (
                   <tr key={rowKey} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     {/* Name */}
@@ -798,8 +842,8 @@ export default function Portfolio() {
                       </p>
                     </td>
 
-                    {/* Account (only shown if multiple accounts and not filtered to one) */}
-                    {allAccounts.length > 1 && selectedAccounts.length !== 1 && (
+                    {/* Account (only shown when a specific account filter is active) */}
+                    {allAccounts.length > 1 && selectedAccounts.length > 0 && (
                       <td className="px-3 py-2.5">
                         <span className="text-[11px] text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
                           {accountNames[h.account] || h.account}
@@ -866,19 +910,40 @@ export default function Portfolio() {
         )}
       </Card>
 
-      {/* ── History chart ────────────────────────────────────────────────── */}
-      {historyData.length >= 2 && (
+      {/* ── Comparison chart ─────────────────────────────────────────────── */}
+      {comparisonChartData.length >= 2 && (
         <Card className="p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Historiskt portföljvärde</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={historyData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-900">Avkastning jämfört med index</h2>
+            <div className="flex items-center gap-3 text-[11px] text-gray-500">
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-500 inline-block" /> Portfölj</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-orange-400 inline-block" /> OMXS30</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-purple-500 inline-block" /> Nasdaq</span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={comparisonChartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} width={40} />
-              <Tooltip formatter={(v: number) => [formatSEK(v), 'Värde']} />
-              <Line type="monotone" dataKey="value" stroke="#007aff" strokeWidth={2} dot={{ r: 3, fill: '#007aff' }} activeDot={{ r: 5 }} />
+              <YAxis
+                tick={{ fontSize: 10 }}
+                tickFormatter={v => `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`}
+                width={46}
+              />
+              <Tooltip
+                formatter={(v: number, name: string) => [
+                  `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
+                  name === 'portfolio' ? 'Portfölj' : name === 'omxs30' ? 'OMXS30' : 'Nasdaq',
+                ]}
+              />
+              <Line type="monotone" dataKey="portfolio" stroke="#007aff" strokeWidth={2} dot={false} activeDot={{ r: 4 }} connectNulls />
+              <Line type="monotone" dataKey="omxs30"    stroke="#ff9f0a" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} connectNulls strokeDasharray="4 2" />
+              <Line type="monotone" dataKey="nasdaq"    stroke="#bf5af2" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} connectNulls strokeDasharray="4 2" />
             </LineChart>
           </ResponsiveContainer>
+          {!indexHistory && (
+            <p className="text-[11px] text-gray-400 text-center mt-2">Laddar indexdata…</p>
+          )}
         </Card>
       )}
 

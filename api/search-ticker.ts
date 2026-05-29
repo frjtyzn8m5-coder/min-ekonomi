@@ -141,6 +141,24 @@ async function searchYahoo(q: string, country: string): Promise<SearchResult[]> 
     .sort((a, b) => b.score - a.score);
 }
 
+// ── Yahoo v7/finance/quote – gets detailed fund category ──────────────────────
+// The chart API (v8) often returns empty category for Morningstar-ID tickers.
+// The quote API reliably returns e.g. "Equity Precious Metals", "Sweden Equity".
+
+async function fetchYahooCategory(ticker: string): Promise<string> {
+  try {
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}&fields=category,quoteType`;
+    const resp = await fetch(url, {
+      headers: { 'User-Agent': UA, 'Accept': 'application/json', 'Accept-Language': 'en-US,en;q=0.9' },
+    });
+    if (!resp.ok) return '';
+    const json = await resp.json() as any;
+    return json?.quoteResponse?.result?.[0]?.category ?? '';
+  } catch {
+    return '';
+  }
+}
+
 // ── Handler ────────────────────────────────────────────────────────────────────
 // GET /api/search-ticker?q=SEB+Sverige+Indexnära&country=SE&isin=SE0002593673
 //
@@ -167,7 +185,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Morningstar (primary for Nordic mutual funds)
     if (isin) {
       const ms = await lookupMorningstar(isin, country);
-      if (ms) results.push(ms);
+      if (ms) {
+        // Enrich with detailed Yahoo category (chart API often returns empty)
+        const yahooCat = await fetchYahooCategory(ms.symbol);
+        if (yahooCat) ms.typeDisp = yahooCat;
+        results.push(ms);
+      }
     }
 
     // 2. Yahoo search by ISIN – good for stocks/ETFs on Yahoo but not Morningstar
