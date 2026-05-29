@@ -11,7 +11,7 @@ const PREFERRED_SUFFIXES: Record<string, string[]> = {
   DE: ['.DE', '.F'],
   US: ['', '.NYSE', '.NASDAQ'],
   LU: ['.ST', '.PA', '.L', '.DE', '.F', ''],
-  IE: ['.L', '.AS', '.ST', ''],
+  IE: ['.L', '.AS', '.ST', '.PA', '.MI'],
   JE: ['.L'],
   FR: ['.PA'],
 };
@@ -89,13 +89,17 @@ async function lookupMorningstar(isin: string, countryCode: string): Promise<Sea
     const ticker = `${msId}${suffix}`;
     const msType: string = first.t ?? '';
 
+    // Real Morningstar fund IDs start with "0P". Non-0P values are ambiguous
+    // exchange tickers – give them a lower score so Yahoo ISIN search can win.
+    const isVerifiedMsId = msId.startsWith('0P');
+
     return {
       symbol: ticker,
       shortname: first.n ?? '',
       quoteType: MS_TYPE_MAP[msType] ?? 'MUTUALFUND',
       typeDisp: first.et ?? msType,
       exchDisp: exchange,
-      score: 15,
+      score: isVerifiedMsId ? 15 : 7,
       source: 'morningstar',
     };
   } catch {

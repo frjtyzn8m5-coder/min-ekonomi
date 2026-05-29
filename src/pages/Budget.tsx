@@ -12,18 +12,37 @@ import type { Category, Transaction } from '../types';
 
 // ── Income / fixed-cost detection ─────────────────────────────────────────────
 
+function median(vals: number[]): number {
+  if (!vals.length) return 0;
+  const sorted = [...vals].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
 function detectIncomeSources(txs: Transaction[]) {
-  const monthly = getMonthlyData(txs);
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const monthly = getMonthlyData(txs).filter(m => m.month < currentMonth);
+  // Use last 3 complete months for income, last 6 for stable fixed costs (median is outlier-safe)
   const last3 = monthly.slice(-3);
+  const last6 = monthly.slice(-6);
   if (!last3.length) return { lön: 0, csnBidrag: 0, csnLån: 0, boende: 0, telefon: 0 };
-  const avg = (key: string) =>
-    Math.round(last3.reduce((s, m) => s + (m.byCategory[key] || 0), 0) / last3.length);
+
+  // Income: median of last 3 months (excludes unusual months)
+  const med3 = (key: string) =>
+    Math.round(median(last3.map(m => m.byCategory[key] || 0).filter(v => v > 0)));
+
+  // Fixed costs: median of last 6 months (more stable, filters deposit outliers)
+  const med6fixed = (key: string) => {
+    const vals = last6.map(m => m.byCategory[key] || 0).filter(v => v > 0);
+    return vals.length ? Math.round(median(vals)) : 0;
+  };
+
   return {
-    lön:       avg('Lön'),
-    csnBidrag: avg('CSN Bidrag'),
-    csnLån:    avg('CSN Lån'),
-    boende:    avg('Boende'),
-    telefon:   avg('Telefon'),
+    lön:       med3('Lön'),
+    csnBidrag: med3('CSN Bidrag'),
+    csnLån:    med3('CSN Lån'),
+    boende:    med6fixed('Boende'),
+    telefon:   med6fixed('Telefon'),
   };
 }
 
@@ -83,9 +102,9 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
   const detected = useMemo(() => detectIncomeSources(transactions), [transactions]);
   const totalDet = detected.lön + detected.csnBidrag + detected.csnLån;
 
-  const [income,  setIncome]  = useState(totalDet || 25000);
-  const [boende,  setBoende]  = useState(detected.boende  || 6000);
-  const [telefon, setTelefon] = useState(detected.telefon || 300);
+  const [income,  setIncome]  = useState(totalDet || 0);
+  const [boende,  setBoende]  = useState(detected.boende  || 0);
+  const [telefon, setTelefon] = useState(detected.telefon || 0);
   const [style,   setStyle]   = useState<BudgetStyle>('balanserad');
   const [applying, setApplying] = useState(false);
 
@@ -138,30 +157,32 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
             <label className="text-xs font-semibold text-gray-700 block mb-2">
               Månadsinkomst efter skatt
             </label>
-            {totalDet > 0 && (
+            {totalDet > 0 ? (
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {detected.lön > 0 && (
                   <span className="text-[11px] bg-green-50 text-green-700 rounded-full px-2 py-0.5">
-                    Lön ~{formatSEK(detected.lön)}
+                    Lön {formatSEK(detected.lön)}
                   </span>
                 )}
                 {detected.csnBidrag > 0 && (
                   <span className="text-[11px] bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">
-                    CSN Bidrag ~{formatSEK(detected.csnBidrag)}
+                    CSN Bidrag {formatSEK(detected.csnBidrag)}
                   </span>
                 )}
                 {detected.csnLån > 0 && (
                   <span className="text-[11px] bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">
-                    CSN Lån ~{formatSEK(detected.csnLån)}
+                    CSN Lån {formatSEK(detected.csnLån)}
                   </span>
                 )}
-                <span className="text-[11px] text-gray-400 self-center">→ totalt ~{formatSEK(totalDet)}</span>
               </div>
+            ) : (
+              <p className="text-[11px] text-gray-400 mb-2">Ingen inkomst hittad i transaktioner — fyll i manuellt.</p>
             )}
             <div className="relative">
               <input
                 type="number"
-                value={income}
+                value={income || ''}
+                placeholder="t.ex. 25000"
                 onChange={e => setIncome(Math.max(0, Number(e.target.value)))}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300 pr-12"
               />
@@ -172,17 +193,18 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
           {/* Fixed costs */}
           <div>
             <label className="text-xs font-semibold text-gray-700 block mb-2">
-              Fasta kostnader <span className="font-normal text-gray-400">(dras av före fördelning)</span>
+              Fasta kostnader <span className="font-normal text-gray-400">(dras av före fördelning av resterande)</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-[11px] text-gray-500 mb-1">
-                  Boende{detected.boende > 0 ? ` (hittade ~${formatSEK(detected.boende)})` : ''}
+                  Boende (hyra/avgift){detected.boende > 0 ? ` · medianvärde senaste 6 mån` : ''}
                 </p>
                 <div className="relative">
                   <input
                     type="number"
-                    value={boende}
+                    value={boende || ''}
+                    placeholder={detected.boende > 0 ? String(detected.boende) : 't.ex. 6000'}
                     onChange={e => setBoende(Math.max(0, Number(e.target.value)))}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-300 pr-8"
                   />
@@ -191,12 +213,13 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
               </div>
               <div>
                 <p className="text-[11px] text-gray-500 mb-1">
-                  Telefon & internet{detected.telefon > 0 ? ` (hittade ~${formatSEK(detected.telefon)})` : ''}
+                  Telefon & internet{detected.telefon > 0 ? ` · medianvärde senaste 6 mån` : ''}
                 </p>
                 <div className="relative">
                   <input
                     type="number"
-                    value={telefon}
+                    value={telefon || ''}
+                    placeholder={detected.telefon > 0 ? String(detected.telefon) : 't.ex. 300'}
                     onChange={e => setTelefon(Math.max(0, Number(e.target.value)))}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-300 pr-8"
                   />

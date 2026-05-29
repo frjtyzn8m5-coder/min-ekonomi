@@ -95,8 +95,7 @@ export default function App() {
         </div>
 
         <main className="flex-1 overflow-auto flex flex-col">
-          {/* Global max-width + centering – consistent on all pages */}
-          <div className="flex-1 flex flex-col w-full max-w-screen-xl mx-auto">
+          <div className="flex-1 flex flex-col w-full">
             <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /></div>}>
               <AnimatePresence mode="wait">
                 <motion.div key={page} {...PAGE_TRANSITION} className="flex-1 flex flex-col min-h-0">
