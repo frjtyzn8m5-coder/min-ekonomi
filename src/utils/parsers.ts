@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import type { Transaction, Category } from '../types';
-import { autoCat, autoIsTransfer } from './categorize';
+import { autoCat, autoIsTransfer, smartCategorize } from './categorize';
 
 function hashId(str: string): string {
   let h = 0;
@@ -236,5 +236,6 @@ export async function parseFiles(files: File[]): Promise<Transaction[]> {
       console.error('Parse error for', file.name, e);
     }
   }
-  return results;
+  // Second pass: use surrounding context to sharpen Swish categorisation etc.
+  return smartCategorize(results);
 }
