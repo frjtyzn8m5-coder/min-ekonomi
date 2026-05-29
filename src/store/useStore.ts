@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot } from '../types';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, FitnessPage, FitnessProfile, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot } from '../types';
 
 const DEFAULT_BUDGETS: BudgetGoal[] = [
   { category: 'Mat', limit: 2000 },
@@ -35,6 +35,13 @@ const DEFAULT_REMINDERS: Reminder[] = [
   { id: 'ekonomi', title: 'Ekonomigenomgång', emoji: '📊', dayOfMonth: -2, time: '08:00', active: true },
 ];
 
+const DEFAULT_FITNESS_PROFILE: FitnessProfile = {
+  gender: 'male',
+  height: 180,
+  age: 25,
+  goal: 'maintain',
+};
+
 interface AppState {
   transactions: Transaction[];
   budgets: BudgetGoal[];
@@ -50,10 +57,12 @@ interface AppState {
   assetClasses: string[];
   module: Module;
   page: Page;
+  fitnessPage: FitnessPage;
+  fitnessProfile: FitnessProfile;
   filter: FilterState;
   pushSubscription: string | null;
 
-  // Firebase setters (called after loading from Firestore)
+  // Firebase setters
   setFirebaseTransactions: (txs: Transaction[]) => void;
   setFirebaseBudgets: (b: BudgetGoal[]) => void;
   setFirebaseAssets: (a: AssetSnapshot[]) => void;
@@ -79,6 +88,8 @@ interface AppState {
   addDebtSnapshot: (s: DebtSnapshot) => void;
   setModule: (m: Module) => void;
   setPage: (p: Page) => void;
+  setFitnessPage: (p: FitnessPage) => void;
+  setFitnessProfile: (p: Partial<FitnessProfile>) => void;
   setFilter: (f: Partial<FilterState>) => void;
   resetFilter: () => void;
   updateTransaction: (id: string, changes: Partial<Transaction>) => void;
@@ -114,6 +125,8 @@ export const useStore = create<AppState>()(
       assetClasses: ['Aktier', 'Räntebärande', 'Råvaror', 'Fastigheter', 'Övrigt'],
       module: 'economy',
       page: 'overview',
+      fitnessPage: 'home',
+      fitnessProfile: DEFAULT_FITNESS_PROFILE,
       filter: DEFAULT_FILTER,
       pushSubscription: null,
 
@@ -169,6 +182,8 @@ export const useStore = create<AppState>()(
 
       setModule: (module) => set({ module }),
       setPage: (page) => set({ page }),
+      setFitnessPage: (fitnessPage) => set({ fitnessPage }),
+      setFitnessProfile: (p) => set(s => ({ fitnessProfile: { ...s.fitnessProfile, ...p } })),
       setFilter: (f) => set(s => ({ filter: { ...s.filter, ...f } })),
       resetFilter: () => set({ filter: DEFAULT_FILTER }),
 
@@ -198,7 +213,7 @@ export const useStore = create<AppState>()(
       setPushSubscription: (sub) => set({ pushSubscription: sub }),
     }),
     {
-      name: 'ekonomi_v4',
+      name: 'ekonomi_v5',  // bumpad från v4 → rensar gamla cached state
       partialize: (s) => ({
         transactions: s.transactions,
         budgets: s.budgets,
@@ -212,6 +227,7 @@ export const useStore = create<AppState>()(
         portfolioSnapshots: s.portfolioSnapshots,
         assetClasses: s.assetClasses,
         pushSubscription: s.pushSubscription,
+        fitnessProfile: s.fitnessProfile,
       }),
     }
   )

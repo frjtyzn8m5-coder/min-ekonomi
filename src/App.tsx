@@ -21,6 +21,7 @@ const Login        = lazy(() => import('./pages/Login'));
 // ── Hub module pages (lazy) ───────────────────────────────────────────────────
 const Home         = lazy(() => import('./pages/home/Home'));
 const FitnessHome  = lazy(() => import('./pages/fitness/FitnessHome'));
+const WeightLog    = lazy(() => import('./pages/fitness/WeightLog'));
 const CalendarHome = lazy(() => import('./pages/calendar/CalendarHome'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -63,7 +64,7 @@ const Spinner = () => (
 );
 
 export default function App() {
-  const { page, module } = useStore();
+  const { page, module, fitnessPage } = useStore();
   const { user, loading, initAuth } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -151,9 +152,10 @@ export default function App() {
           <main className="flex-1 overflow-auto pb-16 lg:pb-0">
             <Suspense fallback={<Spinner />}>
               <AnimatePresence mode="wait">
-                <motion.div key={module} {...PAGE_TRANSITION} className="min-h-full">
+                <motion.div key={module === 'fitness' ? `fitness-${fitnessPage}` : module} {...PAGE_TRANSITION} className="min-h-full">
                   {module === 'home'     && <Home />}
-                  {module === 'fitness'  && <FitnessHome />}
+                  {module === 'fitness'  && fitnessPage === 'home'      && <FitnessHome />}
+                  {module === 'fitness'  && fitnessPage === 'weightlog' && <WeightLog />}
                   {module === 'calendar' && <CalendarHome />}
                 </motion.div>
               </AnimatePresence>

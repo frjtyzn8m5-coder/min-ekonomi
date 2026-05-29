@@ -61,16 +61,47 @@ export interface Reminder {
   id: string;
   title: string;
   emoji: string;
-  // dayOfMonth: 1-28 = specifik dag, -1 = sista vardag, -2 = näst sista vardag
   dayOfMonth: number;
-  time: string; // HH:MM
+  time: string;
   active: boolean;
-  lastSentMonth?: string; // YYYY-MM – håller koll på att inte skicka dubbelt
+  lastSentMonth?: string;
 }
 
 export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders' | 'settings' | 'portfolio';
 
 export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
+
+export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes';
+
+export interface BodyMeasurements {
+  waist?: number;
+  hips?: number;
+  chest?: number;
+  armLeft?: number;
+  armRight?: number;
+  thighLeft?: number;
+  thighRight?: number;
+  neck?: number;
+  calf?: number;
+}
+
+export interface BodyEntry {
+  date: string;
+  weight?: number;
+  measurements?: BodyMeasurements;
+  bodyFatPercent?: number;
+  leanMass?: number;
+  notes?: string;
+  photoUrl?: string;
+}
+
+export interface FitnessProfile {
+  gender: 'male' | 'female';
+  height: number;
+  age: number;
+  targetWeight?: number;
+  goal: 'lose_fat' | 'gain_muscle' | 'recomp' | 'maintain';
+}
 
 export interface FilterState {
   months: string[];
@@ -85,25 +116,23 @@ export interface FilterState {
   dateTo: string | null;
 }
 
-// ── Portfolio ────────────────────────────────────────────────────────────────
-
 export interface Holding {
   isin: string;
   name: string;
   shares: number;
-  avgBuyPrice: number; // weighted avg in instrument currency
-  currency: string;    // instrument currency
-  account: string;     // Avanza account id
+  avgBuyPrice: number;
+  currency: string;
+  account: string;
 }
 
 export interface TickerMapping {
   isin: string;
-  ticker: string;      // Yahoo Finance ticker, e.g. "AFRY.ST" or "0P0001IMY7.ST"
+  ticker: string;
   name: string;
-  manual?: boolean;    // user-overridden ticker
-  category?: string;   // Yahoo Finance fund category, e.g. "Equity Precious Metals"
-  quoteType?: string;  // MUTUALFUND | ETF | EQUITY
-  assetClass?: string; // user-defined class, e.g. "Ädelmetaller"
+  manual?: boolean;
+  category?: string;
+  quoteType?: string;
+  assetClass?: string;
 }
 
 export interface PriceData {
@@ -111,13 +140,13 @@ export interface PriceData {
   price: number;
   currency: string;
   changePercent: number;
-  fetchedAt: number; // unix ms
+  fetchedAt: number;
   category?: string;
   quoteType?: string;
 }
 
 export interface PortfolioSnapshot {
-  date: string;       // YYYY-MM-DD
+  date: string;
   totalValueSEK: number;
   holdings: { isin: string; name: string; valueSEK: number; shares: number }[];
 }
