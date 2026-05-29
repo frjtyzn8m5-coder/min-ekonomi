@@ -50,7 +50,7 @@ const SHARE_CHANGING_TYPES = new Set([
 export function computeHoldings(content: string): Holding[] {
   const rows = parseAvanzaRows(content);
 
-  // Map ISIN → holding (shares + weighted avg price)
+  // Map ISIN::account → holding (shares + weighted avg price per account)
   const map = new Map<string, Holding>();
 
   for (const row of rows) {
@@ -59,7 +59,8 @@ export function computeHoldings(content: string): Holding[] {
     const antal = parseNum(row.antal);
     if (antal === 0) continue;
 
-    const existing: Holding = map.get(row.isin) ?? {
+    const key = `${row.isin}::${row.account}`;
+    const existing: Holding = map.get(key) ?? {
       isin: row.isin,
       name: row.name || row.isin,
       shares: 0,
@@ -86,7 +87,7 @@ export function computeHoldings(content: string): Holding[] {
       existing.name = row.name;
     }
 
-    map.set(row.isin, existing);
+    map.set(key, existing);
   }
 
   // Only return active holdings (filter rounding noise)
