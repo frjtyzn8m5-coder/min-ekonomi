@@ -162,6 +162,8 @@ export default function Portfolio() {
   const [showClassManager, setShowClassManager] = useState(false);
   const [searchStatus, setSearchStatus] = useState<'idle' | 'searching' | 'done'>('idle');
   const [remapCount, setRemapCount] = useState<number | null>(null);
+  const [sortKey, setSortKey] = useState<'name' | 'valueSEK' | 'gainPct' | 'changePercent' | 'shares'>('valueSEK');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [indexHistory, setIndexHistory] = useState<{
     omxs30: { date: string; pct: number }[];
     nasdaq: { date: string; pct: number }[];
@@ -559,8 +561,15 @@ export default function Portfolio() {
     // Use aggregated (no duplicate ISINs) when no account filter is active
     let r: any[] = selectedAccounts.length === 0 ? aggregatedEnriched : enriched.filter(h => selectedAccounts.includes(h.account));
     if (selectedClass) r = r.filter(h => h.assetClass === selectedClass || (selectedClass === 'Ej klassad' && !h.assetClass));
-    return r;
-  }, [enriched, aggregatedEnriched, selectedAccounts, selectedClass]);
+    return [...r].sort((a, b) => {
+      let va = a[sortKey] ?? 0;
+      let vb = b[sortKey] ?? 0;
+      if (sortKey === 'name') { va = (va as string).toLowerCase(); vb = (vb as string).toLowerCase(); }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [enriched, aggregatedEnriched, selectedAccounts, selectedClass, sortKey, sortDir]);
 
   // Use aggregated enriched for class breakdown (no double-counting)
   const enrichedForClass = useMemo(() => {
@@ -819,15 +828,26 @@ export default function Portfolio() {
           <table className="w-full text-xs">
             <thead>
               <tr className="text-[11px] text-gray-400 border-b border-gray-100">
-                <th className="text-left px-4 py-2">Värdepapper</th>
-                {allAccounts.length > 1 && selectedAccounts.length > 0 && <th className="text-left px-3 py-2">Konto</th>}
-                <th className="text-left px-3 py-2">Klass</th>
-                <th className="text-right px-3 py-2">Ticker</th>
-                <th className="text-right px-3 py-2">Antal</th>
-                <th className="text-right px-3 py-2">Kurs</th>
-                <th className="text-right px-3 py-2">Värde (SEK)</th>
-                <th className="text-right px-3 py-2">Vinst/Förlust</th>
-                <th className="text-right px-3 py-2">Dag %</th>
+                {(() => {
+                  const th = (key: typeof sortKey | null, label: string, align: 'left' | 'right' = 'right') => {
+                    const active = key === sortKey;
+                    const arrow = active ? (sortDir === 'desc' ? ' ↓' : ' ↑') : '';
+                    const cls = `px-3 py-2 ${align === 'right' ? 'text-right' : 'text-left'} ${key ? 'cursor-pointer select-none hover:text-gray-600' : ''} ${active ? 'text-blue-500' : ''}`;
+                    const onClick = key ? () => { if (active) setSortDir(d => d === 'desc' ? 'asc' : 'desc'); else { setSortKey(key); setSortDir('desc'); } } : undefined;
+                    return <th key={label} className={cls} onClick={onClick}>{label}{arrow}</th>;
+                  };
+                  return <>
+                    {th('name', 'Värdepapper', 'left')}
+                    {allAccounts.length > 1 && selectedAccounts.length > 0 && th(null, 'Konto', 'left')}
+                    {th(null, 'Klass', 'left')}
+                    {th(null, 'Ticker')}
+                    {th('shares', 'Antal')}
+                    {th(null, 'Kurs')}
+                    {th('valueSEK', 'Värde (SEK)')}
+                    {th('gainPct', 'Vinst/Förlust')}
+                    {th('changePercent', 'Dag %')}
+                  </>;
+                })()}
               </tr>
             </thead>
             <tbody>

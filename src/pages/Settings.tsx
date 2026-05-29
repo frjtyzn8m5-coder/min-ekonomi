@@ -4,7 +4,9 @@ import { useAuthStore } from '../store/useAuthStore';
 import { saveOwnAccounts } from '../lib/db';
 import { updateTransactionDoc } from '../lib/db';
 import { Card } from '../components/ui/Card';
-import { Plus, Trash2, Zap, Check } from 'lucide-react';
+import { Plus, Trash2, Zap, Check, RefreshCw } from 'lucide-react';
+import { autoCat, autoIsTransfer, smartCategorize } from '../utils/categorize';
+import type { Category } from '../types';
 
 // Bank account numbers: 8–14 digits that do NOT start with 46 (those are Swish/phone)
 const BANK_ACCOUNT_RX = /^\d{8,14}$/;
@@ -28,12 +30,14 @@ function detectCandidates(transactions: ReturnType<typeof useStore.getState>['tr
 }
 
 export default function Settings() {
-  const { transactions, ownAccounts, addOwnAccount, removeOwnAccount, setOwnAccounts } = useStore();
+  const { transactions, ownAccounts, addOwnAccount, removeOwnAccount, setOwnAccounts, updateTransaction } = useStore();
   const { user } = useAuthStore();
   const [input, setInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [applying, setApplying] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [recatting, setRecatting] = useState(false);
+  const [recatResult, setRecatResult] = useState<string | null>(null);
 
   const candidates = useMemo(
     () => detectCandidates(transactions, ownAccounts),
@@ -80,6 +84,44 @@ export default function Settings() {
 
   const txCountForAccount = (acc: string) =>
     transactions.filter(tx => tx.description.trim() === acc).length;
+
+  const recategorizeAll = async () => {
+    if (!user || transactions.length === 0) return;
+    setRecatting(true);
+    setRecatResult(null);
+
+    // Re-run categorization on all non-manual transactions
+    const reCatted = smartCategorize(
+      transactions.map(tx => {
+        if (tx.isTransfer) return tx; // don't touch confirmed transfers
+        const isXfer = autoIsTransfer(tx.description);
+        const category: Category = isXfer ? 'Överföring' : autoCat(tx.description);
+        return { ...tx, category, isTransfer: isXfer, type: isXfer ? 'transfer' as const : tx.amount >= 0 ? 'income' as const : 'expense' as const };
+      })
+    );
+
+    // Find what actually changed
+    const changed = reCatted.filter(updated => {
+      const orig = transactions.find(t => t.id === updated.id);
+      return orig && (orig.category !== updated.category || orig.isTransfer !== updated.isTransfer);
+    });
+
+    // Persist to Firestore + local store
+    await Promise.all(
+      changed.map(tx =>
+        updateTransactionDoc(user.uid, tx.id, {
+          category: tx.category,
+          isTransfer: tx.isTransfer,
+          type: tx.type,
+        })
+      )
+    );
+    changed.forEach(tx => updateTransaction(tx.id, { category: tx.category, isTransfer: tx.isTransfer, type: tx.type }));
+
+    setRecatting(false);
+    setRecatResult(`${changed.length} transaktioner uppdaterade`);
+    setTimeout(() => setRecatResult(null), 4000);
+  };
 
   return (
     <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
@@ -176,6 +218,35 @@ export default function Settings() {
             )}
           </div>
         )}
+      </Card>
+
+      {/* Re-categorize */}
+      <Card className="p-5 space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">Omklassificera transaktioner</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Kör om auto-kategoriseringen på alla befintliga transaktioner med de senaste reglerna. Bekräftade överföringar ändras inte.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={recategorizeAll}
+            disabled={recatting || transactions.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-40 transition-all"
+          >
+            {recatting ? (
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <RefreshCw size={14} />
+            )}
+            {recatting ? 'Bearbetar...' : `Omklassificera ${transactions.length.toLocaleString('sv-SE')} transaktioner`}
+          </button>
+          {recatResult && (
+            <span className="flex items-center gap-1 text-xs text-green-600">
+              <Check size={12} /> {recatResult}
+            </span>
+          )}
+        </div>
       </Card>
     </div>
   );

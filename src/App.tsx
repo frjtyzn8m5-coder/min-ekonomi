@@ -80,9 +80,17 @@ export default function App() {
           onClick={() => setSidebarOpen(false)} />
       )}
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {/* Desktop sidebar – in normal flex flow, not fixed */}
+      <div className="hidden lg:flex flex-shrink-0">
+        <Sidebar isOpen={true} onClose={() => {}} desktop={true} />
+      </div>
 
-      <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
+      {/* Mobile sidebar – fixed overlay */}
+      <div className="lg:hidden">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      </div>
+
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Mobile top bar */}
         <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 flex-shrink-0">
           <button onClick={() => setSidebarOpen(true)}

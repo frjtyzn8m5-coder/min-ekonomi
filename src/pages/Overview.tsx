@@ -4,7 +4,8 @@ import { CATEGORY_COLORS, EXPENSE_CATEGORIES } from '../utils/categorize';
 import { Card, CardHeader, EmptyState } from '../components/ui/Card';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  LineChart, Line,
 } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Upload, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -15,6 +16,15 @@ function TrendIcon({ pct }: { pct: number }) {
   if (pct > 5) return <TrendingUp size={14} className="text-green-500" />;
   if (pct < -5) return <TrendingDown size={14} className="text-red-500" />;
   return <Minus size={14} className="text-gray-400" />;
+}
+
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  const points = data.map((v, i) => ({ v }));
+  return (
+    <LineChart width={72} height={28} data={points} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+      <Line type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} dot={false} isAnimationActive={false} />
+    </LineChart>
+  );
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -58,6 +68,11 @@ export default function Overview() {
   const expPct = prevMonth ? ((lastMonth.expenses - prevMonth.expenses) / prevMonth.expenses) * 100 : 0;
   const incPct = prevMonth ? ((lastMonth.income - prevMonth.income) / prevMonth.income) * 100 : 0;
 
+  const last8 = monthlyData.slice(-8);
+  const sparkIncome   = last8.map(m => m.income);
+  const sparkExpenses = last8.map(m => m.expenses);
+  const sparkSavings  = last8.map(m => m.savings);
+
   const last3Months = allMonths(transactions).slice(-3);
   const catTotals: Record<string, number> = {};
   for (const tx of transactions) {
@@ -97,8 +112,22 @@ export default function Overview() {
       <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.05 }}
         className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Total inkomst',  value: formatSEK(totalIncome), color: 'text-green-600', sub: null },
-          { label: 'Totala utgifter', value: formatSEK(totalExp),   color: 'text-red-500',   sub: null },
+          {
+            label: 'Total inkomst',
+            value: formatSEK(totalIncome),
+            color: 'text-green-600',
+            sub: null,
+            spark: sparkIncome,
+            sparkColor: '#34c759',
+          },
+          {
+            label: 'Totala utgifter',
+            value: formatSEK(totalExp),
+            color: 'text-red-500',
+            sub: null,
+            spark: sparkExpenses,
+            sparkColor: '#ff3b30',
+          },
           {
             label: `Inkomst ${lastMonth ? formatMonth(lastMonth.month) : ''}`,
             value: lastMonth ? formatSEK(lastMonth.income) : '—',
@@ -107,6 +136,8 @@ export default function Overview() {
               ? <span className={`flex items-center gap-0.5 text-[11px] mt-0.5 ${incPct > 0 ? 'text-green-500' : 'text-red-500'}`}>
                   <TrendIcon pct={incPct} />{incPct > 0 ? '+' : ''}{incPct.toFixed(0)}% vs förra
                 </span> : null,
+            spark: sparkIncome,
+            sparkColor: '#34c759',
           },
           {
             label: `Utgifter ${lastMonth ? formatMonth(lastMonth.month) : ''}`,
@@ -116,13 +147,22 @@ export default function Overview() {
               ? <span className={`flex items-center gap-0.5 text-[11px] mt-0.5 ${expPct < 0 ? 'text-green-500' : 'text-red-500'}`}>
                   <TrendIcon pct={-expPct} />{expPct > 0 ? '+' : ''}{expPct.toFixed(0)}% vs förra
                 </span> : null,
+            spark: sparkExpenses,
+            sparkColor: '#ff3b30',
           },
-        ].map(({ label, value, color, sub }) => (
+        ].map(({ label, value, color, sub, spark, sparkColor }) => (
           <Card key={label}>
-            <div>
-              <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-              <p className={`text-xl font-semibold tracking-tight ${color}`}>{value}</p>
-              {sub}
+            <div className="flex items-start justify-between">
+              <div className="min-w-0">
+                <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+                <p className={`text-xl font-semibold tracking-tight ${color}`}>{value}</p>
+                {sub}
+              </div>
+              {spark.length > 1 && (
+                <div className="flex-shrink-0 opacity-70 ml-2 mt-1">
+                  <Sparkline data={spark} color={sparkColor} />
+                </div>
+              )}
             </div>
           </Card>
         ))}
