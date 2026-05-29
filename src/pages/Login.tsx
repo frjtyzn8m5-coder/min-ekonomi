@@ -49,7 +49,7 @@ export default function Login() {
           <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center shadow-lg mb-4">
             <Wallet size={28} className="text-white" />
           </div>
-          <h1 className="text-xl font-semibold text-gray-900">Min Ekonomi</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Vardagshub</h1>
           <p className="text-sm text-gray-400 mt-1">Din personliga vardagshub</p>
         </div>
 

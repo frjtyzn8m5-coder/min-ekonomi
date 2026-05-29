@@ -12,6 +12,7 @@ export default defineConfig({
           if (id.includes('node_modules/xlsx')) return 'vendor-xlsx';
           if (id.includes('node_modules/framer-motion')) return 'vendor-motion';
           if (id.includes('node_modules/zustand')) return 'vendor-zustand';
+          if (id.includes('node_modules/dexie')) return 'vendor-dexie';
         },
       },
     },
@@ -22,11 +23,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Min Ekonomi',
-        short_name: 'Ekonomi',
-        description: 'Personlig ekonomiöversikt',
-        theme_color: '#3b82f6',
-        background_color: '#f9fafb',
+        name: 'Vardagshub',
+        short_name: 'Hub',
+        description: 'Din personliga vardagshub – ekonomi, träning och hälsa',
+        theme_color: '#111827',
+        background_color: '#111827',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
@@ -38,6 +39,37 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        runtimeCaching: [
+          {
+            // Firebase Firestore & Auth – network-first, fall back till cache
+            urlPattern: /^https:\/\/(firestore|identitytoolkit|securetoken)\.googleapis\.com\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'firebase-cache',
+              networkTimeoutSeconds: 10,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
+          {
+            // Open Food Facts – cache-first, 24h TTL
+            urlPattern: /^https:\/\/(world|se)\.openfoodfacts\.org\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'openfoodfacts-cache',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
+          {
+            // Vercel serverless API – network-first
+            urlPattern: /\/api\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 8,
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 },
+            },
+          },
+        ],
       },
     }),
   ],
