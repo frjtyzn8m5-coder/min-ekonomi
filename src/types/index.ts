@@ -71,7 +71,7 @@ export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'netwo
 
 export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
 
-export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes';
+export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry';
 
 export interface BodyMeasurements {
   waist?: number;
@@ -199,4 +199,69 @@ export interface FoodItem {
   fiber?: number;
   source: 'livsmedelsverket' | 'openfoodfacts' | 'custom';
   barcode?: string;
+}
+
+export interface RecipeIngredient {
+  name: string;
+  originalText: string; // e.g. "3 dl mjölk"
+  amount: number; // grams (normalized)
+  originalAmount: number;
+  originalUnit: string;
+  foodId?: string; // matched LV id
+  pricePerKg?: number; // from price DB
+  nutrition?: { kcal: number; protein: number; fat: number; carbs: number; fiber?: number };
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  servings: number;
+  prepTime?: number; // minutes
+  ingredients: RecipeIngredient[];
+  instructions: string[];
+  tags: string[];
+  nutritionPerServing: { kcal: number; protein: number; fat: number; carbs: number; fiber?: number };
+  totalCostRaw?: number; // SEK, exact grams used
+  totalCostReal?: number; // SEK, minimum purchasable units
+  source?: string; // URL
+  imageUrl?: string;
+  createdAt: number;
+}
+
+export interface PantryItem {
+  id: string;
+  name: string;
+  articleNumber?: string; // ICA article number
+  barcode?: string; // EAN-13
+  amount: number; // current stock (grams or units)
+  unit: 'g' | 'st';
+  unitWeightGrams?: number; // grams per "st" package
+  pricePerUnit?: number; // SEK per piece/package
+  pricePerKg?: number; // SEK/kg
+  expiryDate?: string;
+  category?: string;
+  addedAt: number;
+  source: 'receipt' | 'barcode' | 'manual';
+  foodId?: string; // matched to LV database
+}
+
+export interface PriceEntry {
+  name: string;
+  articleNumber?: string;
+  barcode?: string;
+  pricePerUnit?: number; // SEK per piece/package
+  pricePerKg?: number; // SEK per kg
+  unitWeightGrams?: number; // grams per unit (if known)
+  store: string;
+  lastUpdated: string; // YYYY-MM-DD
+}
+
+export interface ParsedReceiptItem {
+  name: string;
+  articleNumber: string;
+  pris: number; // original price per unit or per kg
+  amount: number; // quantity bought
+  unit: 'st' | 'kg';
+  hasDiscount: boolean;
+  selected: boolean; // for UI selection
 }

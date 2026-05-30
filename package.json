@@ -19,7 +19,9 @@
     "recharts": "^2.15.3",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.5",
-    "firebase": "^11.0.0"
+    "firebase": "^11.0.0",
+    "pdf-parse": "^1.1.1",
+    "nanoid": "^5.0.9"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -33,6 +35,8 @@
     "vite": "^8.0.12",
     "vite-plugin-pwa": "^0.21.1",
     "web-push": "^3.6.7",
-    "@types/web-push": "^3.6.3"
+    "@types/web-push": "^3.6.3",
+    "@types/pdf-parse": "^1.1.5",
+    "nanoid": "^5.0.9"
   }
 }
