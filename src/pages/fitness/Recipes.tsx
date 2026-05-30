@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
-import { loadRecipes, saveRecipe, deleteRecipe, loadPantry, loadPriceDB } from '../../lib/pantryDb';
+import { loadRecipes, saveRecipe, deleteRecipe, loadPantry, loadPriceDB, adjustPantryStock } from '../../lib/pantryDb';
 import { saveFoodEntry } from '../../lib/foodDb';
 import { parseIngredientText } from '../../utils/unitConverter';
 import { calcRecipeCost } from '../../utils/recipeCost';
@@ -744,6 +744,32 @@ export default function Recipes() {
     };
 
     await saveFoodEntry(user.uid, entry);
+
+    // Deduct ingredients from pantry (fuzzy name match)
+    if (pantry.length > 0) {
+      const updatedPantry = [...pantry];
+      for (const ing of recipe.ingredients) {
+        const neededGrams = ing.amount * scale;
+        const lowerName = ing.name.toLowerCase().trim();
+        // Find best matching pantry item
+        let matchIdx = updatedPantry.findIndex(p => p.name.toLowerCase() === lowerName);
+        if (matchIdx === -1) {
+          matchIdx = updatedPantry.findIndex(p =>
+            p.name.toLowerCase().includes(lowerName) || lowerName.includes(p.name.toLowerCase())
+          );
+        }
+        if (matchIdx !== -1) {
+          const item = updatedPantry[matchIdx];
+          const itemGrams = item.unit === 'g' ? item.amount : item.amount * (item.unitWeightGrams ?? 100);
+          const newGrams = Math.max(0, itemGrams - neededGrams);
+          const newAmount = item.unit === 'g' ? newGrams : newGrams / (item.unitWeightGrams ?? 100);
+          updatedPantry[matchIdx] = { ...item, amount: newAmount };
+          await adjustPantryStock(user.uid, item, -(item.amount - newAmount));
+        }
+      }
+      setPantry(updatedPantry);
+    }
+
     setLogSuccess(`${recipe.name} loggad!`);
     setTimeout(() => setLogSuccess(''), 3000);
     setSelected(null);

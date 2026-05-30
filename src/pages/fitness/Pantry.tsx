@@ -235,14 +235,28 @@ function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
               onChange={e => setUnitWeight(e.target.value)}
             />
           )}
-          <input
-            type="number"
-            step="0.01"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-            placeholder="Pris per förpackning (kr)"
-            value={pricePerUnit}
-            onChange={e => setPricePerUnit(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              type="number"
+              step="0.01"
+              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${
+                pricePerUnit ? 'border-green-300 bg-green-50' : 'border-orange-300 bg-orange-50'
+              }`}
+              placeholder="Pris per förpackning (kr) *"
+              value={pricePerUnit}
+              onChange={e => setPricePerUnit(e.target.value)}
+            />
+            {!pricePerUnit && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-orange-500">
+                Viktigt!
+              </span>
+            )}
+          </div>
+          {!pricePerUnit && (
+            <p className="text-[11px] text-orange-500 -mt-1">
+              Pris krävs för att beräkna receptkostnader och inköpslista.
+            </p>
+          )}
           <input
             type="date"
             className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"

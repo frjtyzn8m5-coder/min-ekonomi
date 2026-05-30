@@ -377,6 +377,7 @@ export default function WeightLog() {
   // Photo comparison
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
+  const photoCompareInitialized = useRef(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [compareLayout, setCompareLayout] = useState<'side' | 'slider'>('side');
   const [showCompare, setShowCompare] = useState(false);
@@ -399,6 +400,18 @@ export default function WeightLog() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);
+
+  // ── Auto-init photo comparison: latest (A) vs oldest (B) ─────────────────────
+
+  useEffect(() => {
+    if (photoCompareInitialized.current) return;
+    const photos = entries.filter(e => e.photoUrl).reverse(); // newest first
+    if (photos.length >= 2) {
+      setCompareA(photos[0].date);
+      setCompareB(photos[photos.length - 1].date);
+      photoCompareInitialized.current = true;
+    }
+  }, [entries]);
 
   // ── Save weight ───────────────────────────────────────────────────────────────
 

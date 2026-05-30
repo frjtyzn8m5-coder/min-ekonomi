@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
-import { loadRecipes } from '../../lib/pantryDb';
-import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp, Plus, X, ShoppingCart, Settings, Check, Shuffle } from 'lucide-react';
-import type { Recipe } from '../../types';
+import { loadRecipes, loadPantry, loadPriceDB } from '../../lib/pantryDb';
+import { buildPriceLookup } from '../../utils/recipeCost';
+import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp, Plus, X, ShoppingCart, Settings, Check, Shuffle, Package } from 'lucide-react';
+import type { Recipe, PantryItem, PriceEntry } from '../../types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -155,10 +156,28 @@ function dayTotals(day: Record<MealType, PlannedMeal>) {
 
 // ─── Shopping list ────────────────────────────────────────────────────────────
 
-function ShoppingList({ plan, recipes }: { plan: WeekPlan; recipes: Recipe[] }) {
-  // Aggregate ingredients across all planned meals
-  const ingredientMap = new Map<string, { amount: number; unit: string }>();
+interface ShoppingItem {
+  name: string;
+  neededGrams: number;
+  inPantryGrams: number;
+  toBuyGrams: number;
+  pricePerKg: number | null;
+  estimatedCost: number | null;
+  inPantry: boolean;
+}
 
+function ShoppingList({
+  plan, recipes, pantry, priceDB,
+}: {
+  plan: WeekPlan;
+  recipes: Recipe[];
+  pantry: PantryItem[];
+  priceDB: PriceEntry[];
+}) {
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+
+  // 1. Aggregate needed grams per ingredient across the whole week plan
+  const neededMap = new Map<string, number>();
   for (let d = 0; d < 7; d++) {
     for (const mt of ['breakfast', 'lunch', 'dinner'] as MealType[]) {
       const meal = plan[d][mt];
@@ -167,23 +186,13 @@ function ShoppingList({ plan, recipes }: { plan: WeekPlan; recipes: Recipe[] }) 
       if (!recipe) continue;
       const scale = meal.servings / Math.max(recipe.servings, 1);
       for (const ing of recipe.ingredients) {
-        const key = ing.name.toLowerCase();
-        const existing = ingredientMap.get(key);
-        const amount = ing.amount * scale;
-        if (existing) {
-          ingredientMap.set(key, { amount: existing.amount + amount, unit: 'g' });
-        } else {
-          ingredientMap.set(key, { amount, unit: 'g' });
-        }
+        const key = ing.name.toLowerCase().trim();
+        neededMap.set(key, (neededMap.get(key) ?? 0) + ing.amount * scale);
       }
     }
   }
 
-  const items = [...ingredientMap.entries()]
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([name, { amount, unit }]) => ({ name, amount: Math.round(amount), unit }));
-
-  if (!items.length) {
+  if (!neededMap.size) {
     return (
       <div className="text-center py-12 text-gray-400 text-sm">
         Generera en veckoplan för att se inköpslistan.
@@ -191,14 +200,140 @@ function ShoppingList({ plan, recipes }: { plan: WeekPlan; recipes: Recipe[] }) 
     );
   }
 
+  // 2. Build price map
+  const priceMap = buildPriceLookup(pantry, priceDB);
+
+  // 3. Build pantry stock map (grams available, fuzzy by name)
+  const pantryMap = new Map<string, number>();
+  for (const item of pantry) {
+    const key = item.name.toLowerCase().trim();
+    const grams = item.unit === 'g' ? item.amount : (item.amount * (item.unitWeightGrams ?? 100));
+    pantryMap.set(key, (pantryMap.get(key) ?? 0) + grams);
+  }
+
+  // Fuzzy lookup helper for pantry
+  function pantryGrams(name: string): number {
+    if (pantryMap.has(name)) return pantryMap.get(name)!;
+    for (const [key, val] of pantryMap) {
+      if (key.includes(name) || name.includes(key)) return val;
+    }
+    return 0;
+  }
+
+  function priceLookup(name: string): number | null {
+    const entry = priceMap.get(name) ?? [...priceMap.entries()].find(([k]) => k.includes(name) || name.includes(k))?.[1] ?? null;
+    if (!entry) return null;
+    if (entry.pricePerKg) return entry.pricePerKg;
+    if (entry.pricePerUnit && entry.unitWeightGrams) return (entry.pricePerUnit / entry.unitWeightGrams) * 1000;
+    return null;
+  }
+
+  // 4. Build shopping items
+  const items: ShoppingItem[] = [...neededMap.entries()].map(([name, neededGrams]) => {
+    const inPantryGrams = Math.min(pantryGrams(name), neededGrams);
+    const toBuyGrams = Math.max(0, neededGrams - inPantryGrams);
+    const pkgPerKg = priceLookup(name);
+    const estimatedCost = pkgPerKg !== null && toBuyGrams > 0
+      ? (toBuyGrams / 1000) * pkgPerKg
+      : null;
+    return {
+      name,
+      neededGrams: Math.round(neededGrams),
+      inPantryGrams: Math.round(inPantryGrams),
+      toBuyGrams: Math.round(toBuyGrams),
+      pricePerKg: pkgPerKg,
+      estimatedCost,
+      inPantry: inPantryGrams >= neededGrams,
+    };
+  });
+
+  // 5. Sort: items to buy first, then by estimated cost (cheapest first), then name
+  items.sort((a, b) => {
+    if (a.inPantry !== b.inPantry) return a.inPantry ? 1 : -1;
+    if (a.estimatedCost !== null && b.estimatedCost !== null) return a.estimatedCost - b.estimatedCost;
+    if (a.estimatedCost !== null) return -1;
+    if (b.estimatedCost !== null) return 1;
+    return a.name.localeCompare(b.name, 'sv');
+  });
+
+  const totalCost = items.reduce((sum, i) => sum + (i.estimatedCost ?? 0), 0);
+  const toBuyCount = items.filter(i => !i.inPantry).length;
+
+  function toggleCheck(name: string) {
+    setChecked(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      return next;
+    });
+  }
+
   return (
-    <div className="space-y-1">
-      {items.map(item => (
-        <div key={item.name} className="flex items-center gap-3 py-2 border-b border-gray-50">
-          <span className="flex-1 text-sm text-gray-700 capitalize">{item.name}</span>
-          <span className="text-sm text-gray-500">{item.amount} {item.unit}</span>
+    <div className="space-y-3">
+      {/* Summary bar */}
+      <div className="bg-green-50 border border-green-100 rounded-xl p-3 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-green-800">{toBuyCount} varor att köpa</p>
+          <p className="text-xs text-green-600 mt-0.5">
+            {items.filter(i => i.inPantry).length} täcks av skafferiet
+          </p>
         </div>
-      ))}
+        {totalCost > 0 && (
+          <div className="text-right">
+            <p className="text-xs text-green-600">Uppskattat</p>
+            <p className="text-sm font-bold text-green-800">{totalCost.toFixed(0)} kr</p>
+          </div>
+        )}
+      </div>
+
+      {/* Items to buy */}
+      <div className="bg-white rounded-2xl divide-y divide-gray-50 overflow-hidden border border-gray-100">
+        {items.filter(i => !i.inPantry).map(item => {
+          const done = checked.has(item.name);
+          return (
+            <div
+              key={item.name}
+              onClick={() => toggleCheck(item.name)}
+              className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${done ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
+            >
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${done ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
+                {done && <Check size={11} className="text-white" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm capitalize font-medium ${done ? 'line-through text-gray-400' : 'text-gray-800'}`}>{item.name}</p>
+                <p className="text-xs text-gray-400">{item.toBuyGrams} g behövs</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                {item.estimatedCost !== null ? (
+                  <p className="text-sm font-semibold text-gray-700">{item.estimatedCost.toFixed(1)} kr</p>
+                ) : (
+                  <p className="text-xs text-gray-300">Pris okänt</p>
+                )}
+                {item.pricePerKg && (
+                  <p className="text-[10px] text-gray-400">{item.pricePerKg.toFixed(0)} kr/kg</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Already in pantry */}
+      {items.filter(i => i.inPantry).length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <Package size={12} /> Finns i skafferiet
+          </p>
+          <div className="bg-white rounded-2xl divide-y divide-gray-50 overflow-hidden border border-gray-100 opacity-60">
+            {items.filter(i => i.inPantry).map(item => (
+              <div key={item.name} className="flex items-center gap-3 px-4 py-2.5">
+                <Check size={14} className="text-green-500 flex-shrink-0" />
+                <p className="flex-1 text-sm text-gray-600 capitalize">{item.name}</p>
+                <p className="text-xs text-gray-400">{item.neededGrams} g</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -426,6 +561,8 @@ export default function MealPlan() {
   const { nutritionSettings, fitnessProfile, setFitnessPage } = useStore();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [pantry, setPantry] = useState<PantryItem[]>([]);
+  const [priceDB, setPriceDB] = useState<PriceEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<WeekPlan>(emptyWeek);
   const [activeTab, setActiveTab] = useState<'plan' | 'shopping'>('plan');
@@ -441,8 +578,14 @@ export default function MealPlan() {
 
   useEffect(() => {
     if (!user) return;
-    loadRecipes(user.uid).then(r => {
+    Promise.all([
+      loadRecipes(user.uid),
+      loadPantry(user.uid),
+      loadPriceDB(user.uid),
+    ]).then(([r, p, db]) => {
       setRecipes(r);
+      setPantry(p);
+      setPriceDB(db);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [user]);
@@ -503,7 +646,7 @@ export default function MealPlan() {
 
       {activeTab === 'shopping' ? (
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <ShoppingList plan={plan} recipes={recipes} />
+          <ShoppingList plan={plan} recipes={recipes} pantry={pantry} priceDB={priceDB} />
         </div>
       ) : (
         <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">

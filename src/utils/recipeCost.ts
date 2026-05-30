@@ -191,7 +191,8 @@ export function calcRecipeCost(
     });
   }
 
-  const spiceLump = hasSpices ? SPICE_LUMP_SUM_SEK : 0;
+  // Only add spice lump sum when at least one non-spice ingredient has a known price
+  const spiceLump = (hasSpices && rawTotal > 0) ? SPICE_LUMP_SUM_SEK : 0;
   const totalRaw = rawTotal + spiceLump;
   const totalReal = realTotal + spiceLump;
   const srv = Math.max(servings, 1);

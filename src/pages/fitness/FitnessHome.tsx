@@ -1,4 +1,4 @@
-import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight } from 'lucide-react';
+import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import type { FitnessPage } from '../../types';
@@ -41,11 +41,20 @@ const MODULES: {
   },
   {
     icon: BookOpen,
-    label: 'Recept & Pantry',
+    label: 'Recept',
     description: 'Importera recept från ICA. Kalori- och kostnadsberäkning med Livsmedelsverkets databas.',
     color: 'text-violet-500',
     bg: 'bg-violet-50',
     page: 'recipes',
+    ready: true,
+  },
+  {
+    icon: ShoppingBasket,
+    label: 'Skafferi',
+    description: 'Registrera varor via kvitto, streckkod eller manuellt. Lagerstatus, utgångsdatum och priser.',
+    color: 'text-amber-600',
+    bg: 'bg-amber-50',
+    page: 'pantry',
     ready: true,
   },
   {
