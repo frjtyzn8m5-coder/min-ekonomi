@@ -100,45 +100,89 @@ function ReceiptReview({ items, onConfirm, onClose }: ReceiptReviewProps) {
 
 // ─── Manual add dialog ────────────────────────────────────────────────────────
 
+const CATEGORY_OPTIONS = [
+  'Mejeri', 'Kött & Fisk', 'Grönsaker', 'Frukt', 'Bröd & Spannmål',
+  'Konserver', 'Frysvara', 'Kryddor', 'Dryck', 'Snacks', 'Övrigt',
+];
+
 interface ManualAddProps {
   onSave: (item: PantryItem) => void;
   onClose: () => void;
   prefill?: Partial<PantryItem>;
+  existingItems?: PantryItem[];
 }
 
-function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddProps) {
   const [name, setName] = useState(prefill?.name ?? '');
   const [amount, setAmount] = useState(String(prefill?.amount ?? ''));
   const [unit, setUnit] = useState<'g' | 'st'>(prefill?.unit ?? 'g');
   const [unitWeight, setUnitWeight] = useState(String(prefill?.unitWeightGrams ?? ''));
   const [pricePerUnit, setPricePerUnit] = useState(String(prefill?.pricePerUnit ?? ''));
-  const [expiry, setExpiry] = useState(prefill?.expiryDate ?? '');
+  const [expiry, setExpiry] = useState(prefill?.expiryDate ?? todayStr());
   const [category, setCategory] = useState(prefill?.category ?? '');
   const [foodId, setFoodId] = useState(prefill?.foodId ?? '');
 
-  // LV autocomplete
-  const [lvSuggestions, setLvSuggestions] = useState<FoodItem[]>([]);
+  // Combined suggestions: existing pantry items + LV database
+  const [suggestions, setSuggestions] = useState<Array<{ label: string; sub: string; onSelect: () => void }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [matchedLv, setMatchedLv] = useState<FoodItem | null>(null);
+
+  // Category dropdown state
+  const [showCatDropdown, setShowCatDropdown] = useState(false);
+  const filteredCats = CATEGORY_OPTIONS.filter(c =>
+    !category || c.toLowerCase().includes(category.toLowerCase()),
+  );
 
   async function handleNameChange(val: string) {
     setName(val);
     setMatchedLv(null);
     setFoodId('');
-    if (val.length < 2) { setLvSuggestions([]); return; }
-    const lv = await getLvData();
-    const q = val.toLowerCase();
-    const matches = lv.filter(i => i.name.toLowerCase().includes(q)).slice(0, 6);
-    setLvSuggestions(matches);
-    setShowSuggestions(matches.length > 0);
-  }
+    if (val.length < 2) { setSuggestions([]); setShowSuggestions(false); return; }
 
-  function selectLvItem(item: FoodItem) {
-    setName(item.name);
-    setFoodId(item.id);
-    setMatchedLv(item);
-    setLvSuggestions([]);
-    setShowSuggestions(false);
+    const q = val.toLowerCase();
+
+    // Existing pantry items first (top priority)
+    const pantryMatches = existingItems
+      .filter(i => i.name.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map(i => ({
+        label: i.name,
+        sub: `${i.amount} ${i.unit}${i.pricePerUnit ? ` · ${i.pricePerUnit} kr` : ''}`,
+        onSelect: () => {
+          setName(i.name);
+          setUnit(i.unit);
+          setAmount(String(i.amount));
+          if (i.pricePerUnit) setPricePerUnit(String(i.pricePerUnit));
+          if (i.unitWeightGrams) setUnitWeight(String(i.unitWeightGrams));
+          if (i.category) setCategory(i.category);
+          if (i.foodId) setFoodId(i.foodId);
+          setSuggestions([]); setShowSuggestions(false);
+        },
+      }));
+
+    // LV database
+    const lv = await getLvData();
+    const lvMatches = lv
+      .filter(i => i.name.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map(i => ({
+        label: i.name,
+        sub: `${i.energy_kcal} kcal · ${i.protein}g P · ${i.fat}g F · ${i.carbs}g KH`,
+        onSelect: () => {
+          setName(i.name);
+          setFoodId(i.id);
+          setMatchedLv(i);
+          setSuggestions([]); setShowSuggestions(false);
+        },
+      }));
+
+    const all = [...pantryMatches, ...lvMatches].slice(0, 7);
+    setSuggestions(all);
+    setShowSuggestions(all.length > 0);
   }
 
   function handleSave() {
@@ -172,7 +216,7 @@ function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
           </button>
         </div>
         <div className="p-5 space-y-3">
-          {/* Name field with LV autocomplete */}
+          {/* Name field with combined autocomplete */}
           <div className="relative">
             <input
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -181,34 +225,33 @@ function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
               onChange={e => handleNameChange(e.target.value)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             />
-            {showSuggestions && lvSuggestions.length > 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
-                {lvSuggestions.map(item => (
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden max-h-60 overflow-y-auto">
+                {suggestions.map((s, i) => (
                   <button
-                    key={item.id}
-                    onMouseDown={() => selectLvItem(item)}
+                    key={i}
+                    onMouseDown={s.onSelect}
                     className="w-full text-left px-3 py-2 hover:bg-green-50 text-sm border-b border-gray-50 last:border-0"
                   >
-                    <span className="font-medium text-gray-800">{item.name}</span>
-                    <span className="text-xs text-gray-400 ml-2">
-                      {item.energy_kcal} kcal · {item.protein}g P · {item.fat}g F · {item.carbs}g KH
-                    </span>
+                    <span className="font-medium text-gray-800 block">{s.label}</span>
+                    <span className="text-xs text-gray-400">{s.sub}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Show matched nutrition summary */}
+          {/* Matched LV nutrition */}
           {matchedLv && (
             <div className="bg-green-50 rounded-xl px-3 py-2 flex items-center gap-2">
               <Check size={14} className="text-green-600 flex-shrink-0" />
               <span className="text-xs text-green-700">
-                Matchad: {matchedLv.energy_kcal} kcal/100g · {matchedLv.protein}g P · {matchedLv.fat}g F · {matchedLv.carbs}g KH
+                {matchedLv.energy_kcal} kcal/100g · {matchedLv.protein}g P · {matchedLv.fat}g F · {matchedLv.carbs}g KH
               </span>
             </div>
           )}
 
+          {/* Amount + unit */}
           <div className="flex gap-2">
             <input
               type="number"
@@ -235,6 +278,8 @@ function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
               onChange={e => setUnitWeight(e.target.value)}
             />
           )}
+
+          {/* Price — visually required */}
           <div className="relative">
             <input
               type="number"
@@ -254,21 +299,48 @@ function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
           </div>
           {!pricePerUnit && (
             <p className="text-[11px] text-orange-500 -mt-1">
-              Pris krävs för att beräkna receptkostnader och inköpslista.
+              Pris behövs för receptkostnader och inköpslista.
             </p>
           )}
-          <input
-            type="date"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-            value={expiry}
-            onChange={e => setExpiry(e.target.value)}
-          />
-          <input
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-            placeholder="Kategori (t.ex. Mejeri)"
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-          />
+
+          {/* Expiry date — pre-filled with today */}
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Bäst före</label>
+            <input
+              type="date"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              value={expiry}
+              onChange={e => setExpiry(e.target.value)}
+            />
+          </div>
+
+          {/* Category — dropdown with filter */}
+          <div className="relative">
+            <label className="text-xs text-gray-500 mb-1 block">Kategori</label>
+            <input
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              placeholder="Välj eller skriv kategori…"
+              value={category}
+              onChange={e => { setCategory(e.target.value); setShowCatDropdown(true); }}
+              onFocus={() => setShowCatDropdown(true)}
+              onBlur={() => setTimeout(() => setShowCatDropdown(false), 150)}
+            />
+            {showCatDropdown && filteredCats.length > 0 && (
+              <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
+                {filteredCats.map(cat => (
+                  <button
+                    key={cat}
+                    onMouseDown={() => { setCategory(cat); setShowCatDropdown(false); }}
+                    className={`w-full text-left px-3 py-2 hover:bg-green-50 text-sm border-b border-gray-50 last:border-0 ${
+                      category === cat ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-700'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <div className="px-5 pb-5 flex gap-3">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">
@@ -381,17 +453,37 @@ export default function Pantry() {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    const newItems: PantryItem[] = selected.map(ri => ({
-      id: nanoid(),
-      name: ri.name,
-      articleNumber: ri.articleNumber,
-      amount: ri.unit === 'kg' ? ri.amount * 1000 : ri.amount,
-      unit: ri.unit === 'kg' ? 'g' : 'st',
-      pricePerUnit: ri.unit === 'st' ? ri.pris : undefined,
-      pricePerKg: ri.unit === 'kg' ? ri.pris : undefined,
-      addedAt: Date.now(),
-      source: 'receipt' as const,
-    }));
+    // Dedup: if article number already in pantry, update amount+price; else create new
+    const updatedItems: PantryItem[] = [];
+    const newItems: PantryItem[] = [];
+
+    for (const ri of selected) {
+      const existing = items.find(i => i.articleNumber && i.articleNumber === ri.articleNumber);
+      const incomingAmount = ri.unit === 'kg' ? ri.amount * 1000 : ri.amount;
+      const incomingUnit = ri.unit === 'kg' ? 'g' : 'st';
+
+      if (existing) {
+        const merged: PantryItem = {
+          ...existing,
+          amount: existing.amount + incomingAmount,
+          pricePerUnit: ri.unit === 'st' ? ri.pris : existing.pricePerUnit,
+          pricePerKg: ri.unit === 'kg' ? ri.pris : existing.pricePerKg,
+        };
+        updatedItems.push(merged);
+      } else {
+        newItems.push({
+          id: nanoid(),
+          name: ri.name,
+          articleNumber: ri.articleNumber,
+          amount: incomingAmount,
+          unit: incomingUnit,
+          pricePerUnit: ri.unit === 'st' ? ri.pris : undefined,
+          pricePerKg: ri.unit === 'kg' ? ri.pris : undefined,
+          addedAt: Date.now(),
+          source: 'receipt' as const,
+        });
+      }
+    }
 
     const priceEntries: PriceEntry[] = selected.map(ri => ({
       name: ri.name,
@@ -402,10 +494,13 @@ export default function Pantry() {
       lastUpdated: today,
     }));
 
-    await upsertPantryItems(user.uid, newItems);
+    await upsertPantryItems(user.uid, [...updatedItems, ...newItems]);
     await upsertPriceEntries(user.uid, priceEntries);
 
-    setItems(prev => [...newItems, ...prev]);
+    setItems(prev => [
+      ...newItems,
+      ...prev.map(i => updatedItems.find(u => u.id === i.id) ?? i),
+    ]);
     setReceiptItems(null);
   }
 
@@ -595,6 +690,7 @@ export default function Pantry() {
       {showManual && (
         <ManualAdd
           prefill={editItem ?? undefined}
+          existingItems={items}
           onSave={handleSaveItem}
           onClose={() => { setShowManual(false); setEditItem(null); }}
         />

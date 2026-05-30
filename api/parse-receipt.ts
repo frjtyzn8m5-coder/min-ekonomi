@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-// @ts-ignore
-import pdfParse from 'pdf-parse';
+// Use the inner module directly to avoid pdf-parse's test-file loading
+// which crashes in Vercel's serverless environment.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pdfParse = require('pdf-parse/lib/pdf-parse.js');
 
 export const config = { api: { bodyParser: false } };
 

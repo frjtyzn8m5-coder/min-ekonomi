@@ -385,9 +385,9 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
   const hasAnyPrice = cost.totalRawSEK > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
+    <div className="flex flex-col min-h-full bg-white">
       {/* Sticky header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0 bg-white">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0 bg-white sticky top-0 z-10">
         <button
           onClick={onClose}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
@@ -625,6 +625,7 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
 
 export default function Recipes() {
   const { user } = useAuthStore();
+  const { setFitnessPage } = useStore();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [pantry, setPantry] = useState<PantryItem[]>([]);
   const [priceDB, setPriceDB] = useState<PriceEntry[]>([]);
@@ -789,11 +790,32 @@ export default function Recipes() {
     );
   }
 
+  // ── Recipe detail: render as full page (no overlay) ──────────────────────────
+  if (selected) {
+    return (
+      <RecipeDetail
+        recipe={selected}
+        pantry={pantry}
+        priceDB={priceDB}
+        onSave={handleSave}
+        onClose={() => setSelected(null)}
+        onDelete={handleDelete}
+        onLog={handleLog}
+      />
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setFitnessPage('home')}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 -ml-1 mr-1"
+          >
+            <ArrowLeft size={18} className="text-gray-500" />
+          </button>
           <ChefHat size={22} className="text-green-600" />
           <h1 className="text-lg font-bold text-gray-900">Recept</h1>
           <span className="text-sm text-gray-400">({recipes.length})</span>
@@ -899,19 +921,6 @@ export default function Recipes() {
             );
           })}
         </div>
-      )}
-
-      {/* Recipe detail modal */}
-      {selected && (
-        <RecipeDetail
-          recipe={selected}
-          pantry={pantry}
-          priceDB={priceDB}
-          onSave={handleSave}
-          onClose={() => setSelected(null)}
-          onDelete={handleDelete}
-          onLog={handleLog}
-        />
       )}
 
       {/* Import dialog */}
