@@ -1,22 +1,32 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
 import { loadRecipes, saveRecipe, deleteRecipe, loadPantry } from '../../lib/pantryDb';
 import { saveFoodEntry } from '../../lib/foodDb';
 import { parseIngredientText } from '../../utils/unitConverter';
 import { calcRecipeCost } from '../../utils/recipeCost';
-import type { Recipe, RecipeIngredient, PantryItem, FoodEntry } from '../../types';
+import { getLvData, matchToLV, nutritionForGrams, calcRecipeNutrition } from '../../utils/matchNutrition';
+import type { Recipe, RecipeIngredient, PantryItem, FoodEntry, FoodItem } from '../../types';
 import {
   ChefHat, Plus, Trash2, Link, Loader2, Search, X, ChevronDown, ChevronUp,
-  Utensils, Clock, DollarSign, Info, Check, Package,
+  Utensils, Check, Package, RefreshCw, AlertCircle, Shuffle,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatCost(v: number | undefined | null): string {
-  if (v == null) return '–';
+  if (v == null || v === 0) return '–';
   return `${v.toFixed(0)} kr`;
+}
+
+function fmt1(n: number): string { return n.toFixed(1); }
+
+// ─── Extend RecipeIngredient with LV match ───────────────────────────────────
+
+interface ResolvedIngredient extends RecipeIngredient {
+  lvItem: FoodItem | null;
+  nutrition: { kcal: number; protein: number; fat: number; carbs: number; fiber?: number } | null;
 }
 
 // ─── URL Import dialog ────────────────────────────────────────────────────────
@@ -93,6 +103,200 @@ function ImportDialog({ onImport, onClose }: ImportDialogProps) {
   );
 }
 
+// ─── LV swap modal ────────────────────────────────────────────────────────────
+
+interface SwapModalProps {
+  ingredientName: string;
+  currentMatch: FoodItem | null;
+  onSelect: (item: FoodItem) => void;
+  onClose: () => void;
+}
+
+function SwapModal({ ingredientName, currentMatch, onSelect, onClose }: SwapModalProps) {
+  const [query, setQuery] = useState(ingredientName);
+  const [results, setResults] = useState<FoodItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => { if (query.trim().length > 1) search(query); }, [query]);
+
+  async function search(q: string) {
+    setLoading(true);
+    const data = await getLvData();
+    const lq = q.toLowerCase();
+    const hits = data
+      .filter(i => i.name.toLowerCase().includes(lq))
+      .slice(0, 20);
+    setResults(hits);
+    setLoading(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <p className="text-sm font-semibold text-gray-900">Välj matvara</p>
+          <button onClick={onClose}><X size={16} className="text-gray-400" /></button>
+        </div>
+        <div className="p-3 border-b border-gray-50">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              ref={inputRef}
+              className="w-full pl-8 pr-3 py-2 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Sök i Livsmedelsverkets databas…"
+            />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {loading && <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-gray-400" /></div>}
+          {results.map(item => (
+            <button
+              key={item.id}
+              onClick={() => { onSelect(item); onClose(); }}
+              className={`w-full px-4 py-3 text-left border-b border-gray-50 hover:bg-green-50 transition-colors ${currentMatch?.id === item.id ? 'bg-green-50' : ''}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm text-gray-900">{item.name}</p>
+                {currentMatch?.id === item.id && <Check size={14} className="text-green-600 flex-shrink-0 mt-0.5" />}
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {item.energy_kcal} kcal · P {item.protein}g · F {item.fat}g · K {item.carbs}g
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Ingredient row with detail ───────────────────────────────────────────────
+
+interface IngredientRowProps {
+  ing: ResolvedIngredient;
+  scale: number;
+  costDetail: { rawCost: number | null; found: boolean } | undefined;
+  onUpdateGrams: (newGrams: number) => void;
+  onSwapMatch: (item: FoodItem) => void;
+}
+
+function IngredientRow({ ing, scale, costDetail, onUpdateGrams, onSwapMatch }: IngredientRowProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [showSwap, setShowSwap] = useState(false);
+
+  const scaledGrams = Math.round(ing.amount * scale);
+  const scaledNutrition = ing.lvItem && scaledGrams > 0
+    ? nutritionForGrams(ing.lvItem, scaledGrams)
+    : null;
+
+  const hasNutrition = scaledNutrition && scaledNutrition.kcal > 0;
+
+  return (
+    <>
+      <div className={`border border-gray-100 rounded-xl overflow-hidden ${expanded ? 'ring-1 ring-green-200' : ''}`}>
+        {/* Main row */}
+        <div className="flex items-center gap-2 px-3 py-2 bg-white">
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="flex-1 flex items-center gap-2 text-left min-w-0"
+          >
+            <span className="text-sm text-gray-700 truncate">{ing.name}</span>
+            {!ing.lvItem && (
+              <AlertCircle size={13} className="text-amber-400 flex-shrink-0" title="Ingen nutritionsmatchning" />
+            )}
+            {hasNutrition && (
+              <span className="text-[10px] text-gray-400 flex-shrink-0">
+                {scaledNutrition!.kcal} kcal
+              </span>
+            )}
+          </button>
+          <input
+            type="number"
+            className="w-20 border border-gray-200 rounded-lg px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-green-400"
+            value={scaledGrams}
+            onChange={e => onUpdateGrams(parseFloat(e.target.value) / Math.max(scale, 0.001))}
+          />
+          <span className="text-xs text-gray-400 w-4">g</span>
+          <button onClick={() => setExpanded(v => !v)} className="text-gray-300 hover:text-gray-500">
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+        </div>
+
+        {/* Expanded detail */}
+        {expanded && (
+          <div className="px-3 pb-3 pt-1 bg-gray-50 border-t border-gray-100 space-y-2">
+            {/* Original text */}
+            <p className="text-[10px] text-gray-400">
+              Original: <span className="italic">{ing.originalText}</span>
+            </p>
+
+            {/* LV match */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] text-gray-400 mb-0.5">Matchad matvara</p>
+                {ing.lvItem ? (
+                  <p className="text-xs font-medium text-gray-800 truncate">{ing.lvItem.name}</p>
+                ) : (
+                  <p className="text-xs text-amber-500">Ingen matchning — klicka för att välja</p>
+                )}
+              </div>
+              <button
+                onClick={() => setShowSwap(true)}
+                className="flex items-center gap-1 text-[11px] text-green-600 hover:text-green-700 font-medium flex-shrink-0"
+              >
+                <Shuffle size={12} />
+                Byt
+              </button>
+            </div>
+
+            {/* Nutrition for this ingredient */}
+            {scaledNutrition && (
+              <div className="grid grid-cols-4 gap-1 bg-white rounded-lg px-2 py-1.5">
+                {[
+                  { label: 'Kcal', val: scaledNutrition.kcal },
+                  { label: 'Prot', val: `${fmt1(scaledNutrition.protein)}g` },
+                  { label: 'Fett', val: `${fmt1(scaledNutrition.fat)}g` },
+                  { label: 'Kolh', val: `${fmt1(scaledNutrition.carbs)}g` },
+                ].map(m => (
+                  <div key={m.label} className="text-center">
+                    <p className="text-[9px] text-gray-400">{m.label}</p>
+                    <p className="text-[11px] font-semibold text-gray-700">{m.val}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Cost */}
+            {costDetail && (
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-gray-400">Kostnad (råkostnad)</span>
+                <span className={costDetail.found ? 'text-gray-700 font-medium' : 'text-gray-300'}>
+                  {costDetail.found && costDetail.rawCost !== null
+                    ? `${costDetail.rawCost.toFixed(1)} kr`
+                    : 'Pris okänt'}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {showSwap && (
+        <SwapModal
+          ingredientName={ing.name}
+          currentMatch={ing.lvItem}
+          onSelect={onSwapMatch}
+          onClose={() => setShowSwap(false)}
+        />
+      )}
+    </>
+  );
+}
+
 // ─── Recipe detail / editor ───────────────────────────────────────────────────
 
 interface RecipeDetailProps {
@@ -106,24 +310,77 @@ interface RecipeDetailProps {
 
 function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: RecipeDetailProps) {
   const [servings, setServings] = useState(recipe.servings);
-  const [ingredients, setIngredients] = useState<RecipeIngredient[]>(recipe.ingredients);
+  const [ingredients, setIngredients] = useState<ResolvedIngredient[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [logServings, setLogServings] = useState(1);
+  const [showIngredients, setShowIngredients] = useState(true);
 
   const scale = servings / Math.max(recipe.servings, 1);
 
-  // Cost (no priceDB in-memory for now — use pantry only)
+  // Load LV data and resolve nutrition for each ingredient
+  useEffect(() => {
+    getLvData().then(lvData => {
+      const resolved: ResolvedIngredient[] = recipe.ingredients.map(ing => {
+        const lvItem = matchToLV(ing.name, lvData);
+        const nutrition = lvItem && ing.amount > 0
+          ? nutritionForGrams(lvItem, ing.amount)
+          : null;
+        return { ...ing, lvItem, nutrition };
+      });
+      setIngredients(resolved);
+      setLoading(false);
+    });
+  }, [recipe.id]);
+
+  // Cost (pantry only — no priceDB in-memory)
   const cost = calcRecipeCost(ingredients, servings, pantry, []);
 
+  // Computed nutrition from matched ingredients
+  const computedNutrition = calcRecipeNutrition(
+    ingredients.map(i => ({ grams: i.amount, lvItem: i.lvItem })),
+    recipe.servings,
+  );
+
+  // Use computed if recipe stored value is 0
+  const displayNutrition = recipe.nutritionPerServing.kcal > 0
+    ? recipe.nutritionPerServing
+    : computedNutrition;
+
   function updateIngAmount(idx: number, newGrams: number) {
-    setIngredients(prev => prev.map((ing, i) =>
-      i === idx ? { ...ing, amount: newGrams } : ing,
-    ));
+    setIngredients(prev => prev.map((ing, i) => {
+      if (i !== idx) return ing;
+      const nutrition = ing.lvItem && newGrams > 0
+        ? nutritionForGrams(ing.lvItem, newGrams)
+        : null;
+      return { ...ing, amount: newGrams, nutrition };
+    }));
+  }
+
+  function swapMatch(idx: number, item: FoodItem) {
+    setIngredients(prev => prev.map((ing, i) => {
+      if (i !== idx) return ing;
+      const nutrition = ing.amount > 0 ? nutritionForGrams(item, ing.amount) : null;
+      return { ...ing, lvItem: item, nutrition };
+    }));
   }
 
   function handleSave() {
-    onSave({ ...recipe, servings, ingredients });
+    // Recompute nutrition before saving
+    const newNutrition = calcRecipeNutrition(
+      ingredients.map(i => ({ grams: i.amount, lvItem: i.lvItem })),
+      servings,
+    );
+    const recipeToSave: Recipe = {
+      ...recipe,
+      servings,
+      ingredients: ingredients.map(({ lvItem, nutrition, ...rest }) => rest),
+      nutritionPerServing: newNutrition.kcal > 0 ? newNutrition : recipe.nutritionPerServing,
+    };
+    onSave(recipeToSave);
   }
+
+  const matchedCount = ingredients.filter(i => i.lvItem !== null).length;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
@@ -141,7 +398,7 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
             onClick={handleSave}
             className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700"
           >
-            Spara ändringar
+            Spara
           </button>
         </div>
       </div>
@@ -154,19 +411,19 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
           </div>
         )}
 
-        <div className="p-4 max-w-2xl mx-auto space-y-5">
-          {/* Name + meta */}
+        <div className="p-4 max-w-2xl mx-auto space-y-4">
+          {/* Name */}
           <div>
             <h1 className="text-xl font-bold text-gray-900">{recipe.name}</h1>
             {recipe.source && (
               <a href={recipe.source} target="_blank" rel="noopener noreferrer"
-                className="text-xs text-green-600 hover:underline mt-1 block">
+                className="text-xs text-green-600 hover:underline mt-1 block truncate">
                 {recipe.source}
               </a>
             )}
           </div>
 
-          {/* Servings control */}
+          {/* Servings */}
           <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-3">
             <div className="flex items-center gap-1 text-gray-500">
               <Utensils size={16} />
@@ -174,12 +431,12 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
             </div>
             <div className="flex items-center gap-2 ml-auto">
               <button onClick={() => setServings(s => Math.max(1, s - 1))}
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 text-lg leading-none">
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100">
                 −
               </button>
               <span className="w-8 text-center font-semibold text-gray-800">{servings}</span>
               <button onClick={() => setServings(s => s + 1)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 text-lg leading-none">
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100">
                 +
               </button>
             </div>
@@ -201,39 +458,67 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
 
           {/* Nutrition per serving */}
           <div className="bg-white border border-gray-100 rounded-xl p-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Näring per portion</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Näring per portion</p>
+              {loading && <Loader2 size={12} className="animate-spin text-gray-400" />}
+              {!loading && matchedCount < ingredients.length && (
+                <span className="text-[10px] text-amber-500">
+                  {matchedCount}/{ingredients.length} ingredienser matchade
+                </span>
+              )}
+              {!loading && matchedCount === ingredients.length && ingredients.length > 0 && (
+                <span className="text-[10px] text-green-600">Alla matchade ✓</span>
+              )}
+            </div>
             <div className="grid grid-cols-4 gap-2 text-center">
               {[
-                { label: 'Kcal', val: Math.round((recipe.nutritionPerServing.kcal * scale)) },
-                { label: 'Protein', val: `${Math.round(recipe.nutritionPerServing.protein * scale)}g` },
-                { label: 'Kolh', val: `${Math.round(recipe.nutritionPerServing.carbs * scale)}g` },
-                { label: 'Fett', val: `${Math.round(recipe.nutritionPerServing.fat * scale)}g` },
+                { label: 'Kcal', val: Math.round(displayNutrition.kcal * scale) },
+                { label: 'Protein', val: `${fmt1(displayNutrition.protein * scale)}g` },
+                { label: 'Kolh', val: `${fmt1(displayNutrition.carbs * scale)}g` },
+                { label: 'Fett', val: `${fmt1(displayNutrition.fat * scale)}g` },
               ].map(m => (
                 <div key={m.label}>
                   <p className="text-xs text-gray-400">{m.label}</p>
-                  <p className="text-sm font-bold text-gray-800 mt-0.5">{m.val}</p>
+                  <p className={`text-sm font-bold mt-0.5 ${m.val === 0 || m.val === '0.0g' ? 'text-gray-300' : 'text-gray-800'}`}>
+                    {m.val}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Ingredients */}
+          {/* Ingredients with detail */}
           <div>
-            <h2 className="text-sm font-semibold text-gray-700 mb-2">Ingredienser</h2>
-            <div className="space-y-2">
-              {ingredients.map((ing, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-white border border-gray-100 rounded-xl px-3 py-2">
-                  <span className="flex-1 text-sm text-gray-700">{ing.name}</span>
-                  <input
-                    type="number"
-                    className="w-20 border border-gray-200 rounded-lg px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-green-400"
-                    value={Math.round(ing.amount * scale)}
-                    onChange={e => updateIngAmount(idx, parseFloat(e.target.value) / scale || 0)}
-                  />
-                  <span className="text-xs text-gray-400 w-4">g</span>
-                </div>
-              ))}
-            </div>
+            <button
+              className="flex items-center justify-between w-full mb-2"
+              onClick={() => setShowIngredients(v => !v)}
+            >
+              <h2 className="text-sm font-semibold text-gray-700">
+                Ingredienser ({ingredients.length})
+              </h2>
+              {showIngredients ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+            </button>
+
+            {showIngredients && (
+              <div className="space-y-1.5">
+                {loading ? (
+                  <div className="flex justify-center py-6">
+                    <Loader2 size={20} className="animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  ingredients.map((ing, idx) => (
+                    <IngredientRow
+                      key={idx}
+                      ing={ing}
+                      scale={scale}
+                      costDetail={cost.details[idx]}
+                      onUpdateGrams={grams => updateIngAmount(idx, grams)}
+                      onSwapMatch={item => swapMatch(idx, item)}
+                    />
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           {/* Instructions */}
@@ -297,22 +582,27 @@ export default function Recipes() {
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([loadRecipes(user.uid), loadPantry(user.uid)]).then(([r, p]) => {
-      setRecipes(r);
-      setPantry(p);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    Promise.all([loadRecipes(user.uid), loadPantry(user.uid)])
+      .then(([r, p]) => { setRecipes(r); setPantry(p); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [user]);
 
-  function resolveIngredients(rawIngredients: string[]): RecipeIngredient[] {
+  async function resolveIngredients(rawIngredients: string[]): Promise<RecipeIngredient[]> {
+    const lvData = await getLvData();
     return rawIngredients.map(text => {
       const parsed = parseIngredientText(text);
+      const lvItem = matchToLV(parsed.name, lvData);
+      const nutrition = lvItem && parsed.grams && parsed.grams > 0
+        ? nutritionForGrams(lvItem, parsed.grams)
+        : undefined;
       return {
         name: parsed.name,
         originalText: text,
         amount: parsed.grams ?? 0,
         originalAmount: parsed.amount,
         originalUnit: parsed.unit,
+        foodId: lvItem?.id,
+        nutrition: nutrition ?? undefined,
       };
     });
   }
@@ -322,11 +612,15 @@ export default function Recipes() {
     instructions: string[]; imageUrl?: string; tags: string[]; source: string;
   }) {
     if (!user) return;
+    const ingredients = await resolveIngredients(data.ingredients);
 
-    const ingredients = resolveIngredients(data.ingredients);
-
-    // Rough nutrition estimate: zero until Livsmedelsverket matching (future)
-    const zeroNutrition = { kcal: 0, protein: 0, fat: 0, carbs: 0 };
+    // Compute nutrition from matched ingredients
+    const lvData = await getLvData();
+    const nutritionInputs = ingredients.map(ing => ({
+      grams: ing.amount,
+      lvItem: ing.foodId ? lvData.find(i => i.id === ing.foodId) ?? null : null,
+    }));
+    const nutritionPerServing = calcRecipeNutrition(nutritionInputs, data.servings);
 
     const recipe: Recipe = {
       id: nanoid(),
@@ -335,7 +629,7 @@ export default function Recipes() {
       ingredients,
       instructions: data.instructions,
       tags: data.tags,
-      nutritionPerServing: zeroNutrition,
+      nutritionPerServing,
       imageUrl: data.imageUrl,
       source: data.source,
       createdAt: Date.now(),
@@ -366,24 +660,22 @@ export default function Recipes() {
     const today = new Date().toISOString().slice(0, 10);
     const scale = servings / Math.max(recipe.servings, 1);
     const n = recipe.nutritionPerServing;
-
     const entry: FoodEntry = {
       id: nanoid(),
       date: today,
       mealType: 'dinner',
       foodId: `recipe_${recipe.id}`,
       foodName: `${recipe.name} (${servings} port.)`,
-      amount: servings * 300, // rough gram estimate
+      amount: servings * 300,
       nutrition: {
-        kcal: Math.round(n.kcal * scale * servings),
+        kcal:    Math.round(n.kcal * scale * servings),
         protein: Math.round(n.protein * scale * servings * 10) / 10,
-        fat: Math.round(n.fat * scale * servings * 10) / 10,
-        carbs: Math.round(n.carbs * scale * servings * 10) / 10,
+        fat:     Math.round(n.fat * scale * servings * 10) / 10,
+        carbs:   Math.round(n.carbs * scale * servings * 10) / 10,
       },
       source: 'custom',
       timestamp: Date.now(),
     };
-
     await saveFoodEntry(user.uid, entry);
     setSelected(null);
     setLogSuccess(`${recipe.name} loggad!`);
@@ -405,20 +697,22 @@ export default function Recipes() {
               <ChefHat size={20} className="text-green-600" />
               <h1 className="text-lg font-bold text-gray-900">Recept</h1>
             </div>
-            <button
-              onClick={() => setShowImport(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-medium"
-            >
-              <Link size={15} />
-              Importera
-            </button>
-            <button
-              onClick={() => setFitnessPage('pantry')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm font-medium"
-            >
-              <Package size={15} />
-              Skafferi
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowImport(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-medium"
+              >
+                <Link size={15} />
+                Importera
+              </button>
+              <button
+                onClick={() => setFitnessPage('pantry')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm font-medium"
+              >
+                <Package size={15} />
+                Skafferi
+              </button>
+            </div>
           </div>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -433,7 +727,6 @@ export default function Recipes() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-4">
-        {/* Log success toast */}
         {logSuccess && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg z-50 flex items-center gap-2">
             <Check size={14} />
@@ -482,8 +775,8 @@ export default function Recipes() {
                       <span>{recipe.nutritionPerServing.kcal} kcal/port.</span>
                     )}
                     {cost.totalRawSEK > 0 && (
-                      <span className="flex items-center gap-1 text-green-600 font-medium">
-                        ~{cost.perServingReal.toFixed(0)} kr/port.
+                      <span className="text-green-600 font-medium">
+                        ~{cost.perServingRaw.toFixed(0)} kr/port.
                       </span>
                     )}
                   </div>
@@ -511,7 +804,7 @@ export default function Recipes() {
         <RecipeDetail
           recipe={selected}
           pantry={pantry}
-          onSave={handleSave}
+          onSave={r => { handleSave(r); setSelected(null); }}
           onClose={() => setSelected(null)}
           onDelete={handleDelete}
           onLog={handleLog}

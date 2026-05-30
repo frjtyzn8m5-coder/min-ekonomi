@@ -71,7 +71,7 @@ export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'netwo
 
 export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
 
-export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry';
+export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry' | 'mealplan';
 
 export interface BodyMeasurements {
   waist?: number;

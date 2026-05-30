@@ -161,13 +161,34 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
         setResults([]);
         setQuery(item.name);
       } else {
-        setError(`Streckkod ${code} hittades inte i Open Food Facts.`);
+        // Product not found — scanner will show add-product form
+        setError(`Streckkod ${code} hittades inte. Scanna igen och välj "Lägg till manuellt" för att registrera produkten.`);
       }
     } catch {
       setError('Kunde inte slå upp streckkoden.');
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleAddProduct(barcode: string, name: string, nutrition: {
+    energy_kcal: number; protein: number; fat: number; carbs: number; fiber?: number;
+  }) {
+    const item: FoodItem = {
+      id: `custom-${barcode || Date.now()}`,
+      name,
+      energy_kcal: nutrition.energy_kcal,
+      protein: nutrition.protein,
+      fat: nutrition.fat,
+      carbs: nutrition.carbs,
+      fiber: nutrition.fiber,
+      source: 'custom',
+      barcode: barcode || undefined,
+    };
+    setSelected(item);
+    setResults([]);
+    setQuery(name);
+    setShowScanner(false);
   }
 
   function handleConfirm() {
@@ -179,7 +200,14 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
   }
 
   if (showScanner) {
-    return <BarcodeScanner onDetected={handleBarcode} onClose={() => setShowScanner(false)} />;
+    return (
+      <BarcodeScanner
+        onDetected={handleBarcode}
+        onClose={() => setShowScanner(false)}
+        allowAddProduct
+        onAddProduct={handleAddProduct}
+      />
+    );
   }
 
   return (

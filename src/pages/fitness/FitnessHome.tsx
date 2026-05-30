@@ -1,4 +1,4 @@
-import { Scale, UtensilsCrossed, Dumbbell, BookOpen, ChevronRight } from 'lucide-react';
+import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import type { FitnessPage } from '../../types';
@@ -42,10 +42,19 @@ const MODULES: {
   {
     icon: BookOpen,
     label: 'Recept & Pantry',
-    description: 'Importera recept från ICA. Kalori- och kostnadsberäkning. Veckoplanering.',
+    description: 'Importera recept från ICA. Kalori- och kostnadsberäkning med Livsmedelsverkets databas.',
     color: 'text-violet-500',
     bg: 'bg-violet-50',
     page: 'recipes',
+    ready: true,
+  },
+  {
+    icon: CalendarDays,
+    label: 'Veckoplanering',
+    description: 'Generera en anpassad veckoplan. Byt ut måltider, spara favoritfrukost och exportera inköpslista.',
+    color: 'text-rose-500',
+    bg: 'bg-rose-50',
+    page: 'mealplan',
     ready: true,
   },
 ];

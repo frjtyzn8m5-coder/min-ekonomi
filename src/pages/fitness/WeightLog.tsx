@@ -4,7 +4,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, RadarChart,
   Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
-import { ArrowLeft, Plus, Minus, ChevronDown, ChevronUp, Camera } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, ChevronDown, ChevronUp, Camera, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -118,6 +118,117 @@ const MEASUREMENT_FIELDS: { key: keyof BodyMeasurements; label: string }[] = [
   { key: 'calf',       label: 'Vader (cm)' },
 ];
 
+// ─── Body part categories for photos ─────────────────────────────────────────
+
+const BODY_PARTS = ['Framsida', 'Ryggsida', 'Sida', 'Armar', 'Ben', 'Ansikte'] as const;
+type BodyPart = typeof BODY_PARTS[number];
+
+// ─── Photo comparison slider ──────────────────────────────────────────────────
+
+interface PhotoSliderProps {
+  urlA: string;
+  labelA: string;
+  urlB: string;
+  labelB: string;
+}
+
+function PhotoSlider({ urlA, labelA, urlB, labelB }: PhotoSliderProps) {
+  const [sliderX, setSliderX] = useState(50); // percent
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  function getPercent(clientX: number): number {
+    if (!containerRef.current) return 50;
+    const rect = containerRef.current.getBoundingClientRect();
+    return Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+  }
+
+  function onPointerDown(e: React.PointerEvent) {
+    dragging.current = true;
+    (e.target as Element).setPointerCapture(e.pointerId);
+    setSliderX(getPercent(e.clientX));
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (!dragging.current) return;
+    setSliderX(getPercent(e.clientX));
+  }
+
+  function onPointerUp() { dragging.current = false; }
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full aspect-[3/4] rounded-xl overflow-hidden select-none cursor-ew-resize"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+    >
+      {/* Before (full width) */}
+      <img src={urlA} alt="Före" className="absolute inset-0 w-full h-full object-cover" />
+
+      {/* After (clipped) */}
+      <div
+        className="absolute inset-0 overflow-hidden"
+        style={{ clipPath: `inset(0 ${100 - sliderX}% 0 0)` }}
+      >
+        <img src={urlB} alt="Efter" className="absolute inset-0 w-full h-full object-cover" />
+      </div>
+
+      {/* Divider line */}
+      <div
+        className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg pointer-events-none"
+        style={{ left: `${sliderX}%` }}
+      >
+        {/* Handle */}
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
+          <div className="flex gap-0.5">
+            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+          </div>
+        </div>
+      </div>
+
+      {/* Labels */}
+      <span className="absolute bottom-2 left-2 text-[10px] bg-black/60 text-white px-2 py-0.5 rounded-full">
+        {labelA}
+      </span>
+      <span className="absolute bottom-2 right-2 text-[10px] bg-black/60 text-white px-2 py-0.5 rounded-full">
+        {labelB}
+      </span>
+    </div>
+  );
+}
+
+// ─── Measurement instructions ──────────────────────────────────────────────────
+
+function MeasurementInstructions() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-blue-50 rounded-xl overflow-hidden">
+      <button
+        className="w-full flex items-center gap-2 px-4 py-3 text-left"
+        onClick={() => setOpen(v => !v)}
+      >
+        <Info size={16} className="text-blue-500 flex-shrink-0" />
+        <span className="text-sm text-blue-700 font-medium">Råd för konsekventa mätningar</span>
+        {open ? <ChevronUp size={14} className="ml-auto text-blue-400" /> : <ChevronDown size={14} className="ml-auto text-blue-400" />}
+      </button>
+      {open && (
+        <div className="px-4 pb-4 text-sm text-blue-800 space-y-1.5 leading-relaxed">
+          <p>📅 <strong>Mät samma dag varje vecka</strong> — t.ex. alltid måndag morgon.</p>
+          <p>🌅 <strong>Mät på morgonen</strong> — innan frukost och efter toa.</p>
+          <p>👕 <strong>Mät utan kläder</strong> eller i samma tunna kläder varje gång.</p>
+          <p>📍 <strong>Midja:</strong> på navelhöjd, andas ut lugnt och mät utan att dra in magen.</p>
+          <p>📍 <strong>Höfter:</strong> på den bredaste punkten runt skinkor och höfter.</p>
+          <p>📍 <strong>Hals:</strong> under struphuvudet, horisontellt runt halsen.</p>
+          <p>📸 <strong>Foton:</strong> mät och fotografera vid samma tidpunkt i samma ljus.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function WeightLog() {
@@ -141,6 +252,9 @@ export default function WeightLog() {
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
+  const [sliderMode, setSliderMode] = useState(false);
+  const [uploadBodyPart, setUploadBodyPart] = useState<BodyPart>('Framsida');
+  const [filterBodyPart, setFilterBodyPart] = useState<BodyPart | 'Alla'>('Alla');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Load data ────────────────────────────────────────────────────────────────
@@ -215,19 +329,22 @@ export default function WeightLog() {
     setSaving(true);
     try {
       const dataUrl = await compressImage(file);
-      const dateStr = today();
-      const entry: BodyEntry = { date: dateStr, photoUrl: dataUrl };
-      await saveBodyEntry(user.uid, entry);
+      // Encode body part into the date key: date__bodypart
+      const dateStr = `${today()}__${uploadBodyPart}`;
+      const entry: BodyEntry = { date: dateStr, photoUrl: dataUrl, notes: uploadBodyPart };
+      await saveBodyEntry(user.uid, { ...entry, date: dateStr.split('__')[0] });
       setEntries(prev => {
-        const existing = prev.find(e => e.date === dateStr);
-        const without = prev.filter(e => e.date !== dateStr);
-        return [...without, { ...existing, ...entry }].sort((a, b) => a.date.localeCompare(b.date));
+        const baseDate = today();
+        const existing = prev.find(e => e.date === baseDate);
+        const without = prev.filter(e => e.date !== baseDate);
+        return [...without, { ...existing, date: baseDate, photoUrl: dataUrl, notes: uploadBodyPart }]
+          .sort((a, b) => a.date.localeCompare(b.date));
       });
     } finally {
       setSaving(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }, [user]);
+  }, [user, uploadBodyPart]);
 
   // ── Derived chart data ────────────────────────────────────────────────────────
 
@@ -628,36 +745,65 @@ export default function WeightLog() {
           </div>
         )}
 
+        {/* ── Measurement instructions ───────────────────────────────────────── */}
+        <MeasurementInstructions />
+
         {/* ── Progress photos ───────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold text-gray-900">Progress-foton</p>
             <div className="flex gap-2">
               {photoEntries.length >= 2 && (
-                <button
-                  onClick={() => setCompareMode(v => !v)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                    compareMode ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  Jämför
-                </button>
+                <>
+                  <button
+                    onClick={() => { setCompareMode(v => !v); setSliderMode(false); }}
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                      compareMode && !sliderMode ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Sida vid sida
+                  </button>
+                  <button
+                    onClick={() => { setSliderMode(v => !v); setCompareMode(true); }}
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                      sliderMode ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Slider
+                  </button>
+                </>
               )}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-1.5 text-xs bg-gray-900 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-gray-800 transition-colors"
               >
                 <Camera size={13} />
-                Ladda upp
+                Foto
               </button>
             </div>
+          </div>
+
+          {/* Body part selector for upload */}
+          <div className="flex gap-1.5 mb-3 flex-wrap">
+            {BODY_PARTS.map(part => (
+              <button
+                key={part}
+                onClick={() => setUploadBodyPart(part)}
+                className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                  uploadBodyPart === part
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {part}
+              </button>
+            ))}
           </div>
 
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            capture="user"
             className="hidden"
             onChange={handlePhotoUpload}
           />
@@ -668,11 +814,11 @@ export default function WeightLog() {
             </div>
           )}
           {photoEntries.length === 0 && (
-            <p className="text-xs text-gray-400 text-center py-6">Inga foton ännu. Ladda upp ditt första progress-foto!</p>
+            <p className="text-xs text-gray-400 text-center py-6">Inga foton ännu. Välj kroppsdel och ladda upp ditt första foto!</p>
           )}
 
-          {/* Compare mode */}
-          {compareMode && photoEntries.length >= 2 && (
+          {/* Compare mode — sida vid sida */}
+          {compareMode && !sliderMode && photoEntries.length >= 2 && (
             <div className="mb-4 space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 {(['A', 'B'] as const).map(slot => {
@@ -687,7 +833,9 @@ export default function WeightLog() {
                       >
                         <option value="">Välj datum</option>
                         {photoEntries.map(e => (
-                          <option key={e.date} value={e.date}>{formatDate(e.date)}</option>
+                          <option key={e.date} value={e.date}>
+                            {formatDate(e.date)}{e.notes ? ` — ${e.notes}` : ''}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -712,22 +860,89 @@ export default function WeightLog() {
             </div>
           )}
 
-          {/* Photo grid */}
-          {!compareMode && photoEntries.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {photoEntries.slice(0, 9).map(e => (
-                <div key={e.date} className="relative group">
-                  <img
-                    src={e.photoUrl}
-                    alt={e.date}
-                    className="w-full aspect-square object-cover rounded-xl"
+          {/* Slider compare mode */}
+          {sliderMode && photoEntries.length >= 2 && (
+            <div className="mb-4 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                {(['A', 'B'] as const).map(slot => {
+                  const selected = slot === 'A' ? compareA : compareB;
+                  return (
+                    <div key={slot}>
+                      <p className="text-[10px] text-gray-400 mb-1">{slot === 'A' ? 'Vänster (före)' : 'Höger (efter)'}</p>
+                      <select
+                        className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none"
+                        value={selected ?? ''}
+                        onChange={e => slot === 'A' ? setCompareA(e.target.value) : setCompareB(e.target.value)}
+                      >
+                        <option value="">Välj datum</option>
+                        {photoEntries.map(e => (
+                          <option key={e.date} value={e.date}>
+                            {formatDate(e.date)}{e.notes ? ` — ${e.notes}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+              {compareA && compareB && (() => {
+                const entA = photoEntries.find(e => e.date === compareA);
+                const entB = photoEntries.find(e => e.date === compareB);
+                if (!entA?.photoUrl || !entB?.photoUrl) return null;
+                return (
+                  <PhotoSlider
+                    urlA={entA.photoUrl}
+                    labelA={formatDate(compareA)}
+                    urlB={entB.photoUrl}
+                    labelB={formatDate(compareB)}
                   />
-                  <span className="absolute bottom-1 left-1 text-[9px] bg-black/50 text-white px-1.5 py-0.5 rounded-full">
-                    {formatDate(e.date)}
-                  </span>
-                </div>
-              ))}
+                );
+              })()}
+              <p className="text-[10px] text-gray-400 text-center">Dra slidern för att jämföra</p>
             </div>
+          )}
+
+          {/* Filter by body part */}
+          {!compareMode && !sliderMode && photoEntries.length > 0 && (
+            <>
+              <div className="flex gap-1.5 mb-3 flex-wrap">
+                {(['Alla', ...BODY_PARTS] as const).map(part => (
+                  <button
+                    key={part}
+                    onClick={() => setFilterBodyPart(part)}
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                      filterBodyPart === part
+                        ? 'bg-gray-700 text-white'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    {part}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {photoEntries
+                  .filter(e => filterBodyPart === 'Alla' || e.notes === filterBodyPart)
+                  .slice(0, 9)
+                  .map(e => (
+                    <div key={`${e.date}-${e.notes}`} className="relative group">
+                      <img
+                        src={e.photoUrl}
+                        alt={e.date}
+                        className="w-full aspect-square object-cover rounded-xl"
+                      />
+                      <span className="absolute bottom-1 left-1 text-[9px] bg-black/50 text-white px-1.5 py-0.5 rounded-full">
+                        {formatDate(e.date)}
+                      </span>
+                      {e.notes && (
+                        <span className="absolute top-1 right-1 text-[8px] bg-blue-500/70 text-white px-1.5 py-0.5 rounded-full">
+                          {e.notes}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </>
           )}
         </div>
 
