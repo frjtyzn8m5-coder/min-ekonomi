@@ -664,21 +664,16 @@ export default function Recipes() {
     const lvData = await getLvData();
     const parsedIngredients: RecipeIngredient[] = await Promise.all(
       data.ingredients.map(async (text) => {
-        // Try to use parseIngredientText if available, else basic fallback
-        let parsed: RecipeIngredient;
-        try {
-          parsed = parseIngredientText(text);
-        } catch {
-          // Fallback: unknown amount, name = text
-          parsed = {
-            name: text,
-            originalText: text,
-            amount: 100,
-            originalAmount: 100,
-            originalUnit: 'g',
-          };
-        }
-        return parsed;
+        // parseIngredientText returns ParsedIngredient; map to RecipeIngredient
+        const pi = parseIngredientText(text);
+        const ing: RecipeIngredient = {
+          name: pi.name || text,
+          originalText: text,
+          amount: pi.grams ?? (pi.amount * 100), // grams (normalized)
+          originalAmount: pi.amount,
+          originalUnit: pi.unit,
+        };
+        return ing;
       })
     );
 
