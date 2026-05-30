@@ -26,7 +26,7 @@ function fmt1(n: number): string { return n.toFixed(1); }
 
 interface ResolvedIngredient extends RecipeIngredient {
   lvItem: FoodItem | null;
-  nutrition: { kcal: number; protein: number; fat: number; carbs: number; fiber?: number } | null;
+  nutrition: { kcal: number; protein: number; fat: number; carbs: number; fiber?: number } | undefined;
 }
 
 // ─── URL Import dialog ────────────────────────────────────────────────────────
@@ -206,7 +206,7 @@ function IngredientRow({ ing, scale, costDetail, onUpdateGrams, onSwapMatch }: I
           >
             <span className="text-sm text-gray-700 truncate">{ing.name}</span>
             {!ing.lvItem && (
-              <AlertCircle size={13} className="text-amber-400 flex-shrink-0" title="Ingen nutritionsmatchning" />
+              <span title="Ingen nutritionsmatchning"><AlertCircle size={13} className="text-amber-400 flex-shrink-0" /></span>
             )}
             {hasNutrition && (
               <span className="text-[10px] text-gray-400 flex-shrink-0">
@@ -325,7 +325,7 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
         const lvItem = matchToLV(ing.name, lvData);
         const nutrition = lvItem && ing.amount > 0
           ? nutritionForGrams(lvItem, ing.amount)
-          : null;
+          : undefined;
         return { ...ing, lvItem, nutrition };
       });
       setIngredients(resolved);

@@ -433,7 +433,9 @@ export default function MealPlan() {
   const [selectedDay, setSelectedDay] = useState(0);
 
   // Plan settings
-  const [goal, setGoal] = useState<'lose_fat' | 'gain_muscle' | 'maintain'>(fitnessProfile.goal ?? 'maintain');
+  const [goal, setGoal] = useState<'lose_fat' | 'gain_muscle' | 'maintain'>(
+    fitnessProfile.goal === 'recomp' ? 'maintain' : (fitnessProfile.goal ?? 'maintain')
+  );
   const [favBreakfast, setFavBreakfast] = useState<string | null>(null);
   const [targetKcal, setTargetKcal] = useState(nutritionSettings.targetCalories ?? 2000);
 
