@@ -160,3 +160,43 @@ export interface ImportBatch {
   dateTo: string;
   account: string;
 }
+
+export interface FoodEntry {
+  id: string;
+  date: string; // YYYY-MM-DD
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  foodId: string;
+  foodName: string;
+  amount: number; // gram
+  nutrition: {
+    kcal: number;
+    protein: number;
+    fat: number;
+    carbs: number;
+    fiber?: number;
+  };
+  source: 'livsmedelsverket' | 'openfoodfacts' | 'custom';
+  timestamp: number;
+}
+
+export interface NutritionSettings {
+  targetCalories: number;
+  proteinTarget: number; // g
+  carbTarget: number; // g
+  fatTarget: number; // g
+  goal: 'lose_fat' | 'gain_muscle' | 'maintain';
+  bmrFormula: 'mifflin' | 'katch' | 'harris';
+  activityLevel: number; // 1.2 | 1.375 | 1.55 | 1.725 | 1.9
+}
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  energy_kcal: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  fiber?: number;
+  source: 'livsmedelsverket' | 'openfoodfacts' | 'custom';
+  barcode?: string;
+}

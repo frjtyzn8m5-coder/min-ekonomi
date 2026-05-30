@@ -22,6 +22,7 @@ const Login        = lazy(() => import('./pages/Login'));
 const Home         = lazy(() => import('./pages/home/Home'));
 const FitnessHome  = lazy(() => import('./pages/fitness/FitnessHome'));
 const WeightLog    = lazy(() => import('./pages/fitness/WeightLog'));
+const FoodLog      = lazy(() => import('./pages/fitness/FoodLog'));
 const CalendarHome = lazy(() => import('./pages/calendar/CalendarHome'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ const PAGE_LABELS: Record<string, string> = {
   portfolio:    'Portfölj',
 };
 
-const ECONOMY_PAGES: Record<string, any> = {
+const ECONOMY_PAGES: Record<string, React.ComponentType> = {
   overview: Overview,
   transactions: Transactions,
   analytics: Analytics,
@@ -91,16 +92,14 @@ export default function App() {
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
 
-      {/* ── Desktop top nav (hidden on mobile – mobile uses fixed bottom nav) ── */}
+      {/* ── Desktop top nav ── */}
       <TopNav />
 
-      {/* ── Main content area ────────────────────────────────────────────────── */}
+      {/* ── Main content area ── */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {module === 'economy' ? (
-          // ── Economy module: sidebar + paged content ──────────────────────
           <>
-            {/* Mobile overlay backdrop */}
             {sidebarOpen && (
               <div
                 className="fixed inset-0 z-20 bg-black/30 lg:hidden"
@@ -108,19 +107,15 @@ export default function App() {
               />
             )}
 
-            {/* Desktop sidebar – in normal flex flow */}
             <div className="hidden lg:flex flex-shrink-0">
               <Sidebar isOpen={true} onClose={() => {}} desktop={true} />
             </div>
 
-            {/* Mobile sidebar – fixed overlay */}
             <div className="lg:hidden">
               <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             </div>
 
-            {/* Page area */}
             <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-              {/* Mobile top bar with hamburger */}
               <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 flex-shrink-0">
                 <button
                   onClick={() => setSidebarOpen(true)}
@@ -133,7 +128,6 @@ export default function App() {
                 </span>
               </div>
 
-              {/* pb-16 on mobile avoids the fixed bottom nav covering content */}
               <main className="flex-1 overflow-auto pb-16 lg:pb-0">
                 <div className="min-h-full flex flex-col max-w-screen-2xl mx-auto w-full">
                   <Suspense fallback={<Spinner />}>
@@ -148,14 +142,18 @@ export default function App() {
             </div>
           </>
         ) : (
-          // ── Other modules: full-width, no sidebar ────────────────────────
           <main className="flex-1 overflow-auto pb-16 lg:pb-0">
             <Suspense fallback={<Spinner />}>
               <AnimatePresence mode="wait">
-                <motion.div key={module === 'fitness' ? `fitness-${fitnessPage}` : module} {...PAGE_TRANSITION} className="min-h-full">
+                <motion.div
+                  key={module === 'fitness' ? `fitness-${fitnessPage}` : module}
+                  {...PAGE_TRANSITION}
+                  className="min-h-full"
+                >
                   {module === 'home'     && <Home />}
                   {module === 'fitness'  && fitnessPage === 'home'      && <FitnessHome />}
                   {module === 'fitness'  && fitnessPage === 'weightlog' && <WeightLog />}
+                  {module === 'fitness'  && fitnessPage === 'foodlog'   && <FoodLog />}
                   {module === 'calendar' && <CalendarHome />}
                 </motion.div>
               </AnimatePresence>

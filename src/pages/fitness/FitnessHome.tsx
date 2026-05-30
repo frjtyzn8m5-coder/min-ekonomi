@@ -28,7 +28,7 @@ const MODULES: {
     color: 'text-orange-500',
     bg: 'bg-orange-50',
     page: 'foodlog',
-    ready: false,
+    ready: true,
   },
   {
     icon: Dumbbell,
