@@ -310,7 +310,7 @@ export default function Recipes() {
       return {
         name: parsed.name,
         originalText: text,
-        amount: parsed.result.grams ?? 0,
+        amount: parsed.grams ?? 0,
         originalAmount: parsed.amount,
         originalUnit: parsed.unit,
       };

@@ -4,6 +4,7 @@ import { loadPantry, savePantryItem, deletePantryItem, adjustPantryStock, upsert
 import type { PantryItem, ParsedReceiptItem, PriceEntry } from '../../types';
 import ReceiptScanner from '../../components/fitness/ReceiptScanner';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import type { IScannerControls } from '@zxing/browser';
 import {
   Package, Plus, Trash2, ScanBarcode, FileText, Search, ChevronDown,
   AlertTriangle, Edit2, Check, X,
@@ -227,7 +228,7 @@ export default function Pantry() {
   const [showManual, setShowManual] = useState(false);
   const [editItem, setEditItem] = useState<PantryItem | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const controlsRef = useRef<IScannerControls | null>(null);
 
   // Load pantry
   useEffect(() => {
@@ -242,11 +243,11 @@ export default function Pantry() {
   useEffect(() => {
     if (view !== 'barcode' || !videoRef.current) return;
     const reader = new BrowserMultiFormatReader();
-    readerRef.current = reader;
 
     reader.decodeFromVideoDevice(undefined, videoRef.current, async (result, err) => {
       if (!result) return;
       const barcode = result.getText();
+      controlsRef.current?.stop();
       setView('list');
 
       // Look up barcode in Open Food Facts
@@ -270,9 +271,9 @@ export default function Pantry() {
         setShowManual(true);
         setEditItem({ id: nanoid(), name: '', barcode, amount: 1, unit: 'st', addedAt: Date.now(), source: 'barcode' } as PantryItem);
       }
-    }).catch(() => {});
+    }).then(controls => { controlsRef.current = controls; }).catch(() => {});
 
-    return () => { reader.reset(); };
+    return () => { controlsRef.current?.stop(); };
   }, [view]);
 
   async function handleSaveItem(item: PantryItem) {

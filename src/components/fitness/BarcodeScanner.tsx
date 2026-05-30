@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/browser';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import type { IScannerControls } from '@zxing/browser';
 import { X, Camera, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,7 +11,7 @@ interface BarcodeScannerProps {
 
 export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const controlsRef = useRef<IScannerControls | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
 
@@ -20,7 +21,6 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
     async function startScanner() {
       try {
         const reader = new BrowserMultiFormatReader();
-        readerRef.current = reader;
 
         const devices = await BrowserMultiFormatReader.listVideoInputDevices();
         if (!devices.length) {
@@ -38,7 +38,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
         if (!active || !videoRef.current) return;
         setScanning(true);
 
-        await reader.decodeFromVideoDevice(
+        const controls = await reader.decodeFromVideoDevice(
           backCamera.deviceId,
           videoRef.current,
           (result, err) => {
@@ -46,11 +46,14 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
             if (result) {
               onDetected(result.getText());
             }
-            if (err && !(err instanceof NotFoundException)) {
+            // err is non-null every frame without a code — only log unexpected errors
+            if (err && err.name !== 'NotFoundException') {
               console.warn('Barcode scan error:', err);
             }
           }
         );
+
+        controlsRef.current = controls;
       } catch (e: unknown) {
         if (!active) return;
         const msg = e instanceof Error ? e.message : 'Okänt fel';
@@ -67,7 +70,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
 
     return () => {
       active = false;
-      readerRef.current?.reset();
+      controlsRef.current?.stop();
     };
   }, [onDetected]);
 
@@ -80,73 +83,62 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
         className="fixed inset-0 z-50 bg-black flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 text-white">
-          <div className="flex items-center gap-2">
-            <Camera size={18} />
+        <div className="flex items-center justify-between px-4 py-3 bg-black/80">
+          <div className="flex items-center gap-2 text-white">
+            <Camera size={20} />
             <span className="font-medium text-sm">Skanna streckkod</span>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
           >
-            <X size={18} />
+            <X size={18} className="text-white" />
           </button>
         </div>
 
-        {/* Video */}
-        <div className="flex-1 relative overflow-hidden">
+        {/* Camera feed */}
+        <div className="flex-1 relative flex items-center justify-center">
           <video
             ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover"
-            playsInline
+            className="w-full h-full object-cover"
+            autoPlay
             muted
+            playsInline
           />
 
-          {/* Scanning overlay */}
-          {scanning && !error && (
+          {/* Scan frame overlay */}
+          {scanning && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-40 border-2 border-white rounded-xl relative">
-                {/* Corner decorations */}
-                <div className="absolute -top-0.5 -left-0.5 w-6 h-6 border-t-4 border-l-4 border-orange-400 rounded-tl-xl" />
-                <div className="absolute -top-0.5 -right-0.5 w-6 h-6 border-t-4 border-r-4 border-orange-400 rounded-tr-xl" />
-                <div className="absolute -bottom-0.5 -left-0.5 w-6 h-6 border-b-4 border-l-4 border-orange-400 rounded-bl-xl" />
-                <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 border-b-4 border-r-4 border-orange-400 rounded-br-xl" />
-                {/* Scan line animation */}
-                <motion.div
-                  className="absolute left-2 right-2 h-0.5 bg-orange-400 rounded"
-                  animate={{ top: ['10%', '85%', '10%'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                />
+              <div className="relative w-64 h-48">
+                {/* Corners */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-3 border-l-3 border-orange-400 rounded-tl-lg" style={{ borderWidth: 3 }} />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-3 border-r-3 border-orange-400 rounded-tr-lg" style={{ borderWidth: 3 }} />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-3 border-l-3 border-orange-400 rounded-bl-lg" style={{ borderWidth: 3 }} />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-3 border-r-3 border-orange-400 rounded-br-lg" style={{ borderWidth: 3 }} />
+                {/* Scan line */}
+                <div className="absolute left-2 right-2 h-0.5 bg-orange-400 opacity-80 animate-pulse" style={{ top: '50%' }} />
               </div>
-              <p className="absolute bottom-12 text-white/80 text-sm">
-                Rikta kameran mot streckkoden
-              </p>
             </div>
           )}
 
           {/* Error state */}
           {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6">
-              <div className="text-center">
-                <AlertCircle size={40} className="text-red-400 mx-auto mb-3" />
-                <p className="text-white text-sm">{error}</p>
-                <button
-                  onClick={onClose}
-                  className="mt-4 px-4 py-2 bg-white/20 rounded-xl text-white text-sm"
-                >
-                  Stäng
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Loading state */}
-          {!scanning && !error && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-white text-sm animate-pulse">Startar kameran…</div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 p-6 text-center">
+              <AlertCircle size={40} className="text-red-400 mb-3" />
+              <p className="text-white text-sm">{error}</p>
+              <button
+                onClick={onClose}
+                className="mt-4 px-4 py-2 bg-white text-gray-800 rounded-full text-sm font-medium"
+              >
+                Stäng
+              </button>
             </div>
           )}
         </div>
+
+        <p className="text-center text-white/60 text-xs py-3">
+          Rikta kameran mot streckkoden
+        </p>
       </motion.div>
     </AnimatePresence>
   );
