@@ -133,7 +133,7 @@ export const useStore = create<AppState>()(
       priceCache: {},
       portfolioSnapshots: [],
       assetClasses: ['Aktier', 'Räntebärande', 'Råvaror', 'Fastigheter', 'Övrigt'],
-      module: 'economy',
+      module: 'home',
       page: 'overview',
       fitnessPage: 'home',
       fitnessProfile: DEFAULT_FITNESS_PROFILE,

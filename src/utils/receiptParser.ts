@@ -21,11 +21,11 @@ export function parseICAReceipt(text: string): ParsedReceiptItem[] {
   const startIdx = headerIdx >= 0 ? headerIdx + 1 : 0;
 
   // Pattern: (optional *)(name)(6-8 digit article nr)(pris)(amount)(st|kg)(summa)
-  // The text from PDF may have varying whitespace so we match flexibly
-  const itemRe = /^(\*\s*)?(.+?)\s{2,}(\d{6,8})\s+([\d,]+)\s+([\d,]+)\s+(st|kg)\s+([\d,]+)/i;
+  // pdf-parse may produce single or double spaces between columns
+  const itemRe = /^(\*\s*)?(.+?)\s+(\d{6,8})\s+([\d,]+)\s+([\d,]+)\s+(st|kg)\s+([\d,]+)/i;
 
-  // Also handle lines where columns are tab-separated or have other spacing
-  const itemRe2 = /^(\*\s*)?(.+?)\s+(\d{7})\s+([\d,]+)\s+([\d,]+)\s+(st|kg)\s+([\d,]+)/i;
+  // Fallback: no summa column at end (some lines omit it)
+  const itemRe2 = /^(\*\s*)?(.+?)\s+(\d{6,8})\s+([\d,]+)\s+([\d,]+)\s+(st|kg)/i;
 
   const seen = new Map<string, ParsedReceiptItem>();
 

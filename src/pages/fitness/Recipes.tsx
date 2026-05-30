@@ -9,7 +9,7 @@ import { getLvData, matchToLV, nutritionForGrams, calcRecipeNutrition } from '..
 import type { Recipe, RecipeIngredient, PantryItem, FoodEntry, FoodItem } from '../../types';
 import {
   ChefHat, Plus, Trash2, Link, Loader2, Search, X, ChevronDown, ChevronUp,
-  Utensils, Check, Package, RefreshCw, AlertCircle, Shuffle,
+  Utensils, Check, Package, RefreshCw, AlertCircle, Shuffle, ArrowLeft,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
@@ -35,7 +35,7 @@ interface ImportDialogProps {
   onImport: (data: {
     name: string; servings: number; ingredients: string[];
     instructions: string[]; imageUrl?: string; tags: string[]; source: string;
-  }) => void;
+  }) => Promise<void>;
   onClose: () => void;
 }
 
@@ -56,7 +56,7 @@ function ImportDialog({ onImport, onClose }: ImportDialogProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Importering misslyckades');
-      onImport(data);
+      await onImport(data);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -610,8 +610,8 @@ export default function Recipes() {
   async function handleImport(data: {
     name: string; servings: number; ingredients: string[];
     instructions: string[]; imageUrl?: string; tags: string[]; source: string;
-  }) {
-    if (!user) return;
+  }): Promise<void> {
+    if (!user) throw new Error('Inte inloggad');
     const ingredients = await resolveIngredients(data.ingredients);
 
     // Compute nutrition from matched ingredients
@@ -694,6 +694,9 @@ export default function Recipes() {
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
+              <button onClick={() => setFitnessPage('home')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 -ml-1">
+                <ArrowLeft size={18} className="text-gray-600" />
+              </button>
               <ChefHat size={20} className="text-green-600" />
               <h1 className="text-lg font-bold text-gray-900">Recept</h1>
             </div>

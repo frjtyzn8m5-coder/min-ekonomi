@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useStore } from '../../store/useStore';
 import { loadPantry, savePantryItem, deletePantryItem, adjustPantryStock, upsertPantryItems, upsertPriceEntries } from '../../lib/pantryDb';
 import type { PantryItem, ParsedReceiptItem, PriceEntry } from '../../types';
 import ReceiptScanner from '../../components/fitness/ReceiptScanner';
@@ -7,7 +8,7 @@ import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
 import {
   Package, Plus, Trash2, ScanBarcode, FileText, Search, ChevronDown,
-  AlertTriangle, Edit2, Check, X,
+  AlertTriangle, Edit2, Check, X, ArrowLeft,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
@@ -219,6 +220,7 @@ type View = 'list' | 'barcode';
 
 export default function Pantry() {
   const { user } = useAuthStore();
+  const { setFitnessPage } = useStore();
   const [items, setItems] = useState<PantryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -358,6 +360,9 @@ export default function Pantry() {
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
+              <button onClick={() => setFitnessPage('recipes')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 -ml-1">
+                <ArrowLeft size={18} className="text-gray-600" />
+              </button>
               <Package size={20} className="text-green-600" />
               <h1 className="text-lg font-bold text-gray-900">Skafferi</h1>
             </div>

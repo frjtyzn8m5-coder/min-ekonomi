@@ -18,7 +18,8 @@ function today(): string {
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
+  const base = dateStr.split('__')[0]; // handle "2026-05-30__Framsida" compound keys
+  const d = new Date(base + 'T00:00:00');
   return d.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
 }
 
@@ -255,6 +256,7 @@ export default function WeightLog() {
   const [sliderMode, setSliderMode] = useState(false);
   const [uploadBodyPart, setUploadBodyPart] = useState<BodyPart>('Framsida');
   const [filterBodyPart, setFilterBodyPart] = useState<BodyPart | 'Alla'>('Alla');
+  const [photoDate, setPhotoDate] = useState(today());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Load data ────────────────────────────────────────────────────────────────
@@ -329,22 +331,19 @@ export default function WeightLog() {
     setSaving(true);
     try {
       const dataUrl = await compressImage(file);
-      // Encode body part into the date key: date__bodypart
-      const dateStr = `${today()}__${uploadBodyPart}`;
-      const entry: BodyEntry = { date: dateStr, photoUrl: dataUrl, notes: uploadBodyPart };
-      await saveBodyEntry(user.uid, { ...entry, date: dateStr.split('__')[0] });
+      // Key: date__bodyPart — allows multiple photos per day, one per body part
+      const docKey = `${photoDate}__${uploadBodyPart}`;
+      const entry: BodyEntry = { date: docKey, photoUrl: dataUrl, notes: uploadBodyPart };
+      await saveBodyEntry(user.uid, entry);
       setEntries(prev => {
-        const baseDate = today();
-        const existing = prev.find(e => e.date === baseDate);
-        const without = prev.filter(e => e.date !== baseDate);
-        return [...without, { ...existing, date: baseDate, photoUrl: dataUrl, notes: uploadBodyPart }]
-          .sort((a, b) => a.date.localeCompare(b.date));
+        const without = prev.filter(e => e.date !== docKey);
+        return [...without, entry].sort((a, b) => a.date.localeCompare(b.date));
       });
     } finally {
       setSaving(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }, [user, uploadBodyPart]);
+  }, [user, uploadBodyPart, photoDate]);
 
   // ── Derived chart data ────────────────────────────────────────────────────────
 
@@ -783,8 +782,8 @@ export default function WeightLog() {
             </div>
           </div>
 
-          {/* Body part selector for upload */}
-          <div className="flex gap-1.5 mb-3 flex-wrap">
+          {/* Body part selector + date picker for upload */}
+          <div className="flex gap-1.5 mb-2 flex-wrap">
             {BODY_PARTS.map(part => (
               <button
                 key={part}
@@ -798,6 +797,16 @@ export default function WeightLog() {
                 {part}
               </button>
             ))}
+          </div>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs text-gray-400">Datum:</span>
+            <input
+              type="date"
+              value={photoDate}
+              max={today()}
+              onChange={e => setPhotoDate(e.target.value || today())}
+              className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-400"
+            />
           </div>
 
           <input
@@ -814,7 +823,10 @@ export default function WeightLog() {
             </div>
           )}
           {photoEntries.length === 0 && (
-            <p className="text-xs text-gray-400 text-center py-6">Inga foton ännu. Välj kroppsdel och ladda upp ditt första foto!</p>
+            <div className="text-center py-6 space-y-2">
+              <p className="text-xs text-gray-400">Inga foton ännu. Välj kroppsdel, välj datum och ladda upp ditt första foto!</p>
+              <p className="text-[10px] text-gray-300">När du har minst 2 foton kan du jämföra dem sida vid sida eller med slider.</p>
+            </div>
           )}
 
           {/* Compare mode — sida vid sida */}
