@@ -71,7 +71,7 @@ export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'netwo
 
 export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
 
-export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry' | 'mealplan';
+export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry' | 'mealplan' | 'onboarding' | 'program';
 
 export interface BodyMeasurements {
   waist?: number;
@@ -256,12 +256,65 @@ export interface PriceEntry {
   lastUpdated: string; // YYYY-MM-DD
 }
 
+// ── Training Program types (Fas 6) ────────────────────────────────────────────
+
+export type TrainingGoal = 'lose_fat' | 'gain_muscle' | 'recomp' | 'strength' | 'endurance';
+export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
+export type ProgramSplit = 'full_body' | 'upper_lower' | 'ppl';
+
+export interface TrainingProfile {
+  age: number;
+  gender: 'male' | 'female';
+  height: number;          // cm
+  weight: number;          // kg
+  bodyFat?: number;        // %
+  goal: TrainingGoal;
+  experienceLevel: ExperienceLevel;
+  trainingDaysPerWeek: number;
+  availableEquipment: string[];
+  cardioDaysPerWeek?: number;
+  cardioType?: string;
+  injuries?: string;
+  preferBuilt: boolean;    // true = want a pre-built program
+}
+
+export interface ProgramSet {
+  reps: string;   // e.g. "4-6" or "8-12"
+  rir?: number;   // Reps In Reserve
+}
+
+export interface ProgramExercise {
+  name: string;
+  sets: number;
+  repsRange: string;  // e.g. "4-6"
+  rest: number;       // seconds
+  note?: string;
+}
+
+export interface WorkoutDay {
+  dayName: string;     // "Måndag", "Tisdag" etc. or "Push A", "Pull A" etc.
+  splitLabel: string;  // "Push", "Pull", "Legs", "Överkropp", "Helkropp"
+  exercises: ProgramExercise[];
+}
+
+export interface WorkoutProgram {
+  id: string;
+  name: string;
+  split: ProgramSplit;
+  daysPerWeek: number;
+  goal: TrainingGoal;
+  experienceLevel: ExperienceLevel;
+  schedule: WorkoutDay[];   // ordered list of training days in the week
+  createdAt: number;
+}
+
 export interface ParsedReceiptItem {
   name: string;
   articleNumber: string;
-  pris: number; // original price per unit or per kg
-  amount: number; // quantity bought
+  pris: number;        // effective price paid per unit/kg (after discount)
+  regularPris?: number; // listed unit/kg price before discount (for price DB)
+  amount: number;      // quantity bought
   unit: 'st' | 'kg';
   hasDiscount: boolean;
-  selected: boolean; // for UI selection
+  selected: boolean;   // for UI selection
 }

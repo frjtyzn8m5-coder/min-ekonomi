@@ -57,31 +57,39 @@ function parseRowBased(text: string): ParsedReceiptItem[] {
       const name = m[2].trim().replace(/^\*/, '').trim();
       if (SKIP_NAMES.has(name.toLowerCase())) continue;
       const articleNumber = m[3];
+      const listedUnitPrice = parseNum(m[4]); // listed price per unit/kg (before discount)
       const amount = parseNum(m[5]);
       const unit = m[6].toLowerCase() as 'st' | 'kg';
       const summa = parseNum(m[7]);
-      // Use paid sum / amount for effective per-unit price (includes discounts)
-      const pris = amount > 0 ? summa / amount : parseNum(m[4]);
+      // Effective price paid = total / amount (includes discount)
+      const pris = amount > 0 ? summa / amount : listedUnitPrice;
       if (pris <= 0) continue;
       const hasDiscount = m[1] === '*';
-      items.push({ name, articleNumber, pris, amount, unit, hasDiscount, selected: true });
+      // regularPris = listed price (use for price DB when discounted)
+      const regularPris = hasDiscount ? listedUnitPrice : undefined;
+      items.push({ name, articleNumber, pris, regularPris, amount, unit, hasDiscount, selected: true });
       continue;
     }
 
-    // Simpler pattern without unit token: NAME ARTICLE PRICE1 PRICE2 TOTAL
+    // Simpler pattern without unit token: NAME ARTICLE UNIT_PRICE AMOUNT TOTAL
+    // m2[4]=listed unit price, m2[5]=amount bought, m2[6]=total paid
     const m2 = line.match(/^(\*?)(.+?)\s+(\d{6,8})\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)$/i);
     if (m2) {
       const name = m2[2].trim().replace(/^\*/, '').trim();
       if (SKIP_NAMES.has(name.toLowerCase())) continue;
       const articleNumber = m2[3];
-      const amount = parseNum(m2[4]);
-      const summa = parseNum(m2[5]);
+      const listedUnitPrice = parseNum(m2[4]);
+      const amount = parseNum(m2[5]);
+      const summa = parseNum(m2[6]); // total paid
       if (summa <= 0 || amount <= 0) continue;
+      const hasDiscount = m2[1] === '*';
+      const pris = summa / amount; // effective per-unit price paid
+      const regularPris = hasDiscount ? listedUnitPrice : undefined;
       items.push({
         name, articleNumber,
-        pris: summa / amount,
+        pris, regularPris,
         amount, unit: 'st',
-        hasDiscount: m2[1] === '*',
+        hasDiscount,
         selected: true,
       });
     }

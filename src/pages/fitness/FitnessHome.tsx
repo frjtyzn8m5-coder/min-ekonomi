@@ -1,4 +1,4 @@
-import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket } from 'lucide-react';
+import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import type { FitnessPage } from '../../types';
@@ -64,6 +64,15 @@ const MODULES: {
     color: 'text-rose-500',
     bg: 'bg-rose-50',
     page: 'mealplan',
+    ready: true,
+  },
+  {
+    icon: ClipboardList,
+    label: 'Träningsprogram',
+    description: 'Personligt program baserat på dina mål och erfarenhet. PPL, Upper/Lower eller Helkropp.',
+    color: 'text-indigo-600',
+    bg: 'bg-indigo-50',
+    page: 'program',
     ready: true,
   },
 ];

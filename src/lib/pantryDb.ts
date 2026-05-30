@@ -38,7 +38,9 @@ export async function adjustPantryStock(
 export async function upsertPantryItems(uid: string, items: PantryItem[]): Promise<void> {
   const batch = writeBatch(db);
   for (const item of items) {
-    batch.set(doc(db, 'users', uid, 'pantry', item.id), item, { merge: true });
+    // JSON round-trip strips undefined values — Firestore rejects them
+    const clean = JSON.parse(JSON.stringify(item));
+    batch.set(doc(db, 'users', uid, 'pantry', item.id), clean, { merge: true });
   }
   await batch.commit();
 }

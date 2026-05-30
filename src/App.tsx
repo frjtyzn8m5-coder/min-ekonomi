@@ -23,10 +23,12 @@ const Home         = lazy(() => import('./pages/home/Home'));
 const FitnessHome  = lazy(() => import('./pages/fitness/FitnessHome'));
 const WeightLog    = lazy(() => import('./pages/fitness/WeightLog'));
 const FoodLog      = lazy(() => import('./pages/fitness/FoodLog'));
-const Pantry       = lazy(() => import('./pages/fitness/Pantry'));
-const Recipes      = lazy(() => import('./pages/fitness/Recipes'));
-const MealPlan     = lazy(() => import('./pages/fitness/MealPlan'));
-const CalendarHome = lazy(() => import('./pages/calendar/CalendarHome'));
+const Pantry          = lazy(() => import('./pages/fitness/Pantry'));
+const Recipes         = lazy(() => import('./pages/fitness/Recipes'));
+const MealPlan        = lazy(() => import('./pages/fitness/MealPlan'));
+const Onboarding      = lazy(() => import('./pages/fitness/Onboarding'));
+const WorkoutProgram  = lazy(() => import('./pages/fitness/WorkoutProgram'));
+const CalendarHome    = lazy(() => import('./pages/calendar/CalendarHome'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -157,9 +159,11 @@ export default function App() {
                   {module === 'fitness'  && fitnessPage === 'home'      && <FitnessHome />}
                   {module === 'fitness'  && fitnessPage === 'weightlog' && <WeightLog />}
                   {module === 'fitness'  && fitnessPage === 'foodlog'   && <FoodLog />}
-                  {module === 'fitness'  && fitnessPage === 'pantry'    && <Pantry />}
-                  {module === 'fitness'  && fitnessPage === 'recipes'   && <Recipes />}
-                  {module === 'fitness'  && fitnessPage === 'mealplan'  && <MealPlan />}
+                  {module === 'fitness'  && fitnessPage === 'pantry'     && <Pantry />}
+                  {module === 'fitness'  && fitnessPage === 'recipes'    && <Recipes />}
+                  {module === 'fitness'  && fitnessPage === 'mealplan'   && <MealPlan />}
+                  {module === 'fitness'  && fitnessPage === 'onboarding' && <Onboarding />}
+                  {module === 'fitness'  && fitnessPage === 'program'    && <WorkoutProgram />}
                   {module === 'calendar' && <CalendarHome />}
                 </motion.div>
               </AnimatePresence>

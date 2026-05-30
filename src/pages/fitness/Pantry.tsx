@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
 import { loadPantry, savePantryItem, deletePantryItem, adjustPantryStock, upsertPantryItems, upsertPriceEntries } from '../../lib/pantryDb';
-import { getLvData } from '../../utils/matchNutrition';
+import { getLvData, matchToLV } from '../../utils/matchNutrition';
 import type { PantryItem, ParsedReceiptItem, PriceEntry, FoodItem } from '../../types';
 import ReceiptScanner from '../../components/fitness/ReceiptScanner';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -76,7 +76,12 @@ function ReceiptReview({ items, onConfirm, onClose }: ReceiptReviewProps) {
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-sm font-semibold text-gray-800">{item.pris.toFixed(2)} kr</p>
-                <p className="text-xs text-gray-400">{item.amount} {item.unit}</p>
+                <div className="flex items-center gap-1 justify-end">
+                  <p className="text-xs text-gray-400">{item.amount} {item.unit}</p>
+                  {item.hasDiscount && (
+                    <span className="text-[10px] font-medium bg-red-100 text-red-600 px-1 rounded">REA</span>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -453,6 +458,9 @@ export default function Pantry() {
 
     const today = new Date().toISOString().slice(0, 10);
 
+    // Pre-load LV data for nutrition matching
+    const lvData = await getLvData();
+
     // Dedup: if article number already in pantry, update amount+price; else create new
     const updatedItems: PantryItem[] = [];
     const newItems: PantryItem[] = [];
@@ -460,17 +468,24 @@ export default function Pantry() {
     for (const ri of selected) {
       const existing = items.find(i => i.articleNumber && i.articleNumber === ri.articleNumber);
       const incomingAmount = ri.unit === 'kg' ? ri.amount * 1000 : ri.amount;
-      const incomingUnit = ri.unit === 'kg' ? 'g' : 'st';
+      const incomingUnit: 'g' | 'st' = ri.unit === 'kg' ? 'g' : 'st';
 
       if (existing) {
         const merged: PantryItem = {
           ...existing,
           amount: existing.amount + incomingAmount,
-          pricePerUnit: ri.unit === 'st' ? ri.pris : existing.pricePerUnit,
-          pricePerKg: ri.unit === 'kg' ? ri.pris : existing.pricePerKg,
+          // Only update price if not a sale price; prefer regularPris when discounted
+          pricePerUnit: ri.unit === 'st'
+            ? (ri.regularPris ?? ri.pris)
+            : existing.pricePerUnit,
+          pricePerKg: ri.unit === 'kg'
+            ? (ri.regularPris ?? ri.pris)
+            : existing.pricePerKg,
         };
         updatedItems.push(merged);
       } else {
+        // Try to match to LV database for nutrition info
+        const lvMatch = matchToLV(ri.name, lvData);
         newItems.push({
           id: nanoid(),
           name: ri.name,
@@ -479,29 +494,36 @@ export default function Pantry() {
           unit: incomingUnit,
           pricePerUnit: ri.unit === 'st' ? ri.pris : undefined,
           pricePerKg: ri.unit === 'kg' ? ri.pris : undefined,
+          foodId: lvMatch?.id,
           addedAt: Date.now(),
           source: 'receipt' as const,
         });
       }
     }
 
+    // Price DB stores the REGULAR (non-sale) price for accurate cost tracking
     const priceEntries: PriceEntry[] = selected.map(ri => ({
       name: ri.name,
       articleNumber: ri.articleNumber,
-      pricePerUnit: ri.unit === 'st' ? ri.pris : undefined,
-      pricePerKg: ri.unit === 'kg' ? ri.pris : undefined,
+      // Use regularPris when discounted, otherwise use pris
+      pricePerUnit: ri.unit === 'st' ? (ri.regularPris ?? ri.pris) : undefined,
+      pricePerKg: ri.unit === 'kg' ? (ri.regularPris ?? ri.pris) : undefined,
       store: 'ICA',
       lastUpdated: today,
     }));
 
-    await upsertPantryItems(user.uid, [...updatedItems, ...newItems]);
-    await upsertPriceEntries(user.uid, priceEntries);
-
-    setItems(prev => [
-      ...newItems,
-      ...prev.map(i => updatedItems.find(u => u.id === i.id) ?? i),
-    ]);
-    setReceiptItems(null);
+    try {
+      await upsertPantryItems(user.uid, [...updatedItems, ...newItems]);
+      await upsertPriceEntries(user.uid, priceEntries);
+      setItems(prev => [
+        ...newItems,
+        ...prev.map(i => updatedItems.find(u => u.id === i.id) ?? i),
+      ]);
+      setReceiptItems(null);
+    } catch (err) {
+      console.error('Kunde inte spara kvittoprodukter:', err);
+      alert('Något gick fel vid sparandet. Kontrollera anslutningen och försök igen.');
+    }
   }
 
   const filtered = items.filter(i =>
