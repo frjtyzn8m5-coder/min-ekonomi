@@ -179,8 +179,29 @@ export function toGrams(
   }
 
   // ── Package/unknown units ─────────────────────────────────────────────────
-  const packageUnits = ['förpackning', 'förp', 'paket', 'burk', 'portion', 'näve', 'kruka', 'knippe', 'kvist', 'kvisitar'];
+  const packageUnits = [
+    'förpackning', 'förp', 'paket', 'burk', 'portion', 'portioner',
+    'näve', 'kruka', 'knippe', 'kvist', 'kvisitar',
+  ];
   if (packageUnits.includes(u)) {
+    // "X portioner pasta" → use a typical serving weight for that ingredient
+    if (u === 'portion' || u === 'portioner') {
+      // Typical serving weights in grams
+      const SERVING_WEIGHTS: [string, number][] = [
+        ['pasta', 80], ['spaghetti', 80], ['penne', 80], ['rigatoni', 80],
+        ['ris', 70], ['quinoa', 70],
+        ['köttfärs', 150], ['kyckling', 150], ['fisk', 150],
+        ['potatis', 150],
+        ['soppa', 300], ['sallad', 100],
+      ];
+      for (const [key, serving] of SERVING_WEIGHTS) {
+        if (name.includes(key)) {
+          return { grams: Math.round(amount * serving), confidence: 'low' };
+        }
+      }
+      // Generic: 1 portion ≈ 200g
+      return { grams: Math.round(amount * 200), confidence: 'low' };
+    }
     // Try to find a weight for the unit type
     for (const [key, weight] of ST_WEIGHTS_RAW) {
       if (u.includes(key) || key.includes(u)) {
@@ -292,6 +313,6 @@ function isUnit(s: string): boolean {
     u in UNIT_ML ||
     u in UNIT_G ||
     ['st', 'stycken', 'styck', 'st.', 'förpackning', 'förp', 'paket',
-     'burk', 'portion', 'näve', 'kruka', 'knippe', 'kvist', 'skivor', 'klyftor'].includes(u)
+     'burk', 'portion', 'portioner', 'näve', 'kruka', 'knippe', 'kvist', 'skivor', 'klyftor'].includes(u)
   );
 }

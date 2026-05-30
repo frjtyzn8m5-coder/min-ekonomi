@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
-import { loadRecipes, saveRecipe, deleteRecipe, loadPantry } from '../../lib/pantryDb';
+import { loadRecipes, saveRecipe, deleteRecipe, loadPantry, loadPriceDB } from '../../lib/pantryDb';
 import { saveFoodEntry } from '../../lib/foodDb';
 import { parseIngredientText } from '../../utils/unitConverter';
 import { calcRecipeCost } from '../../utils/recipeCost';
 import { getLvData, matchToLV, nutritionForGrams, calcRecipeNutrition } from '../../utils/matchNutrition';
-import type { Recipe, RecipeIngredient, PantryItem, FoodEntry, FoodItem } from '../../types';
+import type { Recipe, RecipeIngredient, PantryItem, PriceEntry, FoodEntry, FoodItem } from '../../types';
 import {
   ChefHat, Plus, Trash2, Link, Loader2, Search, X, ChevronDown, ChevronUp,
   Utensils, Check, Package, RefreshCw, AlertCircle, Shuffle, ArrowLeft,
@@ -302,13 +302,14 @@ function IngredientRow({ ing, scale, costDetail, onUpdateGrams, onSwapMatch }: I
 interface RecipeDetailProps {
   recipe: Recipe;
   pantry: PantryItem[];
+  priceDB: PriceEntry[];
   onSave: (r: Recipe) => void;
   onClose: () => void;
   onDelete: (id: string) => void;
   onLog: (r: Recipe, servings: number) => void;
 }
 
-function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: RecipeDetailProps) {
+function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLog }: RecipeDetailProps) {
   const [servings, setServings] = useState(recipe.servings);
   const [ingredients, setIngredients] = useState<ResolvedIngredient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -333,8 +334,7 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
     });
   }, [recipe.id]);
 
-  // Cost (pantry only — no priceDB in-memory)
-  const cost = calcRecipeCost(ingredients, servings, pantry, []);
+  const cost = calcRecipeCost(ingredients, servings, pantry, priceDB);
 
   // Computed nutrition from matched ingredients
   const computedNutrition = calcRecipeNutrition(
@@ -366,7 +366,6 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
   }
 
   function handleSave() {
-    // Recompute nutrition before saving
     const newNutrition = calcRecipeNutrition(
       ingredients.map(i => ({ grams: i.amount, lvItem: i.lvItem })),
       servings,
@@ -381,12 +380,21 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
   }
 
   const matchedCount = ingredients.filter(i => i.lvItem !== null).length;
+  const pricedCount = cost.details.filter(d => !d.isSpice && d.rawCost !== null).length;
+  const totalPriceable = cost.details.filter(d => !d.isSpice).length;
+  const hasAnyPrice = cost.totalRawSEK > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
-        <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800">← Tillbaka</button>
+      {/* Sticky header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
+        >
+          <ArrowLeft size={16} />
+          Tillbaka
+        </button>
         <div className="flex gap-2">
           <button
             onClick={() => onDelete(recipe.id)}
@@ -406,18 +414,22 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
       <div className="flex-1 overflow-y-auto">
         {/* Image */}
         {recipe.imageUrl && (
-          <div className="h-48 bg-gray-100">
+          <div className="h-48 bg-gray-100 flex-shrink-0">
             <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
           </div>
         )}
 
-        <div className="p-4 max-w-2xl mx-auto space-y-4">
-          {/* Name */}
+        <div className="p-4 max-w-2xl mx-auto space-y-4 pb-8">
+          {/* Name + source */}
           <div>
             <h1 className="text-xl font-bold text-gray-900">{recipe.name}</h1>
             {recipe.source && (
-              <a href={recipe.source} target="_blank" rel="noopener noreferrer"
-                className="text-xs text-green-600 hover:underline mt-1 block truncate">
+              <a
+                href={recipe.source}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-green-600 hover:underline mt-1 block truncate"
+              >
                 {recipe.source}
               </a>
             )}
@@ -430,30 +442,51 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
               <span className="text-sm">Portioner</span>
             </div>
             <div className="flex items-center gap-2 ml-auto">
-              <button onClick={() => setServings(s => Math.max(1, s - 1))}
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100">
+              <button
+                onClick={() => setServings(s => Math.max(1, s - 1))}
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+              >
                 −
               </button>
               <span className="w-8 text-center font-semibold text-gray-800">{servings}</span>
-              <button onClick={() => setServings(s => s + 1)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100">
+              <button
+                onClick={() => setServings(s => s + 1)}
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+              >
                 +
               </button>
             </div>
           </div>
 
           {/* Cost summary */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-green-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-green-600 font-medium">Råkostnad</p>
-              <p className="text-lg font-bold text-green-700 mt-1">{formatCost(cost.totalRawSEK)}</p>
-              <p className="text-xs text-green-500">{formatCost(cost.perServingRaw)} / portion</p>
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-green-50 rounded-xl p-3 text-center">
+                <p className="text-xs text-green-600 font-medium">Råkostnad</p>
+                <p className="text-lg font-bold text-green-700 mt-1">
+                  {hasAnyPrice ? formatCost(cost.totalRawSEK) : '–'}
+                </p>
+                <p className="text-xs text-green-500">
+                  {hasAnyPrice ? `${formatCost(cost.perServingRaw)} / portion` : 'Lägg till priser i skafferiet'}
+                </p>
+              </div>
+              <div className="bg-blue-50 rounded-xl p-3 text-center">
+                <p className="text-xs text-blue-600 font-medium">Verklig kostnad</p>
+                <p className="text-lg font-bold text-blue-700 mt-1">
+                  {hasAnyPrice ? formatCost(cost.totalRealSEK) : '–'}
+                </p>
+                <p className="text-xs text-blue-500">
+                  {hasAnyPrice ? `${formatCost(cost.perServingReal)} / portion` : 'Skanna kvitto för priser'}
+                </p>
+              </div>
             </div>
-            <div className="bg-blue-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-blue-600 font-medium">Verklig kostnad</p>
-              <p className="text-lg font-bold text-blue-700 mt-1">{formatCost(cost.totalRealSEK)}</p>
-              <p className="text-xs text-blue-500">{formatCost(cost.perServingReal)} / portion</p>
-            </div>
+            {totalPriceable > 0 && (
+              <p className="text-[11px] text-center text-gray-400">
+                {pricedCount === totalPriceable
+                  ? `✓ Alla ${totalPriceable} ingredienser prissatta`
+                  : `${pricedCount}/${totalPriceable} ingredienser med känt pris — ${totalPriceable - pricedCount} saknas`}
+              </p>
+            )}
           </div>
 
           {/* Nutrition per serving */}
@@ -473,49 +506,50 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
             <div className="grid grid-cols-4 gap-2 text-center">
               {[
                 { label: 'Kcal', val: Math.round(displayNutrition.kcal * scale) },
-                { label: 'Protein', val: `${fmt1(displayNutrition.protein * scale)}g` },
-                { label: 'Kolh', val: `${fmt1(displayNutrition.carbs * scale)}g` },
-                { label: 'Fett', val: `${fmt1(displayNutrition.fat * scale)}g` },
+                { label: 'Protein', val: `${fmt1((displayNutrition.protein ?? 0) * scale)}g` },
+                { label: 'Fett', val: `${fmt1((displayNutrition.fat ?? 0) * scale)}g` },
+                { label: 'Kolhydr', val: `${fmt1((displayNutrition.carbs ?? 0) * scale)}g` },
               ].map(m => (
-                <div key={m.label}>
-                  <p className="text-xs text-gray-400">{m.label}</p>
-                  <p className={`text-sm font-bold mt-0.5 ${m.val === 0 || m.val === '0.0g' ? 'text-gray-300' : 'text-gray-800'}`}>
-                    {m.val}
-                  </p>
+                <div key={m.label} className="bg-gray-50 rounded-lg py-2">
+                  <p className="text-[10px] text-gray-400">{m.label}</p>
+                  <p className="text-sm font-bold text-gray-800 mt-0.5">{m.val}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Ingredients with detail */}
+          {/* Ingredient list */}
           <div>
             <button
-              className="flex items-center justify-between w-full mb-2"
               onClick={() => setShowIngredients(v => !v)}
+              className="flex items-center justify-between w-full py-1 mb-2"
             >
-              <h2 className="text-sm font-semibold text-gray-700">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
                 Ingredienser ({ingredients.length})
-              </h2>
+              </p>
               {showIngredients ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
             </button>
 
             {showIngredients && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {loading ? (
                   <div className="flex justify-center py-6">
                     <Loader2 size={20} className="animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  ingredients.map((ing, idx) => (
-                    <IngredientRow
-                      key={idx}
-                      ing={ing}
-                      scale={scale}
-                      costDetail={cost.details[idx]}
-                      onUpdateGrams={grams => updateIngAmount(idx, grams)}
-                      onSwapMatch={item => swapMatch(idx, item)}
-                    />
-                  ))
+                  ingredients.map((ing, idx) => {
+                    const detail = cost.details.find(d => d.name === ing.name);
+                    return (
+                      <IngredientRow
+                        key={idx}
+                        ing={ing}
+                        scale={scale}
+                        costDetail={detail ? { rawCost: detail.rawCost, found: detail.found } : undefined}
+                        onUpdateGrams={g => updateIngAmount(idx, g)}
+                        onSwapMatch={item => swapMatch(idx, item)}
+                      />
+                    );
+                  })
                 )}
               </div>
             )}
@@ -524,42 +558,62 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
           {/* Instructions */}
           {recipe.instructions.length > 0 && (
             <div>
-              <button
-                onClick={() => setExpanded(e => !e)}
-                className="flex items-center gap-2 text-sm font-semibold text-gray-700 w-full"
-              >
-                Instruktioner
-                {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-              {expanded && (
-                <ol className="mt-2 space-y-2 list-decimal list-inside">
-                  {recipe.instructions.map((step, i) => (
-                    <li key={i} className="text-sm text-gray-600 leading-relaxed">{step}</li>
-                  ))}
-                </ol>
-              )}
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Instruktioner</p>
+              <ol className="space-y-3">
+                {recipe.instructions.map((step, idx) => (
+                  <li key={idx} className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <p className="text-sm text-gray-700 leading-relaxed">{step}</p>
+                  </li>
+                ))}
+              </ol>
             </div>
           )}
 
-          {/* Log as meal */}
-          <div className="bg-orange-50 rounded-xl p-4">
-            <p className="text-sm font-semibold text-orange-700 mb-2">Logga som måltid</p>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <button onClick={() => setLogServings(s => Math.max(1, s - 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600">−</button>
-                <span className="w-8 text-center text-sm font-semibold">{logServings}</span>
-                <button onClick={() => setLogServings(s => s + 1)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600">+</button>
-              </div>
-              <span className="text-sm text-orange-600">portioner</span>
-              <button
-                onClick={() => onLog(recipe, logServings)}
-                className="ml-auto px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-600"
-              >
-                Logga
-              </button>
+          {/* Tags */}
+          {recipe.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {recipe.tags.map(tag => (
+                <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  {tag}
+                </span>
+              ))}
             </div>
+          )}
+
+          {/* Log section */}
+          <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Logga måltid</p>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">Portioner:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setLogServings(s => Math.max(1, s - 1))}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+                >
+                  −
+                </button>
+                <span className="w-8 text-center font-semibold text-gray-800">{logServings}</span>
+                <button
+                  onClick={() => setLogServings(s => s + 1)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+                >
+                  +
+                </button>
+              </div>
+              <span className="text-sm text-gray-400 ml-auto">
+                ≈ {Math.round(displayNutrition.kcal * (logServings / Math.max(recipe.servings, 1)))} kcal
+              </span>
+            </div>
+            <button
+              onClick={() => onLog(recipe, logServings)}
+              className="w-full py-2.5 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700 flex items-center justify-center gap-2"
+            >
+              <Utensils size={15} />
+              Logga {logServings} portion{logServings !== 1 ? 'er' : ''}
+            </button>
           </div>
         </div>
       </div>
@@ -571,65 +625,80 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
 
 export default function Recipes() {
   const { user } = useAuthStore();
-  const { nutritionSettings, setFitnessPage } = useStore();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [pantry, setPantry] = useState<PantryItem[]>([]);
+  const [priceDB, setPriceDB] = useState<PriceEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [showImport, setShowImport] = useState(false);
   const [selected, setSelected] = useState<Recipe | null>(null);
+  const [showImport, setShowImport] = useState(false);
   const [logSuccess, setLogSuccess] = useState('');
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([loadRecipes(user.uid), loadPantry(user.uid)])
-      .then(([r, p]) => { setRecipes(r); setPantry(p); setLoading(false); })
-      .catch(() => setLoading(false));
+    setLoading(true);
+    Promise.all([
+      loadRecipes(user.uid),
+      loadPantry(user.uid),
+      loadPriceDB(user.uid),
+    ]).then(([r, p, db]) => {
+      setRecipes(r);
+      setPantry(p);
+      setPriceDB(db);
+      setLoading(false);
+    });
   }, [user]);
 
-  async function resolveIngredients(rawIngredients: string[]): Promise<RecipeIngredient[]> {
-    const lvData = await getLvData();
-    return rawIngredients.map(text => {
-      const parsed = parseIngredientText(text);
-      const lvItem = matchToLV(parsed.name, lvData);
-      const nutrition = lvItem && parsed.grams && parsed.grams > 0
-        ? nutritionForGrams(lvItem, parsed.grams)
-        : undefined;
-      return {
-        name: parsed.name,
-        originalText: text,
-        amount: parsed.grams ?? 0,
-        originalAmount: parsed.amount,
-        originalUnit: parsed.unit,
-        foodId: lvItem?.id,
-        nutrition: nutrition ?? undefined,
-      };
-    });
-  }
-
   async function handleImport(data: {
-    name: string; servings: number; ingredients: string[];
-    instructions: string[]; imageUrl?: string; tags: string[]; source: string;
-  }): Promise<void> {
-    if (!user) throw new Error('Inte inloggad');
-    const ingredients = await resolveIngredients(data.ingredients);
+    name: string;
+    servings: number;
+    ingredients: string[];
+    instructions: string[];
+    imageUrl?: string;
+    tags: string[];
+    source: string;
+  }) {
+    if (!user) return;
 
-    // Compute nutrition from matched ingredients
+    // Parse each ingredient string into a RecipeIngredient
     const lvData = await getLvData();
-    const nutritionInputs = ingredients.map(ing => ({
-      grams: ing.amount,
-      lvItem: ing.foodId ? lvData.find(i => i.id === ing.foodId) ?? null : null,
-    }));
-    const nutritionPerServing = calcRecipeNutrition(nutritionInputs, data.servings);
+    const parsedIngredients: RecipeIngredient[] = await Promise.all(
+      data.ingredients.map(async (text) => {
+        // Try to use parseIngredientText if available, else basic fallback
+        let parsed: RecipeIngredient;
+        try {
+          parsed = parseIngredientText(text);
+        } catch {
+          // Fallback: unknown amount, name = text
+          parsed = {
+            name: text,
+            originalText: text,
+            amount: 100,
+            originalAmount: 100,
+            originalUnit: 'g',
+          };
+        }
+        return parsed;
+      })
+    );
+
+    // Compute nutrition from matched LV items
+    const nutrition = calcRecipeNutrition(
+      parsedIngredients.map(i => ({
+        grams: i.amount,
+        lvItem: matchToLV(i.name, lvData),
+      })),
+      data.servings,
+    );
 
     const recipe: Recipe = {
       id: nanoid(),
       name: data.name,
       servings: data.servings,
-      ingredients,
+      ingredients: parsedIngredients,
       instructions: data.instructions,
       tags: data.tags,
-      nutritionPerServing,
+      nutritionPerServing: nutrition,
       imageUrl: data.imageUrl,
       source: data.source,
       createdAt: Date.now(),
@@ -638,155 +707,167 @@ export default function Recipes() {
     await saveRecipe(user.uid, recipe);
     setRecipes(prev => [recipe, ...prev]);
     setShowImport(false);
-    setSelected(recipe);
   }
 
   async function handleSave(r: Recipe) {
     if (!user) return;
     await saveRecipe(user.uid, r);
     setRecipes(prev => prev.map(x => x.id === r.id ? r : x));
-    setSelected(null);
+    setSelected(r);
   }
 
   async function handleDelete(id: string) {
     if (!user) return;
     await deleteRecipe(user.uid, id);
-    setRecipes(prev => prev.filter(r => r.id !== id));
+    setRecipes(prev => prev.filter(x => x.id !== id));
     setSelected(null);
   }
 
   async function handleLog(recipe: Recipe, servings: number) {
     if (!user) return;
-    const today = new Date().toISOString().slice(0, 10);
     const scale = servings / Math.max(recipe.servings, 1);
-    const n = recipe.nutritionPerServing;
+    const totalGrams = recipe.ingredients.reduce((sum, i) => sum + i.amount, 0) * scale;
+
     const entry: FoodEntry = {
       id: nanoid(),
-      date: today,
+      date: new Date().toISOString().slice(0, 10),
       mealType: 'dinner',
-      foodId: `recipe_${recipe.id}`,
-      foodName: `${recipe.name} (${servings} port.)`,
-      amount: servings * 300,
+      foodId: recipe.id,
+      foodName: recipe.name,
+      amount: Math.round(totalGrams),
       nutrition: {
-        kcal:    Math.round(n.kcal * scale * servings),
-        protein: Math.round(n.protein * scale * servings * 10) / 10,
-        fat:     Math.round(n.fat * scale * servings * 10) / 10,
-        carbs:   Math.round(n.carbs * scale * servings * 10) / 10,
+        kcal: Math.round(recipe.nutritionPerServing.kcal * scale),
+        protein: Math.round(recipe.nutritionPerServing.protein * scale * 10) / 10,
+        fat: Math.round(recipe.nutritionPerServing.fat * scale * 10) / 10,
+        carbs: Math.round(recipe.nutritionPerServing.carbs * scale * 10) / 10,
+        fiber: recipe.nutritionPerServing.fiber != null
+          ? Math.round(recipe.nutritionPerServing.fiber * scale * 10) / 10
+          : undefined,
       },
       source: 'custom',
       timestamp: Date.now(),
     };
+
     await saveFoodEntry(user.uid, entry);
-    setSelected(null);
     setLogSuccess(`${recipe.name} loggad!`);
-    setTimeout(() => setLogSuccess(''), 2500);
+    setTimeout(() => setLogSuccess(''), 3000);
+    setSelected(null);
   }
 
   const filtered = recipes.filter(r =>
-    !search || r.name.toLowerCase().includes(search.toLowerCase()) ||
-    r.tags.some(t => t.toLowerCase().includes(search.toLowerCase())),
+    r.name.toLowerCase().includes(search.toLowerCase()) ||
+    r.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
   );
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 size={28} className="animate-spin text-green-500" />
+        <p className="text-sm text-gray-400">Laddar recept…</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-full bg-gray-50">
+    <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <button onClick={() => setFitnessPage('home')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 -ml-1">
-                <ArrowLeft size={18} className="text-gray-600" />
-              </button>
-              <ChefHat size={20} className="text-green-600" />
-              <h1 className="text-lg font-bold text-gray-900">Recept</h1>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowImport(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-medium"
-              >
-                <Link size={15} />
-                Importera
-              </button>
-              <button
-                onClick={() => setFitnessPage('pantry')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm font-medium"
-              >
-                <Package size={15} />
-                Skafferi
-              </button>
-            </div>
-          </div>
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50"
-              placeholder="Sök recept…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ChefHat size={22} className="text-green-600" />
+          <h1 className="text-lg font-bold text-gray-900">Recept</h1>
+          <span className="text-sm text-gray-400">({recipes.length})</span>
         </div>
+        <button
+          onClick={() => setShowImport(true)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700"
+        >
+          <Link size={14} />
+          Importera
+        </button>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        {logSuccess && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg z-50 flex items-center gap-2">
-            <Check size={14} />
-            {logSuccess}
-          </div>
+      {/* Log success toast */}
+      {logSuccess && (
+        <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
+          <Check size={16} className="text-green-600" />
+          {logSuccess}
+        </div>
+      )}
+
+      {/* Search */}
+      <div className="relative">
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+          placeholder="Sök recept eller tagg…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
+            <X size={14} className="text-gray-400" />
+          </button>
         )}
+      </div>
 
-        {loading && <div className="text-center py-16 text-gray-400 text-sm">Laddar recept…</div>}
-
-        {!loading && recipes.length === 0 && (
-          <div className="text-center py-16">
-            <ChefHat size={40} className="mx-auto mb-3 text-gray-300" />
-            <p className="text-gray-500 font-medium">Inga recept sparade</p>
-            <p className="text-gray-400 text-sm mt-1">Importera ett recept från ICA, Arla eller Tasteline</p>
-            <button
-              onClick={() => setShowImport(true)}
-              className="mt-4 px-5 py-2.5 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700"
-            >
-              Importera recept
-            </button>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 gap-3">
+      {/* Recipe grid */}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+          <ChefHat size={40} className="text-gray-200" />
+          <p className="text-gray-400 text-sm">
+            {search ? 'Inga recept matchar sökningen.' : 'Du har inga recept ännu. Importera ett för att börja!'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
           {filtered.map(recipe => {
-            const cost = calcRecipeCost(recipe.ingredients, recipe.servings, pantry, []);
+            const cost = calcRecipeCost(recipe.ingredients, recipe.servings, pantry, priceDB);
+            const hasPrice = cost.totalRawSEK > 0;
+
             return (
               <button
                 key={recipe.id}
                 onClick={() => setSelected(recipe)}
-                className="text-left bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                className="text-left bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md hover:border-green-200 transition-all"
               >
                 {recipe.imageUrl && (
-                  <div className="h-36 bg-gray-100">
-                    <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
+                  <div className="h-28 bg-gray-100">
+                    <img
+                      src={recipe.imageUrl}
+                      alt={recipe.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 )}
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900">{recipe.name}</h3>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Utensils size={12} />
-                      {recipe.servings} port.
-                    </span>
-                    {recipe.nutritionPerServing.kcal > 0 && (
-                      <span>{recipe.nutritionPerServing.kcal} kcal/port.</span>
-                    )}
-                    {cost.totalRawSEK > 0 && (
-                      <span className="text-green-600 font-medium">
-                        ~{cost.perServingRaw.toFixed(0)} kr/port.
+                {!recipe.imageUrl && (
+                  <div className="h-20 bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
+                    <ChefHat size={28} className="text-green-300" />
+                  </div>
+                )}
+                <div className="p-3">
+                  <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">{recipe.name}</p>
+                  <p className="text-[11px] text-gray-400 mt-1">{recipe.servings} port.</p>
+                  <div className="flex items-center justify-between mt-2">
+                    {recipe.nutritionPerServing.kcal > 0 ? (
+                      <span className="text-[11px] font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                        {recipe.nutritionPerServing.kcal} kcal/port
                       </span>
+                    ) : (
+                      <span />
                     )}
+                    {hasPrice ? (
+                      <span className="text-[11px] text-gray-500">
+                        {formatCost(cost.perServingRaw)}/port
+                      </span>
+                    ) : null}
                   </div>
                   {recipe.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {recipe.tags.slice(0, 4).map(tag => (
-                        <span key={tag} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {recipe.tags.slice(0, 2).map(tag => (
+                        <span key={tag} className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
                           {tag}
                         </span>
                       ))}
@@ -797,20 +878,26 @@ export default function Recipes() {
             );
           })}
         </div>
-      </div>
-
-      {showImport && (
-        <ImportDialog onImport={handleImport} onClose={() => setShowImport(false)} />
       )}
 
+      {/* Recipe detail modal */}
       {selected && (
         <RecipeDetail
           recipe={selected}
           pantry={pantry}
-          onSave={r => { handleSave(r); setSelected(null); }}
+          priceDB={priceDB}
+          onSave={handleSave}
           onClose={() => setSelected(null)}
           onDelete={handleDelete}
           onLog={handleLog}
+        />
+      )}
+
+      {/* Import dialog */}
+      {showImport && (
+        <ImportDialog
+          onImport={handleImport}
+          onClose={() => setShowImport(false)}
         />
       )}
     </div>

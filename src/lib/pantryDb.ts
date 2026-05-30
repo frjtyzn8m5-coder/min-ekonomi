@@ -53,7 +53,9 @@ export async function loadRecipes(uid: string): Promise<Recipe[]> {
 }
 
 export async function saveRecipe(uid: string, recipe: Recipe): Promise<void> {
-  await setDoc(doc(db, 'users', uid, 'recipes', recipe.id), recipe);
+  // Firestore rejects `undefined` values — JSON round-trip strips them cleanly
+  const clean = JSON.parse(JSON.stringify(recipe));
+  await setDoc(doc(db, 'users', uid, 'recipes', recipe.id), clean);
 }
 
 export async function deleteRecipe(uid: string, recipeId: string): Promise<void> {

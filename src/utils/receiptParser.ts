@@ -1,76 +1,100 @@
 import type { ParsedReceiptItem } from '../types';
 
 // ─── ICA Supermarket receipt parser ──────────────────────────────────────────
-// Parses text extracted from Kivra PDF receipts.
-// Uses original "Pris" column (not discounted "Summa").
-// Skips Pant (bottle deposits) and non-food discount lines.
+// pdf-parse extracts ICA Kivra receipts column-by-column, NOT row-by-row.
+// Strategy: extract each column (names, articles, prices, quantities) separately,
+// then zip them together by position.
 
-const SKIP_NAMES = ['pant', 'plastpåse', 'kasse', 'presentkort', 'lotter', 'tidning'];
+const SKIP_NAMES = new Set(['pant', 'plastpåse', 'kasse', 'presentkort', 'lotter', 'tidning']);
+const META_NAMES = new Set(['datum', 'tid', 'org nr', 'kvitto nr', 'kassa', 'kassör']);
 
-function parsePrice(s: string): number {
-  return parseFloat(s.replace(',', '.'));
+function parseNum(s: string): number {
+  return parseFloat(s.replace(',', '.').replace(/\s/g, ''));
+}
+
+/** Extract text between two markers (first occurrence of each). */
+function between(text: string, startMarker: string, endMarker: string): string {
+  const si = text.indexOf(startMarker);
+  if (si < 0) return '';
+  const from = si + startMarker.length;
+  const ei = text.indexOf(endMarker, from);
+  return ei < 0 ? text.slice(from) : text.slice(from, ei);
 }
 
 export function parseICAReceipt(text: string): ParsedReceiptItem[] {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  // ── 1. Names column ─────────────────────────────────────────────────────────
+  // Sits between "Beskrivning" and "Artikelnummer"
+  const nameSection = between(text, 'Beskrivning', 'Artikelnummer');
+  const nameGroups = nameSection.split(/\n{2,}/).map(g => g.trim()).filter(Boolean);
 
-  // Find the item table header
-  const headerIdx = lines.findIndex(l =>
-    l.toLowerCase().includes('beskrivning') && l.toLowerCase().includes('artikelnummer')
-  );
-  const startIdx = headerIdx >= 0 ? headerIdx + 1 : 0;
+  const names: Array<{ name: string; star: boolean }> = [];
+  for (const group of nameGroups) {
+    const first = group.split('\n')[0].trim();
+    if (!first) continue;
+    if (META_NAMES.has(first.toLowerCase())) continue;
+    if (/^\d{4}-\d{2}-\d{2}/.test(first)) continue; // date metadata
+    if (/^\d{2}:\d{2}/.test(first)) continue;        // time metadata
+    if (/^SE\d+/.test(first)) continue;               // org number metadata
+    const star = first.startsWith('*');
+    const name = first.replace(/^\*\s*/, '').trim();
+    if (name) names.push({ name, star });
+  }
 
-  // Pattern: (optional *)(name)(6-8 digit article nr)(pris)(amount)(st|kg)(summa)
-  // pdf-parse may produce single or double spaces between columns
-  const itemRe = /^(\*\s*)?(.+?)\s+(\d{6,8})\s+([\d,]+)\s+([\d,]+)\s+(st|kg)\s+([\d,]+)/i;
+  // ── 2. Article numbers column ───────────────────────────────────────────────
+  const articleSection = between(text, 'Artikelnummer', '\nPris');
+  const articles: string[] = (articleSection.match(/\b\d{6,8}\b/g) ?? []);
 
-  // Fallback: no summa column at end (some lines omit it)
-  const itemRe2 = /^(\*\s*)?(.+?)\s+(\d{6,8})\s+([\d,]+)\s+([\d,]+)\s+(st|kg)/i;
+  // ── 3. Prices column ────────────────────────────────────────────────────────
+  // Between "\nPris\n" and "\nMängd\n"; only positive decimal numbers
+  const priceSection = between(text, '\nPris\n', '\nMängd');
+  const prices: number[] = (priceSection.match(/\b\d+,\d+\b/g) ?? [])
+    .map(s => parseNum(s));
 
-  const seen = new Map<string, ParsedReceiptItem>();
+  // ── 4. Quantities column ────────────────────────────────────────────────────
+  // After "Summa(SEK)" — quantities have "st" or "kg" suffix
+  const afterSumma = text.slice(text.indexOf('Summa(SEK)') + 'Summa(SEK)'.length);
+  const qtyMatches = [...afterSumma.matchAll(/([\d,]+)\s+(st|kg)/gi)];
+  const quantities = qtyMatches.map(m => ({
+    amount: parseNum(m[1]),
+    unit: m[2].toLowerCase() as 'st' | 'kg',
+  }));
 
-  for (let i = startIdx; i < lines.length; i++) {
-    const line = lines[i];
+  // ── 5. Zip columns ──────────────────────────────────────────────────────────
+  // Names and prices include Pant; articles and quantities exclude it.
+  // Walk names in order: skip SKIP items (don't advance art/qty index).
+  const result: ParsedReceiptItem[] = [];
+  let artIdx = 0;
+  let qtyIdx = 0;
 
-    // Stop at payment/summary section
-    if (/^(betalat|moms\s*%|betalnings|erhållen|avrundning|kort\s+\d|köp\s+\d)/i.test(line)) break;
+  for (let i = 0; i < names.length; i++) {
+    const { name, star } = names[i];
+    const pris = prices[i] ?? 0;
 
-    const match = line.match(itemRe) || line.match(itemRe2);
-    if (!match) continue;
+    if (SKIP_NAMES.has(name.toLowerCase())) continue;
 
-    const star = match[1] || '';
-    const rawName = match[2].trim();
-    const articleNumber = match[3];
-    const pris = parsePrice(match[4]);
-    const amount = parsePrice(match[5]);
-    const unit = match[6].toLowerCase() as 'st' | 'kg';
+    const articleNumber = articles[artIdx++] ?? '';
+    const qty = quantities[qtyIdx++];
 
-    // Skip non-food items
-    const nameLower = rawName.toLowerCase();
-    if (SKIP_NAMES.some(s => nameLower.includes(s))) continue;
-    if (pris <= 0) continue;
+    if (!articleNumber || pris <= 0 || !qty) continue;
 
-    const hasDiscount = star.includes('*');
-
-    const item: ParsedReceiptItem = {
-      name: rawName,
+    result.push({
+      name,
       articleNumber,
       pris,
-      amount,
-      unit,
-      hasDiscount,
+      amount: qty.amount,
+      unit: qty.unit,
+      hasDiscount: star,
       selected: true,
-    };
+    });
+  }
 
-    // If same articleNumber seen before as * and now without *, prefer non-* (full original price)
-    if (seen.has(articleNumber)) {
-      const prev = seen.get(articleNumber)!;
-      if (prev.hasDiscount && !hasDiscount) {
-        seen.set(articleNumber, item);
-      }
-      // If both are *, keep first
-    } else {
-      seen.set(articleNumber, item);
+  // ── 6. Deduplicate by articleNumber ─────────────────────────────────────────
+  // For items that appear twice (starred + unstarred), keep the non-starred (full price).
+  const seen = new Map<string, ParsedReceiptItem>();
+  for (const item of result) {
+    const prev = seen.get(item.articleNumber);
+    if (!prev || (prev.hasDiscount && !item.hasDiscount)) {
+      seen.set(item.articleNumber, item);
     }
   }
 
@@ -81,9 +105,9 @@ export function parseICAReceipt(text: string): ParsedReceiptItem[] {
 export function derivePricePer100g(
   pris: number,
   unit: 'st' | 'kg',
-  unitWeightGrams?: number
+  unitWeightGrams?: number,
 ): number | null {
-  if (unit === 'kg') return pris / 10; // kr/kg → kr/100g
+  if (unit === 'kg') return pris / 10;
   if (unit === 'st' && unitWeightGrams) return (pris / unitWeightGrams) * 100;
   return null;
 }

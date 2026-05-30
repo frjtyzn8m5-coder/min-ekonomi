@@ -1160,3 +1160,354 @@ export default function WeightLog() {
     </div>
   );
 }
+              color: change4W != null ? (change4W < 0 ? 'text-emerald-600' : 'text-rose-500') : 'text-gray-600',
+            },
+            {
+              label: 'Kroppsfett',
+              value: latestBF != null ? `${latestBF.toFixed(1)}%` : '–',
+              sub: latestBF ? 'Navy-metoden' : 'Logga mätningar',
+              color: 'text-violet-600',
+            },
+            {
+              label: 'Muskelmassa',
+              value: latestLeanMass != null ? `${latestLeanMass.toFixed(1)} kg` : '–',
+              sub: latestBF ? `${(100 - latestBF).toFixed(1)}% av kroppsvikt` : undefined,
+              color: 'text-emerald-600',
+            },
+          ].map(({ label, value, sub, color }) => (
+            <div key={label} className="bg-white rounded-2xl border border-gray-100 p-4">
+              <p className="text-xs text-gray-400 mb-1">{label}</p>
+              <p className={`text-xl font-bold ${color}`}>{value}</p>
+              {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Prognosis ─────────────────────────────────────────────────────── */}
+        {currentEMA != null && emaAll.length >= 14 && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <p className="text-sm font-semibold text-gray-900 mb-3">Prognos</p>
+            <div className="space-y-2">
+              {[4, 8, 12].map(weeks => {
+                const predicted = currentEMA + weeklyChange * weeks;
+                return (
+                  <div key={weeks} className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
+                    <span className="text-xs text-gray-500">Om {weeks} veckor</span>
+                    <span className="text-sm font-semibold text-gray-900">{predicted.toFixed(1)} kg</span>
+                  </div>
+                );
+              })}
+              {daysToTarget && fitnessProfile.targetWeight && (
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-xs text-gray-500">Beräknad målvikt ({fitnessProfile.targetWeight} kg)</span>
+                  <span className="text-sm font-semibold text-emerald-600">
+                    {Math.round(daysToTarget)} dagar
+                  </span>
+                </div>
+              )}
+              {Math.abs(weeklyChange) > latestWeight! * 0.01 && (
+                <div className="mt-2 p-3 bg-amber-50 rounded-xl">
+                  <p className="text-xs text-amber-700">
+                    ⚠️ Takten ({Math.abs(weeklyChange).toFixed(2)} kg/vecka) överstiger 1% av kroppsvikten – risk för muskelmassaförlust.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Measurement instructions ───────────────────────────────────────── */}
+        <MeasurementInstructions />
+
+        {/* ── Progress photos ───────────────────────────────────────────────── */}
+        {(() => {
+          const filteredPhotos = photoEntries.filter(
+            e => filterBodyPart === 'Alla' || e.notes === filterBodyPart,
+          );
+          const entryA = photoEntries.find(e => e.date === compareA);
+          const entryB = photoEntries.find(e => e.date === compareB);
+          const canCompare = !!(entryA?.photoUrl && entryB?.photoUrl);
+
+          return (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-gray-900">Progress-foton</p>
+                <div className="flex gap-2 flex-wrap justify-end">
+                  {canCompare && (
+                    <>
+                      <button
+                        onClick={() => { setCompareLayout('side'); setShowCompare(true); }}
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                      >
+                        <Columns2 size={12} /> Sida vid sida
+                      </button>
+                      <button
+                        onClick={() => { setCompareLayout('slider'); setShowCompare(true); }}
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                      >
+                        <SlidersHorizontal size={12} /> Slider
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 text-xs bg-gray-900 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    <Camera size={13} /> Foto
+                  </button>
+                </div>
+              </div>
+
+              {/* Selected A/B strip */}
+              {(compareA || compareB) && (
+                <div className="flex gap-2 mb-3">
+                  {compareA && entryA ? (
+                    <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-xl px-2 py-1.5 flex-1 min-w-0">
+                      <img src={entryA.photoUrl!} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" alt="A" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold text-blue-700">A</p>
+                        <p className="text-[10px] text-blue-600 truncate">{formatDate(entryA.date)}</p>
+                      </div>
+                      <button onClick={() => setCompareA(null)} className="text-blue-400 hover:text-blue-600 flex-shrink-0">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl px-3 py-2 flex-1 text-xs text-gray-400">
+                      Klicka foto → Välj som A
+                    </div>
+                  )}
+                  {compareB && entryB ? (
+                    <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-xl px-2 py-1.5 flex-1 min-w-0">
+                      <img src={entryB.photoUrl!} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" alt="B" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold text-orange-700">B</p>
+                        <p className="text-[10px] text-orange-600 truncate">{formatDate(entryB.date)}</p>
+                      </div>
+                      <button onClick={() => setCompareB(null)} className="text-orange-400 hover:text-orange-600 flex-shrink-0">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl px-3 py-2 flex-1 text-xs text-gray-400">
+                      Klicka foto → Välj som B
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Upload controls */}
+              <div className="flex gap-1.5 mb-2 flex-wrap">
+                {BODY_PARTS.map(part => (
+                  <button
+                    key={part}
+                    onClick={() => setUploadBodyPart(part)}
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                      uploadBodyPart === part ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    {part}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs text-gray-400">Datum:</span>
+                <input
+                  type="date"
+                  value={photoDate}
+                  max={today()}
+                  onChange={e => setPhotoDate(e.target.value || today())}
+                  className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                />
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+
+              {daysSinceLastPhoto !== null && daysSinceLastPhoto > 14 && (
+                <div className="mb-3 p-3 bg-blue-50 rounded-xl">
+                  <p className="text-xs text-blue-700">📸 Dags för ett progress-foto! Senaste var för {daysSinceLastPhoto} dagar sedan.</p>
+                </div>
+              )}
+
+              {photoEntries.length === 0 ? (
+                <div className="text-center py-6 space-y-2">
+                  <p className="text-xs text-gray-400">Inga foton ännu. Välj kroppsdel, välj datum och ladda upp ditt första foto!</p>
+                  <p className="text-[10px] text-gray-300">Klicka ett foto → välj som A eller B → jämför med Sida vid sida eller Slider.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Filter by body part */}
+                  <div className="flex gap-1.5 mb-3 flex-wrap">
+                    {(['Alla', ...BODY_PARTS] as const).map(part => (
+                      <button
+                        key={part}
+                        onClick={() => setFilterBodyPart(part)}
+                        className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                          filterBodyPart === part ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        }`}
+                      >
+                        {part}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Photo grid */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {filteredPhotos.slice(0, 12).map(e => {
+                      const isA = compareA === e.date;
+                      const isB = compareB === e.date;
+                      const idx = photoEntries.findIndex(p => p.date === e.date);
+                      return (
+                        <button
+                          key={`${e.date}-${e.notes}`}
+                          className="relative group focus:outline-none"
+                          onClick={() => setLightboxIndex(idx)}
+                        >
+                          <img
+                            src={e.photoUrl}
+                            alt={e.date}
+                            className={`w-full aspect-square object-cover rounded-xl transition-opacity ${
+                              (compareA || compareB) && !isA && !isB ? 'opacity-60' : 'opacity-100'
+                            }`}
+                          />
+                          {isA && (
+                            <span className="absolute top-1 left-1 text-[10px] font-bold bg-blue-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow">A</span>
+                          )}
+                          {isB && (
+                            <span className="absolute top-1 left-1 text-[10px] font-bold bg-orange-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow">B</span>
+                          )}
+                          <span className="absolute bottom-1 left-1 text-[9px] bg-black/50 text-white px-1.5 py-0.5 rounded-full">
+                            {formatDate(e.date)}
+                          </span>
+                          {e.notes && (
+                            <span className="absolute top-1 right-1 text-[8px] bg-blue-500/70 text-white px-1.5 py-0.5 rounded-full">
+                              {e.notes}
+                            </span>
+                          )}
+                          <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/10 transition-colors" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {filteredPhotos.length > 12 && (
+                    <p className="text-xs text-gray-400 text-center mt-2">+{filteredPhotos.length - 12} fler foton</p>
+                  )}
+                  {!compareA && !compareB && (
+                    <p className="text-[10px] text-gray-400 text-center mt-2">
+                      Klicka ett foto för att se det i helskärm och välja det för jämförelse
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Lightbox */}
+        {lightboxIndex !== null && (
+          <PhotoLightbox
+            entries={photoEntries}
+            currentIndex={lightboxIndex}
+            compareA={compareA}
+            compareB={compareB}
+            onSelectA={date => setCompareA(date)}
+            onSelectB={date => setCompareB(date)}
+            onNavigate={setLightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+          />
+        )}
+
+        {/* Compare modal */}
+        {showCompare && compareA && compareB && (() => {
+          const entA = photoEntries.find(e => e.date === compareA);
+          const entB = photoEntries.find(e => e.date === compareB);
+          if (!entA?.photoUrl || !entB?.photoUrl) return null;
+          return (
+            <CompareModal
+              entryA={entA}
+              entryB={entB}
+              layout={compareLayout}
+              onLayoutChange={setCompareLayout}
+              onClose={() => setShowCompare(false)}
+            />
+          );
+        })()}
+
+        {/* ── Measurement radar ─────────────────────────────────────────────── */}
+        {radarData.length >= 3 && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <p className="text-sm font-semibold text-gray-900 mb-1">Mätningstrend</p>
+            <p className="text-xs text-gray-400 mb-4">Procentuell förändring sedan start</p>
+            <ResponsiveContainer width="100%" height={200}>
+              <RadarChart data={radarData}>
+                <PolarGrid stroke="#f0f0f0" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                <PolarRadiusAxis tick={false} axisLine={false} />
+                <Radar name="Start" dataKey="start" stroke="#d1d5db" fill="#d1d5db" fillOpacity={0.3} />
+                <Radar name="Nu" dataKey="current" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* ── Profile settings ──────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <p className="text-sm font-semibold text-gray-900 mb-4">Profilinställningar</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Kön</label>
+              <select
+                value={fitnessProfile.gender}
+                onChange={e => useStore.getState().setFitnessProfile({ gender: e.target.value as 'male' | 'female' })}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+              >
+                <option value="male">Man</option>
+                <option value="female">Kvinna</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Längd (cm)</label>
+              <input
+                type="number"
+                value={fitnessProfile.height}
+                onChange={e => useStore.getState().setFitnessProfile({ height: Number(e.target.value) })}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Ålder</label>
+              <input
+                type="number"
+                value={fitnessProfile.age}
+                onChange={e => useStore.getState().setFitnessProfile({ age: Number(e.target.value) })}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Målvikt (kg)</label>
+              <input
+                type="number"
+                step="0.5"
+                value={fitnessProfile.targetWeight ?? ''}
+                onChange={e => useStore.getState().setFitnessProfile({ targetWeight: e.target.value ? Number(e.target.value) : undefined })}
+                placeholder="–"
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+              />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+              />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

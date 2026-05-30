@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
 import { loadPantry, savePantryItem, deletePantryItem, adjustPantryStock, upsertPantryItems, upsertPriceEntries } from '../../lib/pantryDb';
-import type { PantryItem, ParsedReceiptItem, PriceEntry } from '../../types';
+import { getLvData } from '../../utils/matchNutrition';
+import type { PantryItem, ParsedReceiptItem, PriceEntry, FoodItem } from '../../types';
 import ReceiptScanner from '../../components/fitness/ReceiptScanner';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
@@ -113,30 +114,57 @@ function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
   const [pricePerUnit, setPricePerUnit] = useState(String(prefill?.pricePerUnit ?? ''));
   const [expiry, setExpiry] = useState(prefill?.expiryDate ?? '');
   const [category, setCategory] = useState(prefill?.category ?? '');
+  const [foodId, setFoodId] = useState(prefill?.foodId ?? '');
+
+  // LV autocomplete
+  const [lvSuggestions, setLvSuggestions] = useState<FoodItem[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [matchedLv, setMatchedLv] = useState<FoodItem | null>(null);
+
+  async function handleNameChange(val: string) {
+    setName(val);
+    setMatchedLv(null);
+    setFoodId('');
+    if (val.length < 2) { setLvSuggestions([]); return; }
+    const lv = await getLvData();
+    const q = val.toLowerCase();
+    const matches = lv.filter(i => i.name.toLowerCase().includes(q)).slice(0, 6);
+    setLvSuggestions(matches);
+    setShowSuggestions(matches.length > 0);
+  }
+
+  function selectLvItem(item: FoodItem) {
+    setName(item.name);
+    setFoodId(item.id);
+    setMatchedLv(item);
+    setLvSuggestions([]);
+    setShowSuggestions(false);
+  }
 
   function handleSave() {
     if (!name.trim() || !amount) return;
+    const priceNum = pricePerUnit ? parseFloat(pricePerUnit) : undefined;
+    const weightNum = unitWeight ? parseFloat(unitWeight) : undefined;
     const item: PantryItem = {
       id: prefill?.id ?? nanoid(),
       name: name.trim(),
       amount: parseFloat(amount),
       unit,
-      unitWeightGrams: unitWeight ? parseFloat(unitWeight) : undefined,
-      pricePerUnit: pricePerUnit ? parseFloat(pricePerUnit) : undefined,
-      pricePerKg: pricePerUnit && unitWeight
-        ? (parseFloat(pricePerUnit) / parseFloat(unitWeight)) * 1000
-        : undefined,
+      unitWeightGrams: weightNum,
+      pricePerUnit: priceNum,
+      pricePerKg: priceNum && weightNum ? (priceNum / weightNum) * 1000 : undefined,
       expiryDate: expiry || undefined,
       category: category || undefined,
       addedAt: prefill?.addedAt ?? Date.now(),
       source: prefill?.source ?? 'manual',
+      foodId: foodId || undefined,
     };
     onSave(item);
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">{prefill?.id ? 'Redigera' : 'Lägg till manuellt'}</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
@@ -144,12 +172,43 @@ function ManualAdd({ onSave, onClose, prefill }: ManualAddProps) {
           </button>
         </div>
         <div className="p-5 space-y-3">
-          <input
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-            placeholder="Namn *"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
+          {/* Name field with LV autocomplete */}
+          <div className="relative">
+            <input
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              placeholder="Namn * (börja skriva för förslag)"
+              value={name}
+              onChange={e => handleNameChange(e.target.value)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            />
+            {showSuggestions && lvSuggestions.length > 0 && (
+              <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
+                {lvSuggestions.map(item => (
+                  <button
+                    key={item.id}
+                    onMouseDown={() => selectLvItem(item)}
+                    className="w-full text-left px-3 py-2 hover:bg-green-50 text-sm border-b border-gray-50 last:border-0"
+                  >
+                    <span className="font-medium text-gray-800">{item.name}</span>
+                    <span className="text-xs text-gray-400 ml-2">
+                      {item.energy_kcal} kcal · {item.protein}g P · {item.fat}g F · {item.carbs}g KH
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Show matched nutrition summary */}
+          {matchedLv && (
+            <div className="bg-green-50 rounded-xl px-3 py-2 flex items-center gap-2">
+              <Check size={14} className="text-green-600 flex-shrink-0" />
+              <span className="text-xs text-green-700">
+                Matchad: {matchedLv.energy_kcal} kcal/100g · {matchedLv.protein}g P · {matchedLv.fat}g F · {matchedLv.carbs}g KH
+              </span>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <input
               type="number"
