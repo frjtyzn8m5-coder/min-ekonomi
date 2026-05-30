@@ -249,7 +249,12 @@ export function parseIngredientText(text: string): ParsedIngredient {
     .replace(/^typ\s*/i, '')
     .trim();
 
-  // 3. Handle ranges: "3-4 potatisar" → 3 (take lower bound)
+  // 3a. Handle mixed fractions: "2 1/2" → "2.5"
+  s = s.replace(/^(\d+)\s+(\d+)\/(\d+)/, (_, whole, num, den) =>
+    String(parseInt(whole) + parseInt(num) / parseInt(den)),
+  );
+
+  // 3b. Handle ranges: "3-4 potatisar" → 3 (take lower bound)
   s = s.replace(/^(\d+(?:[.,]\d+)?)\s*[-–]\s*\d+(?:[.,]\d+)?/, '$1');
 
   // 4. Try full match: NUMBER UNIT NAME

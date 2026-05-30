@@ -61,8 +61,26 @@ function tokenScore(a: string, b: string): number {
 }
 
 /**
+ * True if `query` appears in `lvName` at a word boundary (not embedded in a
+ * longer compound word like "mjölk" inside "mjölkchoklad").
+ */
+function isWordBoundaryMatch(lvName: string, query: string): boolean {
+  const idx = lvName.indexOf(query);
+  if (idx === -1) return false;
+  const before = idx === 0 || /[\s,]/.test(lvName[idx - 1]);
+  const after = idx + query.length === lvName.length || /[\s,]/.test(lvName[idx + query.length]);
+  return before && after;
+}
+
+/**
  * Match an ingredient name to the best LV food item.
  * Returns null if no reasonable match is found.
+ *
+ * Scoring (higher = better):
+ *   1.0 – exact match after normalisation
+ *   0.7–0.9 – query appears as a proper word in lvName, penalised for extra tokens
+ *   0.2–0.4 – query is embedded in a compound word (e.g. "mjölk" in "mjölkchoklad")
+ *   0.0–0.3 – token overlap only
  */
 export function matchToLV(ingredientName: string, lvData: FoodItem[]): FoodItem | null {
   const query = normalize(ingredientName);
@@ -74,14 +92,23 @@ export function matchToLV(ingredientName: string, lvData: FoodItem[]): FoodItem 
   for (const item of lvData) {
     const lvName = normalize(item.name);
 
-    // Exact match
+    // Exact match — return immediately
     if (lvName === query) return item;
 
-    // Substring match (ingredient in LV name or vice versa)
     let score = 0;
-    if (lvName.includes(query)) score = query.length / lvName.length;
-    else if (query.includes(lvName)) score = lvName.length / query.length * 0.9;
-    else score = tokenScore(query, lvName) * 0.8;
+
+    if (isWordBoundaryMatch(lvName, query)) {
+      // Query is a proper standalone word inside lvName (e.g. "mjölk" in "mjölk standardmjölk")
+      // Penalise longer names so "Mjölk" beats "Mjölk, standardmjölk 3%"
+      score = 0.9 * (query.length / Math.max(query.length, lvName.length));
+    } else if (lvName.includes(query)) {
+      // Query embedded in a compound word — heavily penalise
+      score = 0.25 * (query.length / lvName.length);
+    } else if (query.includes(lvName)) {
+      score = (lvName.length / query.length) * 0.8;
+    } else {
+      score = tokenScore(query, lvName) * 0.7;
+    }
 
     if (score > bestScore) {
       bestScore = score;
