@@ -352,7 +352,7 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
       if (i !== idx) return ing;
       const nutrition = ing.lvItem && newGrams > 0
         ? nutritionForGrams(ing.lvItem, newGrams)
-        : null;
+        : undefined;
       return { ...ing, amount: newGrams, nutrition };
     }));
   }
@@ -360,7 +360,7 @@ function RecipeDetail({ recipe, pantry, onSave, onClose, onDelete, onLog }: Reci
   function swapMatch(idx: number, item: FoodItem) {
     setIngredients(prev => prev.map((ing, i) => {
       if (i !== idx) return ing;
-      const nutrition = ing.amount > 0 ? nutritionForGrams(item, ing.amount) : null;
+      const nutrition = ing.amount > 0 ? nutritionForGrams(item, ing.amount) : undefined;
       return { ...ing, lvItem: item, nutrition };
     }));
   }
