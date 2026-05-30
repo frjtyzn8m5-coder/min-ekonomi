@@ -316,14 +316,6 @@ function isUnit(s: string): boolean {
      'burk', 'portion', 'portioner', 'näve', 'kruka', 'knippe', 'kvist', 'skivor', 'klyftor'].includes(u)
   );
 }
-cleanName(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/\([^)]*\)/g, '') // remove (...)
-    .replace(/\b(färsk|torr|fryst|kokt|rå|rökt|finriven|grovhackad|hackad|skivad|halverad|krossad|pressad|skalade?)\b/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 /** Extract "(à X g)" or "(X g)" or "(X ml)" hint from text, return grams or null */
 function extractParenthesisHint(text: string): number | null {
