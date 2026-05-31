@@ -239,7 +239,15 @@ function DetailPanel({
 
 // ── Main ExerciseDB ───────────────────────────────────────────────────────────
 
-export default function ExerciseDB() {
+interface ExerciseDBProps {
+  // Embedded mode (used by WorkoutLog)
+  standalone?: boolean;
+  onBack?: () => void;
+  onAddToSession?: (exercise: Exercise) => void;
+  addLabel?: string;
+}
+
+export default function ExerciseDB({ standalone = true, onBack, onAddToSession, addLabel = 'Lägg till' }: ExerciseDBProps) {
   const { setFitnessPage, userProfile, updateUserProfile } = useStore();
 
   const [query, setQuery] = useState('');
@@ -279,7 +287,7 @@ export default function ExerciseDB() {
       <div className="flex-shrink-0 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
         <div className="flex items-center gap-3 mb-1">
           <button
-            onClick={() => setFitnessPage('home')}
+            onClick={() => onBack ? onBack() : setFitnessPage('home')}
             className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
           >
             <ChevronLeft size={16} className="text-gray-600" />
@@ -393,7 +401,7 @@ export default function ExerciseDB() {
               key={ex.id}
               exercise={ex}
               isFav={favorites.includes(ex.id)}
-              onSelect={setSelected}
+              onSelect={onAddToSession ? onAddToSession : setSelected}
               onToggleFav={toggleFav}
             />
           ))}

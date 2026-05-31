@@ -412,21 +412,7 @@ export interface PriceEntry {
   lastUpdated: string; // YYYY-MM-DD
 }
 
-// ── Workout / Exercise types (Fas 5) ─────────────────────────────────────────
-
-export interface Exercise {
-  id: string;
-  name: string;               // Swedish name
-  nameEn?: string;            // English name
-  category: string;           // 'Ben', 'Bröst', 'Rygg', 'Axlar', 'Biceps', 'Triceps', 'Core', 'Helkropp', 'Kondition'
-  muscles: string[];          // Primary muscles
-  musclesSecondary?: string[];
-  equipment: string;          // 'Skivstång', 'Hantel', 'Kabel', 'Maskin', 'Kroppsvikt', 'Bänk', 'Smith', 'Övrigt'
-  level: 'beginner' | 'intermediate' | 'advanced';
-  mechanic: 'compound' | 'isolation' | 'cardio';
-  youtubeSearch: string;      // Search query to open on YouTube
-  instructions?: string[];
-}
+// ── Workout types (Fas 5) – Exercise interface moved to Sprint 2 block above ──
 
 export interface WorkoutSet {
   id: string;

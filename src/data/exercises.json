@@ -1,0 +1,2484 @@
+[
+  {
+    "id": "bench_press_barbell",
+    "name": "Bench Press (Barbell)",
+    "nameSv": "Bänkpress",
+    "category": "chest",
+    "equipment": [
+      "barbell",
+      "bench",
+      "rack"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [
+      "triceps_brachii",
+      "anterior_deltoid"
+    ],
+    "stabilizers": [
+      "rotator_cuff",
+      "serratus_anterior"
+    ],
+    "instructions": [
+      "Lie on a flat bench with eyes directly under the bar.",
+      "Grip the bar slightly wider than shoulder-width.",
+      "Retract scapulae and create a slight arch in the lower back.",
+      "Unrack, lower the bar to the chest with control.",
+      "Press the bar up in a slight arc toward the rack."
+    ],
+    "instructionsSv": [
+      "Ligg på bänken med ögonen under stången.",
+      "Grepp lite bredare än axelbredd.",
+      "Dra ihop skulderbladen och skapa ett stabilt underlag.",
+      "Sänk stången kontrollerat mot bröstet.",
+      "Pressa upp i en lätt båge tillbaka."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      5,
+      8
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 180,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "bench press barbell form Jeff Nippard tutorial"
+  },
+  {
+    "id": "bench_press_dumbbell",
+    "name": "Bench Press (Dumbbell)",
+    "nameSv": "Hantelpress",
+    "category": "chest",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [
+      "triceps_brachii",
+      "anterior_deltoid"
+    ],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Lie on a flat bench, dumbbells at chest level.",
+      "Press both dumbbells up, allowing a natural arc.",
+      "Lower with control, elbows at ~45–60° from torso."
+    ],
+    "instructionsSv": [
+      "Ligg på bänken med hantelarna vid brösthöjd.",
+      "Pressa båda hantelarna uppåt i en naturlig båge.",
+      "Sänk kontrollerat med armbågarna 45–60° från kroppen."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "dumbbell bench press form tutorial"
+  },
+  {
+    "id": "incline_bench_press_barbell",
+    "name": "Incline Bench Press (Barbell)",
+    "nameSv": "Lutande bänkpress",
+    "category": "chest",
+    "equipment": [
+      "barbell",
+      "bench",
+      "rack"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [
+      "anterior_deltoid",
+      "triceps_brachii"
+    ],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Set bench to 30–45° incline.",
+      "Grip slightly wider than shoulder-width.",
+      "Lower bar to upper chest, press back up."
+    ],
+    "instructionsSv": [
+      "Ställ bänken på 30–45° lutning.",
+      "Grepp lite bredare än axelbredd.",
+      "Sänk stången till övre bröstet och pressa tillbaka."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      6,
+      10
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 150,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "incline bench press barbell upper chest tutorial"
+  },
+  {
+    "id": "incline_bench_press_dumbbell",
+    "name": "Incline Bench Press (Dumbbell)",
+    "nameSv": "Lutande hantelpress",
+    "category": "chest",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [
+      "anterior_deltoid",
+      "triceps_brachii"
+    ],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Set bench to 30–45° incline.",
+      "Press dumbbells up from chest level.",
+      "Lower with control."
+    ],
+    "instructionsSv": [
+      "Ställ bänken på 30–45° lutning.",
+      "Pressa hantelarna uppåt från brösthöjd.",
+      "Sänk kontrollerat."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "incline dumbbell press form tutorial"
+  },
+  {
+    "id": "dips",
+    "name": "Dips",
+    "nameSv": "Dips",
+    "category": "chest",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major",
+      "triceps_brachii"
+    ],
+    "secondaryMuscles": [
+      "anterior_deltoid"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Grip the parallel bars, lock out arms at top.",
+      "Lean slightly forward to emphasize chest.",
+      "Lower until upper arms are parallel to ground.",
+      "Press back up to start."
+    ],
+    "instructionsSv": [
+      "Greppa parallelstängerna, lås ut armarna i toppen.",
+      "Luta dig framåt för att betona bröstmuskeln.",
+      "Sänk dig tills överarmarna är parallella med golvet.",
+      "Pressa tillbaka upp."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      6,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "dips chest form tutorial Jeff Nippard"
+  },
+  {
+    "id": "cable_fly",
+    "name": "Cable Fly",
+    "nameSv": "Kabelflyes",
+    "category": "chest",
+    "equipment": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [
+      "anterior_deltoid"
+    ],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Set cables at shoulder height (or adjust for angle focus).",
+      "Step forward slightly for stability.",
+      "Bring hands together in an arc, slight bend in elbows."
+    ],
+    "instructionsSv": [
+      "Ställ kabeln i axelhöjd.",
+      "Stå med fötterna isär framåt.",
+      "För händerna mot varandra i en båge, lätt böjda armar."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "cable fly chest form tutorial"
+  },
+  {
+    "id": "pec_deck",
+    "name": "Pec Deck",
+    "nameSv": "Pec Deck",
+    "category": "chest",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Adjust seat so handles are at chest level.",
+      "Bring handles together in front of chest.",
+      "Slowly return to stretch position."
+    ],
+    "instructionsSv": [
+      "Justera sätet så att handtagen är i brösthöjd.",
+      "För handtagen ihop framför bröstet.",
+      "Återgå långsamt till stretchläget."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "pec deck machine form tutorial"
+  },
+  {
+    "id": "push_up",
+    "name": "Push-up",
+    "nameSv": "Armhävning",
+    "category": "chest",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [
+      "triceps_brachii",
+      "anterior_deltoid"
+    ],
+    "stabilizers": [
+      "core",
+      "serratus_anterior"
+    ],
+    "instructions": [
+      "Place hands slightly wider than shoulder-width.",
+      "Keep body in a straight line from head to heels.",
+      "Lower chest to floor, then press back up."
+    ],
+    "instructionsSv": [
+      "Placera händerna lite bredare än axelbredd.",
+      "Håll kroppen i rak linje från huvud till hälar.",
+      "Sänk bröstet mot golvet och pressa tillbaka."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "perfect push up form tutorial"
+  },
+  {
+    "id": "deadlift_conventional",
+    "name": "Deadlift (Conventional)",
+    "nameSv": "Marklyft",
+    "category": "back",
+    "equipment": [
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "gluteus_maximus",
+      "hamstrings",
+      "erector_spinae"
+    ],
+    "secondaryMuscles": [
+      "quadriceps",
+      "trapezius"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Bar over mid-foot, about 1 inch from shins.",
+      "Hip-width stance, grip just outside legs.",
+      "Take the slack out – lats tight, shoulders packed.",
+      "Hips and shoulders rise at same rate.",
+      "Lock out at the top, control back down."
+    ],
+    "instructionsSv": [
+      "Stången över mitten av foten, ca 3 cm från smalbenet.",
+      "Höftbredda fötter, grepp strax utanför benen.",
+      "Dra bort slack ur stången – spänn lat, dra in axlarna.",
+      "Höfterna och axlarna stiger i samma takt.",
+      "Lås ut i toppen, kontrollera ner."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      3,
+      6
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 240,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "conventional deadlift form Alan Thrall tutorial"
+  },
+  {
+    "id": "deadlift_sumo",
+    "name": "Deadlift (Sumo)",
+    "nameSv": "Sumo marklyft",
+    "category": "back",
+    "equipment": [
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "gluteus_maximus",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "quadriceps",
+      "erector_spinae"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Wide stance, toes pointed 30–45° out.",
+      "Grip inside the legs.",
+      "Knees track over toes throughout the lift."
+    ],
+    "instructionsSv": [
+      "Brett steg, tårna pekade 30–45° utåt.",
+      "Greppa innanför benen.",
+      "Knäna följer tårnas riktning genom hela lyftet."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      3,
+      6
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 240,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "sumo deadlift form tutorial"
+  },
+  {
+    "id": "barbell_row",
+    "name": "Barbell Row",
+    "nameSv": "Skivstångsrodd",
+    "category": "back",
+    "equipment": [
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii",
+      "rear_deltoid"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Hinge forward 45–90°, neutral spine.",
+      "Pull bar to lower chest/navel.",
+      "Squeeze shoulder blades at top.",
+      "Control back to start."
+    ],
+    "instructionsSv": [
+      "Böj framåt 45–90°, neutral rygg.",
+      "Dra stången mot naveln/underkant mage.",
+      "Kläm ihop skulderbladen i toppen.",
+      "Kontrollera tillbaka."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      5,
+      8
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 180,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "barbell row pendlay row form tutorial"
+  },
+  {
+    "id": "pull_up",
+    "name": "Pull-up",
+    "nameSv": "Pullups",
+    "category": "back",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii",
+      "rhomboids"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Dead hang, overhand grip slightly wider than shoulders.",
+      "Pull chest to bar, drive elbows down and back.",
+      "Lower with control to full hang."
+    ],
+    "instructionsSv": [
+      "Häng med raka armar, overhand grepp lite bredare än axelbredd.",
+      "Dra bröstet mot stången, driv armbågarna ner och bakåt.",
+      "Sänk kontrollerat till fullt hängläge."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      5,
+      10
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 150,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "pull up form tutorial Jeff Nippard"
+  },
+  {
+    "id": "chin_up",
+    "name": "Chin-up",
+    "nameSv": "Chins",
+    "category": "back",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Supinated (underhand) grip, shoulder-width.",
+      "Pull chin above the bar.",
+      "Lower with control."
+    ],
+    "instructionsSv": [
+      "Underhand grepp, axelbredda händer.",
+      "Dra hakan ovanför stången.",
+      "Sänk kontrollerat."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      5,
+      10
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 150,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "chin up form tutorial biceps back"
+  },
+  {
+    "id": "lat_pulldown_wide",
+    "name": "Lat Pulldown (Wide Grip)",
+    "nameSv": "Latsdrag brett grepp",
+    "category": "back",
+    "equipment": [
+      "cable",
+      "machine"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii",
+      "rhomboids"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Sit at the pulldown station, grip wider than shoulder-width.",
+      "Lean back slightly, pull bar to upper chest.",
+      "Squeeze lats at bottom, control back up."
+    ],
+    "instructionsSv": [
+      "Sitt vid latsdragsmaskinen, brett grepp.",
+      "Luta dig lätt bakåt och dra stången mot övre bröstet.",
+      "Kläm ihop lat nertill, kontrollera tillbaka."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "lat pulldown wide grip form tutorial"
+  },
+  {
+    "id": "lat_pulldown_close",
+    "name": "Lat Pulldown (Close Grip)",
+    "nameSv": "Latsdrag smalt grepp",
+    "category": "back",
+    "equipment": [
+      "cable",
+      "machine"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Use a close/neutral grip attachment.",
+      "Pull handle to upper chest, drive elbows down.",
+      "Control back to start."
+    ],
+    "instructionsSv": [
+      "Använd ett smalt/neutralt grepp.",
+      "Dra handtaget mot övre bröstet, driv armbågarna ner.",
+      "Kontrollera tillbaka."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "close grip lat pulldown form tutorial"
+  },
+  {
+    "id": "seated_cable_row",
+    "name": "Seated Cable Row",
+    "nameSv": "Sittande kabelrodd",
+    "category": "back",
+    "equipment": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "rhomboids",
+      "latissimus_dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii",
+      "rear_deltoid"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Sit with slight bend in knees, neutral spine.",
+      "Pull handle to lower chest/navel.",
+      "Squeeze shoulder blades, slow return."
+    ],
+    "instructionsSv": [
+      "Sitt med lätt böjda knän, neutral ryggrad.",
+      "Dra handtaget mot naveln.",
+      "Kläm ihop skulderbladen, långsam retur."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "seated cable row form tutorial"
+  },
+  {
+    "id": "single_arm_dumbbell_row",
+    "name": "Single-Arm Dumbbell Row",
+    "nameSv": "Enarms hantelrodd",
+    "category": "back",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii",
+      "rear_deltoid"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Place hand and knee on bench for support.",
+      "Row dumbbell to hip, elbow close to body.",
+      "Lower with control."
+    ],
+    "instructionsSv": [
+      "Stöd hand och knä på bänken.",
+      "Ro hanteln mot höften, armbågen nära kroppen.",
+      "Sänk kontrollerat."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "single arm dumbbell row form tutorial"
+  },
+  {
+    "id": "t_bar_row",
+    "name": "T-Bar Row",
+    "nameSv": "T-stångsrodd",
+    "category": "back",
+    "equipment": [
+      "barbell",
+      "machine"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii",
+      "erector_spinae"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Straddle the barbell, hinge forward.",
+      "Pull weight to chest, squeeze at top.",
+      "Lower with control."
+    ],
+    "instructionsSv": [
+      "Stå gränsle över stången, böj framåt.",
+      "Dra vikten mot bröstet, kläm i toppen.",
+      "Sänk kontrollerat."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "t bar row form tutorial back"
+  },
+  {
+    "id": "face_pull",
+    "name": "Face Pull",
+    "nameSv": "Face Pull",
+    "category": "back",
+    "equipment": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "rear_deltoid",
+      "rotator_cuff"
+    ],
+    "secondaryMuscles": [
+      "rhomboids",
+      "trapezius"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Set cable at or above face height, use rope attachment.",
+      "Pull rope to face, elbows flare out to sides.",
+      "External rotation at the end of the movement."
+    ],
+    "instructionsSv": [
+      "Ställ kabeln i ansiktshöjd eller högre, använd rephandtag.",
+      "Dra repet mot ansiktet, armbågarna utåt.",
+      "Extern rotation i rörelsens slut."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      15,
+      20
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "face pull cable form tutorial athlean-x"
+  },
+  {
+    "id": "squat_back",
+    "name": "Back Squat (Barbell)",
+    "nameSv": "Knäböj",
+    "category": "legs",
+    "equipment": [
+      "barbell",
+      "rack"
+    ],
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus_maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "gluteus_medius"
+    ],
+    "stabilizers": [
+      "core",
+      "erector_spinae"
+    ],
+    "instructions": [
+      "Bar on upper back (traps for high-bar, rear deltoids for low-bar).",
+      "Feet shoulder-width, toes out 10–30°.",
+      "Break at hips and knees simultaneously.",
+      "Knees track over toes throughout.",
+      "Drive up through heels, lock out at top."
+    ],
+    "instructionsSv": [
+      "Stången på övre ryggen (trapezius för high-bar).",
+      "Fötterna axelbredda, tårna lätt utåt.",
+      "Bryt i höft och knä samtidigt.",
+      "Knäna följer tårnas riktning.",
+      "Pressa upp med hälarna, lås ut i toppen."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      5,
+      8
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 240,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "back squat barbell form tutorial Alan Thrall"
+  },
+  {
+    "id": "squat_front",
+    "name": "Front Squat",
+    "nameSv": "Frontknäböj",
+    "category": "legs",
+    "equipment": [
+      "barbell",
+      "rack"
+    ],
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "gluteus_maximus",
+      "core"
+    ],
+    "stabilizers": [
+      "erector_spinae"
+    ],
+    "instructions": [
+      "Bar rests on front deltoids, elbows high.",
+      "Feet shoulder-width, toes out slightly.",
+      "Stay more upright than back squat.",
+      "Squat deep, drive elbows up throughout."
+    ],
+    "instructionsSv": [
+      "Stången vilar på främre deltamusklerna, armbågarna höga.",
+      "Fötterna axelbredda, tårna lätt utåt.",
+      "Håll kroppen mer upprätt än vid vanlig knäböj.",
+      "Knäböj djupt, håll armbågarna uppe."
+    ],
+    "difficulty": "advanced",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      4,
+      6
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 240,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "front squat barbell form tutorial"
+  },
+  {
+    "id": "goblet_squat",
+    "name": "Goblet Squat",
+    "nameSv": "Goblet Squat",
+    "category": "legs",
+    "equipment": [
+      "dumbbell",
+      "kettlebell"
+    ],
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus_maximus"
+    ],
+    "secondaryMuscles": [
+      "core"
+    ],
+    "stabilizers": [],
+    "instructions": [
+      "Hold dumbbell at chest level.",
+      "Feet shoulder-width, toes out.",
+      "Squat deep keeping torso upright."
+    ],
+    "instructionsSv": [
+      "Håll hanteln mot bröstet.",
+      "Axelbred ståndplats, tårna utåt.",
+      "Knäböj djupt med upprätt överkropp."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "goblet squat form tutorial"
+  },
+  {
+    "id": "romanian_deadlift",
+    "name": "Romanian Deadlift",
+    "nameSv": "Romanian Deadlift",
+    "category": "legs",
+    "equipment": [
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "hamstrings",
+      "gluteus_maximus"
+    ],
+    "secondaryMuscles": [
+      "erector_spinae"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Stand with bar at hip level, slight knee bend.",
+      "Hinge at hips, push hips back.",
+      "Lower bar along thighs until hamstring stretch.",
+      "Drive hips forward to return."
+    ],
+    "instructionsSv": [
+      "Stå med stången i höfthöjd, liten knäböjning.",
+      "Hängla i höften, skjut höfterna bakåt.",
+      "Sänk stången längs låren tills hamstring sträcker.",
+      "Driv höfterna framåt för att komma upp."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 150,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "romanian deadlift RDL form tutorial"
+  },
+  {
+    "id": "leg_press",
+    "name": "Leg Press",
+    "nameSv": "Leg Press",
+    "category": "legs",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "gluteus_maximus",
+      "hamstrings"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Place feet at shoulder width on the platform.",
+      "Adjust seat so knees are ~90° at bottom.",
+      "Press through heels, don't lock out knees hard."
+    ],
+    "instructionsSv": [
+      "Placera fötterna axelbredda på plattan.",
+      "Justera sätet så knäna är ~90° nertill.",
+      "Pressa genom hälarna, lås inte ut knäna hårt."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "leg press foot placement form tutorial"
+  },
+  {
+    "id": "hack_squat",
+    "name": "Hack Squat",
+    "nameSv": "Hack Squat",
+    "category": "legs",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "gluteus_maximus"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Set shoulders and back against pads.",
+      "Feet shoulder-width, toes slightly out.",
+      "Lower until thighs are parallel, drive up."
+    ],
+    "instructionsSv": [
+      "Placera axlar och rygg mot kuddarna.",
+      "Axelbred ståndplats, tårna lätt utåt.",
+      "Sänk tills låren är parallella, pressa upp."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "hack squat machine form tutorial quads"
+  },
+  {
+    "id": "leg_curl_lying",
+    "name": "Lying Leg Curl",
+    "nameSv": "Leg Curl",
+    "category": "legs",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "gluteus_maximus"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Lie face down, pad just above heels.",
+      "Curl heels toward glutes.",
+      "Slow controlled eccentric return."
+    ],
+    "instructionsSv": [
+      "Ligg på mage, kudde precis ovanför hälarna.",
+      "Böj hälarna mot rumpan.",
+      "Långsam kontrollerad excentrisk retur."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "lying leg curl hamstring form tutorial"
+  },
+  {
+    "id": "leg_extension",
+    "name": "Leg Extension",
+    "nameSv": "Leg Extension",
+    "category": "legs",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Sit with back against pad, shin pad above ankles.",
+      "Extend legs to full straightness.",
+      "Pause at top, slow return."
+    ],
+    "instructionsSv": [
+      "Sitt med ryggen mot kudden, skenbenskudde ovanför vristen.",
+      "Sträck benen till full utsträckning.",
+      "Pausa i toppen, långsam retur."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "leg extension machine quad form tutorial"
+  },
+  {
+    "id": "hip_thrust",
+    "name": "Hip Thrust (Barbell)",
+    "nameSv": "Hip Thrust",
+    "category": "legs",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "primaryMuscles": [
+      "gluteus_maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Sit with upper back against bench, bar across hips.",
+      "Plant feet flat, shoulder-width.",
+      "Drive hips upward until body is straight.",
+      "Squeeze glutes at top, control down."
+    ],
+    "instructionsSv": [
+      "Sitt med övre ryggen mot bänken, stången mot höfterna.",
+      "Plantera fötterna, axelbredda.",
+      "Driv höfterna uppåt tills kroppen är rak.",
+      "Kläm rumpan i toppen, sänk kontrollerat."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "barbell hip thrust glutes form tutorial"
+  },
+  {
+    "id": "bulgarian_split_squat",
+    "name": "Bulgarian Split Squat",
+    "nameSv": "Bulgarian Split Squat",
+    "category": "legs",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus_maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "gluteus_medius"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Rear foot elevated on bench, front foot far forward.",
+      "Lower rear knee toward floor.",
+      "Front knee tracks over toes.",
+      "Drive up through front heel."
+    ],
+    "instructionsSv": [
+      "Bakre foten höjd på bänken, främre foten långt framåt.",
+      "Sänk bakre knäet mot golvet.",
+      "Främre knät följer tåns riktning.",
+      "Pressa upp genom hälen på främre foten."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "bulgarian split squat form tutorial dumbbell"
+  },
+  {
+    "id": "lunge",
+    "name": "Lunge",
+    "nameSv": "Utfall",
+    "category": "legs",
+    "equipment": [
+      "dumbbell",
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus_maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Step forward, lower back knee toward floor.",
+      "Front shin stays vertical.",
+      "Push back to start or continue walking."
+    ],
+    "instructionsSv": [
+      "Kliv framåt, sänk bakre knäet mot golvet.",
+      "Främre vaden håller sig vertikal.",
+      "Pressa tillbaka eller fortsätt gå."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "lunge walking form tutorial"
+  },
+  {
+    "id": "calf_raise_standing",
+    "name": "Standing Calf Raise",
+    "nameSv": "Stående vadpress",
+    "category": "legs",
+    "equipment": [
+      "machine",
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "gastrocnemius"
+    ],
+    "secondaryMuscles": [
+      "soleus"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Stand with balls of feet on edge.",
+      "Rise up as high as possible.",
+      "Full stretch at bottom."
+    ],
+    "instructionsSv": [
+      "Stå med trampdynorna på kanten.",
+      "Res dig upp så högt som möjligt.",
+      "Full stretch nertill."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "standing calf raise form tutorial"
+  },
+  {
+    "id": "calf_raise_seated",
+    "name": "Seated Calf Raise",
+    "nameSv": "Sittande vadpress",
+    "category": "legs",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "soleus"
+    ],
+    "secondaryMuscles": [
+      "gastrocnemius"
+    ],
+    "stabilizers": [],
+    "instructions": [
+      "Sit with pad resting on thighs, balls of feet on edge.",
+      "Rise up fully, lower with full stretch."
+    ],
+    "instructionsSv": [
+      "Sitt med kudden på låren, trampdynorna på kanten.",
+      "Res upp helt, sänk med full stretch."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      15,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "seated calf raise soleus form tutorial"
+  },
+  {
+    "id": "overhead_press_barbell",
+    "name": "Overhead Press (Barbell)",
+    "nameSv": "Militärpress",
+    "category": "shoulders",
+    "equipment": [
+      "barbell",
+      "rack"
+    ],
+    "primaryMuscles": [
+      "anterior_deltoid",
+      "medial_deltoid"
+    ],
+    "secondaryMuscles": [
+      "triceps_brachii"
+    ],
+    "stabilizers": [
+      "core",
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Stand with feet shoulder-width.",
+      "Grip just outside shoulder-width, elbows slightly forward.",
+      "Bar rests on upper chest in starting position.",
+      "Press bar straight up, move head back to let bar pass.",
+      "Lock out overhead, control down."
+    ],
+    "instructionsSv": [
+      "Stå med axelbredda fötter.",
+      "Grepp strax utanför axelbredd, armbågarna lätt framåt.",
+      "Stången vilar på övre bröstet i startläge.",
+      "Pressa stången rakt upp, flytta huvudet bakåt.",
+      "Lås ut ovanför huvudet, kontrollera ner."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      5,
+      8
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 180,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "overhead press barbell form tutorial Bromley"
+  },
+  {
+    "id": "shoulder_press_dumbbell",
+    "name": "Shoulder Press (Dumbbell)",
+    "nameSv": "Axelpress hantel",
+    "category": "shoulders",
+    "equipment": [
+      "dumbbell"
+    ],
+    "primaryMuscles": [
+      "anterior_deltoid",
+      "medial_deltoid"
+    ],
+    "secondaryMuscles": [
+      "triceps_brachii"
+    ],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Sit or stand, dumbbells at shoulder level.",
+      "Press up until arms are extended.",
+      "Lower with control."
+    ],
+    "instructionsSv": [
+      "Sitt eller stå, hantelarna i axelhöjd.",
+      "Pressa upp tills armarna är utsträckta.",
+      "Sänk kontrollerat."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "dumbbell shoulder press form tutorial"
+  },
+  {
+    "id": "lateral_raise",
+    "name": "Lateral Raise",
+    "nameSv": "Lateral Raise",
+    "category": "shoulders",
+    "equipment": [
+      "dumbbell"
+    ],
+    "primaryMuscles": [
+      "medial_deltoid"
+    ],
+    "secondaryMuscles": [
+      "anterior_deltoid"
+    ],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Stand with dumbbells at sides.",
+      "Raise arms out to sides to shoulder height.",
+      "Slight bend in elbows, lead with elbows.",
+      "Slow controlled descent."
+    ],
+    "instructionsSv": [
+      "Stå med hantelarna längs sidorna.",
+      "Lyft armarna ut till axelhöjd.",
+      "Lätt böjda armar, led med armbågarna.",
+      "Långsam kontrollerad sänkning."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "lateral raise form tutorial medial deltoid"
+  },
+  {
+    "id": "cable_lateral_raise",
+    "name": "Cable Lateral Raise",
+    "nameSv": "Kabel Lateral Raise",
+    "category": "shoulders",
+    "equipment": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "medial_deltoid"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "rotator_cuff"
+    ],
+    "instructions": [
+      "Set cable to low position.",
+      "Stand side-on, raise arm across body to shoulder height.",
+      "Keep tension throughout range."
+    ],
+    "instructionsSv": [
+      "Ställ kabeln i lågt läge.",
+      "Stå sidovänd, lyft armen tvärs kroppen till axelhöjd.",
+      "Håll spänning genom hela rörelseomfånget."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      15,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "cable lateral raise form tutorial"
+  },
+  {
+    "id": "rear_delt_fly",
+    "name": "Rear Delt Fly",
+    "nameSv": "Bakre delt flyes",
+    "category": "shoulders",
+    "equipment": [
+      "dumbbell",
+      "machine"
+    ],
+    "primaryMuscles": [
+      "rear_deltoid"
+    ],
+    "secondaryMuscles": [
+      "rhomboids"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Bend forward 90°, dumbbells hanging.",
+      "Raise arms out to sides, slight elbow bend.",
+      "Squeeze rear delts, control down."
+    ],
+    "instructionsSv": [
+      "Böj framåt 90°, hantelarna hänger.",
+      "Lyft armarna ut åt sidorna med lätt armbågsböjning.",
+      "Kläm bakre deltoideuserna, kontrollera ner."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "rear delt fly dumbbell form tutorial"
+  },
+  {
+    "id": "shrug_barbell",
+    "name": "Barbell Shrug",
+    "nameSv": "Axelryckning",
+    "category": "shoulders",
+    "equipment": [
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "trapezius"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "forearms"
+    ],
+    "instructions": [
+      "Hold barbell at arm's length.",
+      "Shrug shoulders up toward ears.",
+      "Brief pause at top, lower with control."
+    ],
+    "instructionsSv": [
+      "Håll stången med raka armar.",
+      "Ryck axlarna upp mot öronen.",
+      "Kort paus i toppen, kontrollera ner."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "barbell shrug form tutorial trap"
+  },
+  {
+    "id": "barbell_curl",
+    "name": "Barbell Curl",
+    "nameSv": "Skivstångscurl",
+    "category": "arms",
+    "equipment": [
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "biceps_brachii"
+    ],
+    "secondaryMuscles": [
+      "brachialis"
+    ],
+    "stabilizers": [
+      "forearms"
+    ],
+    "instructions": [
+      "Stand with barbell at hip level, underhand grip.",
+      "Curl bar to shoulder level, elbows stay at sides.",
+      "Squeeze at top, lower with control."
+    ],
+    "instructionsSv": [
+      "Stå med stången i höfthöjd, underhand grepp.",
+      "Curl till axelhöjd, armbågarna stannar vid sidorna.",
+      "Kläm i toppen, sänk kontrollerat."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "barbell curl form tutorial biceps"
+  },
+  {
+    "id": "dumbbell_curl",
+    "name": "Dumbbell Curl",
+    "nameSv": "Hantelcurl",
+    "category": "arms",
+    "equipment": [
+      "dumbbell"
+    ],
+    "primaryMuscles": [
+      "biceps_brachii"
+    ],
+    "secondaryMuscles": [
+      "brachialis"
+    ],
+    "stabilizers": [
+      "forearms"
+    ],
+    "instructions": [
+      "Stand with dumbbells at sides, palms forward.",
+      "Curl alternately or simultaneously.",
+      "Supinate at the top for peak contraction."
+    ],
+    "instructionsSv": [
+      "Stå med hantelarna längs sidorna, handflatorna framåt.",
+      "Curl alternerande eller simultant.",
+      "Supinat i toppen för maximal sammandragning."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "dumbbell curl form tutorial biceps"
+  },
+  {
+    "id": "hammer_curl",
+    "name": "Hammer Curl",
+    "nameSv": "Hammer Curl",
+    "category": "arms",
+    "equipment": [
+      "dumbbell"
+    ],
+    "primaryMuscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "secondaryMuscles": [
+      "biceps_brachii"
+    ],
+    "stabilizers": [
+      "forearms"
+    ],
+    "instructions": [
+      "Neutral grip (thumbs up), curl to shoulder.",
+      "Elbows stay fixed at sides.",
+      "Lower with control."
+    ],
+    "instructionsSv": [
+      "Neutralt grepp (tummarna upp), curl till axelns.",
+      "Armbågarna stannar vid sidorna.",
+      "Sänk kontrollerat."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "hammer curl form tutorial brachialis"
+  },
+  {
+    "id": "incline_dumbbell_curl",
+    "name": "Incline Dumbbell Curl",
+    "nameSv": "Lutande hantelcurl",
+    "category": "arms",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primaryMuscles": [
+      "biceps_brachii"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "forearms"
+    ],
+    "instructions": [
+      "Lie back on 45° incline bench.",
+      "Arms hang naturally behind torso.",
+      "Curl up, full supination at top."
+    ],
+    "instructionsSv": [
+      "Ligg bakåt på 45° lutande bänk.",
+      "Armarna hänger naturligt bakom kroppen.",
+      "Curl upp, full supination i toppen."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "incline dumbbell curl biceps long head form"
+  },
+  {
+    "id": "cable_curl",
+    "name": "Cable Curl",
+    "nameSv": "Kabelcurl",
+    "category": "arms",
+    "equipment": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "biceps_brachii"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "forearms"
+    ],
+    "instructions": [
+      "Stand at cable machine, low pulley, underhand grip.",
+      "Curl handle to shoulder height.",
+      "Slow eccentric return."
+    ],
+    "instructionsSv": [
+      "Stå vid kabelmaskinen, lågt läge, underhand grepp.",
+      "Curl handtaget till axelhöjd.",
+      "Långsam excentrisk retur."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "cable curl bicep form tutorial"
+  },
+  {
+    "id": "preacher_curl",
+    "name": "Preacher Curl",
+    "nameSv": "Predikstolscurl",
+    "category": "arms",
+    "equipment": [
+      "machine",
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "biceps_brachii"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [],
+    "instructions": [
+      "Sit at preacher bench, upper arms on pad.",
+      "Curl weight up, squeeze at top.",
+      "Lower to full extension."
+    ],
+    "instructionsSv": [
+      "Sitt vid predikstolen, överarmarna mot kudden.",
+      "Curl vikten uppåt, kläm i toppen.",
+      "Sänk till full utsträckning."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "preacher curl form tutorial ez bar"
+  },
+  {
+    "id": "tricep_pushdown_rope",
+    "name": "Tricep Pushdown (Rope)",
+    "nameSv": "Triceps Pushdown",
+    "category": "arms",
+    "equipment": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "triceps_brachii"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "High pulley, rope attachment.",
+      "Elbows pinned at sides, push down and out.",
+      "Full extension, slow return."
+    ],
+    "instructionsSv": [
+      "Högt läge, rephandtag.",
+      "Armbågarna fasta vid sidorna, pressa ner och utåt.",
+      "Full utsträckning, långsam retur."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "tricep pushdown rope cable form tutorial"
+  },
+  {
+    "id": "overhead_tricep_extension",
+    "name": "Overhead Tricep Extension",
+    "nameSv": "Overhead tricepsextension",
+    "category": "arms",
+    "equipment": [
+      "cable",
+      "dumbbell"
+    ],
+    "primaryMuscles": [
+      "triceps_brachii"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Hold weight overhead, elbows pointing forward.",
+      "Lower weight behind head by bending elbows.",
+      "Extend back to start."
+    ],
+    "instructionsSv": [
+      "Håll vikten ovanför huvudet, armbågarna framåt.",
+      "Sänk vikten bakom huvudet genom att böja armbågarna.",
+      "Sträck tillbaka till startläget."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "overhead tricep extension cable long head tutorial"
+  },
+  {
+    "id": "skull_crusher",
+    "name": "Skull Crusher",
+    "nameSv": "Skullcrusher",
+    "category": "arms",
+    "equipment": [
+      "barbell",
+      "dumbbell"
+    ],
+    "primaryMuscles": [
+      "triceps_brachii"
+    ],
+    "secondaryMuscles": [],
+    "stabilizers": [],
+    "instructions": [
+      "Lie on bench, EZ-bar or dumbbells overhead.",
+      "Lower bar/dumbbells toward forehead by bending elbows.",
+      "Press back to start, elbows stay in."
+    ],
+    "instructionsSv": [
+      "Ligg på bänken, EZ-stång eller hantlar ovanför.",
+      "Sänk mot pannan genom att böja armbågarna.",
+      "Pressa tillbaka till start, armbågarna inne."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "skull crusher ez bar form tutorial triceps"
+  },
+  {
+    "id": "close_grip_bench",
+    "name": "Close Grip Bench Press",
+    "nameSv": "Smalt grepp bänkpress",
+    "category": "arms",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "primaryMuscles": [
+      "triceps_brachii"
+    ],
+    "secondaryMuscles": [
+      "pectoralis_major",
+      "anterior_deltoid"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Grip bar at shoulder-width or slightly inside.",
+      "Lower bar to lower chest, elbows track close to body.",
+      "Press up to start."
+    ],
+    "instructionsSv": [
+      "Grepp i axelbredd eller strax innanför.",
+      "Sänk stången mot nedre bröstet, armbågarna nära kroppen.",
+      "Pressa upp till start."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 120,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "close grip bench press triceps form tutorial"
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "nameSv": "Plankan",
+    "category": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "transverse_abdominis",
+      "core"
+    ],
+    "secondaryMuscles": [
+      "rectus_abdominis",
+      "erector_spinae"
+    ],
+    "stabilizers": [
+      "gluteus_maximus"
+    ],
+    "instructions": [
+      "Forearms on floor, elbows under shoulders.",
+      "Body in straight line from head to heels.",
+      "Brace core, breathe normally, hold."
+    ],
+    "instructionsSv": [
+      "Underarmarna i golvet, armbågarna under axlarna.",
+      "Kroppen i rak linje från huvud till hälar.",
+      "Spänna magen, andas normalt, håll."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      30,
+      60
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "plank perfect form core tutorial"
+  },
+  {
+    "id": "cable_crunch",
+    "name": "Cable Crunch",
+    "nameSv": "Kabelcurl mage",
+    "category": "core",
+    "equipment": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "rectus_abdominis"
+    ],
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "stabilizers": [],
+    "instructions": [
+      "Kneel at cable machine with rope at head height.",
+      "Flex spine, bringing elbows toward knees.",
+      "Full contraction at bottom, slow return."
+    ],
+    "instructionsSv": [
+      "Knäböj vid kabelmaskinen med rep i huvudhöjd.",
+      "Böj ryggraden, för armbågarna mot knäna.",
+      "Full kontraktion nertill, långsam retur."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      12,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "cable crunch abs form tutorial"
+  },
+  {
+    "id": "hanging_leg_raise",
+    "name": "Hanging Leg Raise",
+    "nameSv": "Hängande benlyft",
+    "category": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "rectus_abdominis"
+    ],
+    "secondaryMuscles": [
+      "obliques",
+      "core"
+    ],
+    "stabilizers": [
+      "forearms"
+    ],
+    "instructions": [
+      "Hang from pull-up bar.",
+      "Raise legs to 90° or higher.",
+      "Control the descent."
+    ],
+    "instructionsSv": [
+      "Häng i pull-up stången.",
+      "Lyft benen till 90° eller högre.",
+      "Kontrollera sänkningen."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      10,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "hanging leg raise abs form tutorial"
+  },
+  {
+    "id": "ab_wheel",
+    "name": "Ab Wheel Rollout",
+    "nameSv": "Maghjulsutdragning",
+    "category": "core",
+    "equipment": [
+      "other"
+    ],
+    "primaryMuscles": [
+      "rectus_abdominis",
+      "transverse_abdominis"
+    ],
+    "secondaryMuscles": [
+      "erector_spinae"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Kneel holding ab wheel.",
+      "Roll forward maintaining neutral spine.",
+      "Pull back using core strength."
+    ],
+    "instructionsSv": [
+      "Knäböj med maghjulet.",
+      "Rulla framåt med neutral rygg.",
+      "Dra tillbaka med magmusklernas kraft."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "double_progression",
+    "youtubeSearchQuery": "ab wheel rollout form tutorial core"
+  },
+  {
+    "id": "russian_twist",
+    "name": "Russian Twist",
+    "nameSv": "Russian Twist",
+    "category": "core",
+    "equipment": [
+      "bodyweight",
+      "other"
+    ],
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "rectus_abdominis"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Sit with feet elevated, lean back slightly.",
+      "Rotate torso side to side.",
+      "Add weight plate for progression."
+    ],
+    "instructionsSv": [
+      "Sitt med fötterna höjda, luta dig lätt bakåt.",
+      "Rotera överkroppen åt sidorna.",
+      "Lägg till viktskiva för progression."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      15,
+      20
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "russian twist form obliques tutorial"
+  },
+  {
+    "id": "dead_bug",
+    "name": "Dead Bug",
+    "nameSv": "Dead Bug",
+    "category": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "transverse_abdominis",
+      "core"
+    ],
+    "secondaryMuscles": [
+      "rectus_abdominis"
+    ],
+    "stabilizers": [],
+    "instructions": [
+      "Lie on back, arms extended up, knees at 90°.",
+      "Extend opposite arm and leg simultaneously.",
+      "Keep lower back pressed to floor throughout."
+    ],
+    "instructionsSv": [
+      "Ligg på rygg, armar rakt upp, knän i 90°.",
+      "Sträck motsatt arm och ben simultant.",
+      "Håll nedre ryggen mot golvet hela tiden."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "strength",
+    "defaultRepRange": [
+      8,
+      12
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 60,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "dead bug core exercise form tutorial"
+  },
+  {
+    "id": "treadmill_run",
+    "name": "Treadmill Run",
+    "nameSv": "Löpband",
+    "category": "cardio",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "quadriceps",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "gluteus_maximus",
+      "gastrocnemius"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Start at comfortable pace.",
+      "Maintain upright posture, relax shoulders.",
+      "Progress distance or speed over time."
+    ],
+    "instructionsSv": [
+      "Starta i bekvämt tempo.",
+      "Håll upprätt hållning, slappna av i axlarna.",
+      "Öka distans eller hastighet med tid."
+    ],
+    "difficulty": "beginner",
+    "isCompound": true,
+    "type": "cardio",
+    "defaultRepRange": [
+      1,
+      1
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 0,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "treadmill running form tutorial"
+  },
+  {
+    "id": "rowing_machine",
+    "name": "Rowing Machine",
+    "nameSv": "Rodd maskin",
+    "category": "cardio",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "latissimus_dorsi",
+      "erector_spinae"
+    ],
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "biceps_brachii"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Sit with feet strapped in.",
+      "Drive with legs first, then lean back, then pull arms.",
+      "Reverse order on return."
+    ],
+    "instructionsSv": [
+      "Sitt med fötterna fastspända.",
+      "Driv med benen först, luta bakåt, dra med armarna.",
+      "Omvänd ordning vid retur."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "cardio",
+    "defaultRepRange": [
+      1,
+      1
+    ],
+    "defaultRPETarget": 7,
+    "defaultRestSeconds": 0,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "rowing machine form tutorial concept2"
+  },
+  {
+    "id": "stationary_bike",
+    "name": "Stationary Bike",
+    "nameSv": "Motionscykel",
+    "category": "cardio",
+    "equipment": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "gluteus_maximus"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Adjust seat height – slight bend in knee at bottom.",
+      "Pedal at consistent cadence.",
+      "Vary resistance for progression."
+    ],
+    "instructionsSv": [
+      "Justera säteshöjden – lätt knäböjning nertill.",
+      "Pedala i jämn kadens.",
+      "Variera motståndet för progression."
+    ],
+    "difficulty": "beginner",
+    "isCompound": false,
+    "type": "cardio",
+    "defaultRepRange": [
+      1,
+      1
+    ],
+    "defaultRPETarget": 6,
+    "defaultRestSeconds": 0,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "stationary bike cardio HIIT tutorial"
+  },
+  {
+    "id": "power_clean",
+    "name": "Power Clean",
+    "nameSv": "Power Clean",
+    "category": "full_body",
+    "equipment": [
+      "barbell"
+    ],
+    "primaryMuscles": [
+      "gluteus_maximus",
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "trapezius",
+      "erector_spinae"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Setup like deadlift, bar over mid-foot.",
+      "Explosive hip extension, bar rises.",
+      "Catch bar on front deltoids in quarter squat.",
+      "Stand up to finish."
+    ],
+    "instructionsSv": [
+      "Ställ dig som vid marklyft, stången över mitten av foten.",
+      "Explosiv höftutsträckning, stången stiger.",
+      "Fånga stången på främre deltamusklerna i kvarts knäböj.",
+      "Res dig upp för att avsluta."
+    ],
+    "difficulty": "advanced",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      3,
+      5
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 180,
+    "use1RM": true,
+    "progressionType": "compound_apre",
+    "youtubeSearchQuery": "power clean form tutorial Olympic lifting"
+  },
+  {
+    "id": "kettlebell_swing",
+    "name": "Kettlebell Swing",
+    "nameSv": "Kettlebell Swing",
+    "category": "full_body",
+    "equipment": [
+      "kettlebell"
+    ],
+    "primaryMuscles": [
+      "gluteus_maximus",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "erector_spinae",
+      "core"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Hinge at hips, swing kettlebell back between legs.",
+      "Drive hips explosively forward.",
+      "Kettlebell swings to chest/eye level.",
+      "Let it swing back – repeat."
+    ],
+    "instructionsSv": [
+      "Hängla i höften, sväng kettlebell bakåt mellan benen.",
+      "Driv höfterna explosivt framåt.",
+      "Kettlebell svänger till bröst/ögonhöjd.",
+      "Låt den svänga tillbaka – repetera."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "strength",
+    "defaultRepRange": [
+      15,
+      20
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "kettlebell swing form tutorial hip hinge"
+  },
+  {
+    "id": "burpee",
+    "name": "Burpee",
+    "nameSv": "Burpee",
+    "category": "full_body",
+    "equipment": [
+      "bodyweight"
+    ],
+    "primaryMuscles": [
+      "quadriceps",
+      "pectoralis_major"
+    ],
+    "secondaryMuscles": [
+      "triceps_brachii",
+      "gluteus_maximus"
+    ],
+    "stabilizers": [
+      "core"
+    ],
+    "instructions": [
+      "Stand, drop to squat, jump feet back to push-up position.",
+      "Perform push-up.",
+      "Jump feet forward, then jump up with arms overhead."
+    ],
+    "instructionsSv": [
+      "Stå, gå ner till knäböjläge, hoppa fötterna bakåt.",
+      "Utför en armhävning.",
+      "Hoppa fötterna framåt, hoppa sedan upp med armarna ovanför."
+    ],
+    "difficulty": "intermediate",
+    "isCompound": true,
+    "type": "plyometric",
+    "defaultRepRange": [
+      8,
+      15
+    ],
+    "defaultRPETarget": 8,
+    "defaultRestSeconds": 90,
+    "use1RM": false,
+    "progressionType": "rep_range",
+    "youtubeSearchQuery": "burpee form tutorial"
+  }
+]

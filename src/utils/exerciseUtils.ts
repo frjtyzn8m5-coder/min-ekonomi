@@ -1,5 +1,5 @@
 import type { Exercise, ExerciseCategory, ExerciseEquipment, AnatomicalMuscle } from '../types';
-import exercisesData from '../../data/exercises.json';
+import exercisesData from '../data/exercises.json';
 
 export const EXERCISES: Exercise[] = exercisesData as Exercise[];
 
