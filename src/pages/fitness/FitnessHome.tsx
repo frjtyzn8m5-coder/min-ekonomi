@@ -1,4 +1,4 @@
-import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket, ClipboardList, ListVideo, TrendingUp, Moon, Target } from 'lucide-react';
+import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket, ClipboardList, ListVideo, TrendingUp, Moon, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import type { FitnessPage } from '../../types';
@@ -114,7 +114,8 @@ const MODULES: {
 ];
 
 export default function FitnessHome() {
-  const { setFitnessPage } = useStore();
+  const { setFitnessPage, userProfile } = useStore();
+  const onboardingDone = userProfile?.onboardingCompletedModules?.includes('fitness');
 
   return (
     <div className="min-h-full p-6 max-w-2xl mx-auto">
@@ -132,6 +133,40 @@ export default function FitnessHome() {
         </div>
         <p className="text-sm text-gray-400">Din personliga tränings- och näringshub.</p>
       </motion.div>
+
+      {/* Onboarding-banner (visas om profil ej satt upp) */}
+      {!onboardingDone && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="bg-emerald-600 rounded-2xl p-5 mb-5 text-white"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Zap size={16} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm mb-1">Starta din träningsprofil</p>
+              <p className="text-xs text-emerald-100 mb-3">Det tar ungefär 3 minuter. Du får personliga vikter, anpassad progression och PR-spårning.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFitnessPage('onboarding')}
+                  className="flex-1 py-2 rounded-xl bg-white text-emerald-700 text-xs font-semibold hover:bg-emerald-50 transition-colors"
+                >
+                  Starta träningsprofil
+                </button>
+                <button
+                  onClick={() => {/* bara stäng bannern – användaren loggar fritt */}}
+                  className="px-3 py-2 rounded-xl border border-white/30 text-white text-xs hover:bg-white/10 transition-colors"
+                >
+                  Börja utan profil
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <div className="space-y-3">
         {MODULES.map(({ icon: Icon, label, description, color, bg, page, ready }, i) => (

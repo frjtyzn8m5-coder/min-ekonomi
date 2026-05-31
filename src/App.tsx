@@ -16,7 +16,8 @@ const Import       = lazy(() => import('./pages/Import'));
 const Reminders    = lazy(() => import('./pages/Reminders'));
 const Settings     = lazy(() => import('./pages/Settings'));
 const Portfolio    = lazy(() => import('./pages/Portfolio'));
-const Login        = lazy(() => import('./pages/Login'));
+const Login          = lazy(() => import('./pages/Login'));
+const ModuleSelector = lazy(() => import('./pages/ModuleSelector'));
 
 // ── Hub module pages (lazy) ───────────────────────────────────────────────────
 const Home         = lazy(() => import('./pages/home/Home'));
@@ -33,7 +34,8 @@ const ExerciseDB      = lazy(() => import('./pages/fitness/ExerciseDB'));
 const Development     = lazy(() => import('./pages/fitness/Development'));
 const CycleHub        = lazy(() => import('./pages/fitness/CycleHub'));
 const GoalCenter      = lazy(() => import('./pages/fitness/GoalCenter'));
-const CalendarHome    = lazy(() => import('./pages/calendar/CalendarHome'));
+const CalendarHome        = lazy(() => import('./pages/calendar/CalendarHome'));
+const NutritionOnboarding = lazy(() => import('./pages/nutrition/NutritionOnboarding'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -75,7 +77,7 @@ const Spinner = () => (
 );
 
 export default function App() {
-  const { page, module, fitnessPage } = useStore();
+  const { page, module, fitnessPage, userProfile } = useStore();
   const { user, loading, initAuth } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -93,6 +95,15 @@ export default function App() {
     return (
       <Suspense fallback={null}>
         <Login />
+      </Suspense>
+    );
+  }
+
+  // Ny användare utan profil → modul-väljarskärm
+  if (!userProfile || userProfile.activeModules.length === 0) {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+        <ModuleSelector />
       </Suspense>
     );
   }
@@ -167,7 +178,11 @@ export default function App() {
                   {module === 'fitness'  && fitnessPage === 'pantry'     && <Pantry />}
                   {module === 'fitness'  && fitnessPage === 'recipes'    && <Recipes />}
                   {module === 'fitness'  && fitnessPage === 'mealplan'   && <MealPlan />}
-                  {module === 'fitness'  && fitnessPage === 'onboarding'  && <Onboarding />}
+                  {module === 'fitness'  && fitnessPage === 'onboarding'  && (
+                    userProfile?.activeModules.includes('fitness')
+                      ? <Onboarding />
+                      : <NutritionOnboarding />
+                  )}
                   {module === 'fitness'  && fitnessPage === 'program'     && <WorkoutProgram />}
                   {module === 'fitness'  && fitnessPage === 'workoutlog'  && <WorkoutLog />}
                   {module === 'fitness'  && fitnessPage === 'exercises'    && <ExerciseDB />}
