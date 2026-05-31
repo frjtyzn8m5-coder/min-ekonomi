@@ -469,6 +469,8 @@ export default function Onboarding() {
 
             {/* Steg 2 – Grundmått */}
             {step === 2 && (
+              <div className="space-y-4">
+                <h2 className="font-semibold text-gray-900 text-lg">Dina grundmått</h2>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">Födelseår</label>
