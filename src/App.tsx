@@ -30,6 +30,9 @@ const Onboarding      = lazy(() => import('./pages/fitness/Onboarding'));
 const WorkoutProgram  = lazy(() => import('./pages/fitness/WorkoutProgram'));
 const WorkoutLog      = lazy(() => import('./pages/fitness/WorkoutLog'));
 const ExerciseDB      = lazy(() => import('./pages/fitness/ExerciseDB'));
+const Development     = lazy(() => import('./pages/fitness/Development'));
+const CycleHub        = lazy(() => import('./pages/fitness/CycleHub'));
+const GoalCenter      = lazy(() => import('./pages/fitness/GoalCenter'));
 const CalendarHome    = lazy(() => import('./pages/calendar/CalendarHome'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -167,7 +170,10 @@ export default function App() {
                   {module === 'fitness'  && fitnessPage === 'onboarding'  && <Onboarding />}
                   {module === 'fitness'  && fitnessPage === 'program'     && <WorkoutProgram />}
                   {module === 'fitness'  && fitnessPage === 'workoutlog'  && <WorkoutLog />}
-                  {module === 'fitness'  && fitnessPage === 'exercises'   && <ExerciseDB />}
+                  {module === 'fitness'  && fitnessPage === 'exercises'    && <ExerciseDB />}
+                  {module === 'fitness'  && fitnessPage === 'development'  && <Development />}
+                  {module === 'fitness'  && fitnessPage === 'cyclehub'     && <CycleHub />}
+                  {module === 'fitness'  && fitnessPage === 'goalcenter'   && <GoalCenter />}
                   {module === 'calendar' && <CalendarHome />}
                 </motion.div>
               </AnimatePresence>

@@ -1,4 +1,4 @@
-import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket, ClipboardList, ListVideo } from 'lucide-react';
+import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket, ClipboardList, ListVideo, TrendingUp, Moon, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import type { FitnessPage } from '../../types';
@@ -83,6 +83,33 @@ const MODULES: {
     bg: 'bg-indigo-50',
     page: 'program',
     ready: true,
+  },
+  {
+    icon: TrendingUp,
+    label: 'Utveckling',
+    description: 'Grafer och statistik över styrka, vikt och näring över tid.',
+    color: 'text-purple-600',
+    bg: 'bg-purple-50',
+    page: 'development',
+    ready: false,
+  },
+  {
+    icon: Target,
+    label: 'Målcentrum',
+    description: 'Sätt mål för vikt, kroppsfett och styrka. Följ upp din progress.',
+    color: 'text-green-600',
+    bg: 'bg-green-50',
+    page: 'goalcenter',
+    ready: false,
+  },
+  {
+    icon: Moon,
+    label: 'Cykelspårning',
+    description: 'Optimera träning och kost baserat på din menscykel.',
+    color: 'text-pink-500',
+    bg: 'bg-pink-50',
+    page: 'cyclehub',
+    ready: false,
   },
 ];
 
