@@ -1,3 +1,96 @@
+// ── UserProfile types (Sprint 0) ─────────────────────────────────────────────
+
+export type Gender = 'male' | 'female' | 'prefer_not_to_say'
+export type PrimaryGoal = 'lose_fat' | 'gain_muscle' | 'recomp' | 'maintain' | 'general_health'
+export type ActivityLevel = 'sedentary' | 'lightly_active' | 'moderately_active' | 'highly_active' | 'very_highly_active'
+export type ActiveModule = 'economy' | 'fitness' | 'nutrition' | 'calendar'
+export type Contraceptive = 'none' | 'combined_pill' | 'mini_pill' | 'hormonal_iud' | 'copper_iud' | 'implant' | 'injection' | 'other' | 'not_applicable'
+
+export interface UserProfile {
+  // Identitet
+  uid: string
+  displayName?: string
+  email?: string
+
+  // Aktiva moduler (väljs vid onboarding)
+  activeModules: ActiveModule[]
+  onboardingCompletedModules: ActiveModule[]
+
+  // Grunddata
+  gender: Gender
+  birthDate?: string            // YYYY-MM-DD
+  height?: number               // cm
+
+  // Kroppsstatus – uppdateras från WeightLog
+  currentWeight?: number        // kg
+  currentBodyFat?: number       // % (Navy-metod eller manuell)
+  leanBodyMass?: number         // kg (auto: currentWeight × (1 - bodyFat/100))
+
+  // Aktivitetsnivå
+  activityLevel: ActivityLevel
+  trainingDaysPerWeek: number   // 0–7
+
+  // Beräknade metabolismvärden (auto-beräknade, lagras i Firestore)
+  bmr?: number                  // kcal/dag (Mifflin-St Jeor)
+  estimatedTDEE?: number        // kcal/dag (BMR × aktivitetsmultiplikator)
+  adaptiveTDEE?: number         // kcal/dag (beräknat från vikttrend + matlogg, kräver 14+ dagars data)
+  tdeeLastUpdated?: number      // unix ms
+
+  // Mål
+  primaryGoal: PrimaryGoal
+  targetWeight?: number         // kg
+  targetBodyFat?: number        // %
+  weeklyWeightChangeTarget?: number  // kg/vecka, negativ = förlora, positiv = öka
+  goalDeadline?: string         // YYYY-MM-DD
+
+  // Dagliga mål (auto-beräknade från mål + kroppsstatus)
+  dailyCalorieTarget?: number
+  proteinTargetG?: number
+  fatTargetG?: number
+  carbTargetG?: number
+
+  // Träningsprofil
+  experienceLevel: ExperienceLevel
+  availableEquipment: string[]  // ['barbell', 'dumbbell', 'cable', 'bodyweight', 'bench', 'rack', 'machine']
+  activeProgramId?: string      // referens till träningsprogram
+  activeProgramStartDate?: string // YYYY-MM-DD
+  currentProgramWeek?: number   // 1-baserat
+  currentProgramDayIndex?: number // 0-baserat inom veckan
+  injuries?: string             // fritext
+
+  // Kost-preferenser
+  dietaryPreferences: ('vegetarian' | 'vegan' | 'gluten_free' | 'lactose_free' | 'no_pork' | 'no_shellfish')[]
+  cookingTimePreference: 'minimal' | 'moderate' | 'generous'  // <15min / 15-45min / 45min+
+  mealVariationPreference: 'high' | 'medium' | 'low'
+  batchCookingEnabled: boolean
+
+  // Frukostpreferens (för måltidsplan)
+  breakfastPreference: 'same_daily' | 'rotate_favorites' | 'full_variation'
+  breakfastFavoriteRecipeIds?: string[]
+
+  // Sömn och välmående
+  sleepTargetHours: number      // standard: 8
+  stepsTargetDaily: number      // standard: 8000
+
+  // Menscykel (bara relevant om gender === 'female')
+  cycleTrackingEnabled?: boolean
+  averageCycleLength?: number   // dagar, standard: 28
+  averagePeriodLength?: number  // dagar, standard: 5
+  lastPeriodStartDate?: string  // YYYY-MM-DD
+  contraceptive?: Contraceptive
+  cycleIrregular?: boolean
+
+  // Supplement-tracking
+  activeSupplements?: string[]  // ['creatine', 'fish_oil', 'vitamin_d', 'multivitamin', 'caffeine']
+
+  // Meta
+  createdAt: number
+  updatedAt: number
+  appVersion: string            // '1.0.0'
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export type TransactionType = 'income' | 'expense' | 'transfer' | 'investment';
 
 export type Category =
@@ -71,7 +164,22 @@ export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'netwo
 
 export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
 
-export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry' | 'mealplan' | 'onboarding' | 'program' | 'exercisedetail';
+export type FitnessPage =
+  | 'home'           // FitnessHome.tsx
+  | 'weightlog'      // WeightLog.tsx
+  | 'workoutlog'     // WorkoutLog.tsx
+  | 'workoutprogram' // WorkoutProgram.tsx
+  | 'exercises'      // ExerciseDB.tsx
+  | 'foodlog'        // FoodLog.tsx
+  | 'recipes'        // Recipes.tsx
+  | 'pantry'         // Pantry.tsx
+  | 'mealplan'       // MealPlan.tsx
+  | 'development'    // Development.tsx – grafer och statistik
+  | 'cyclehub'       // CycleHub.tsx – menscykel (bara om female)
+  | 'goalcenter'     // GoalCenter.tsx
+  | 'onboarding'     // Onboarding.tsx (legacy)
+  | 'program'        // WorkoutProgram.tsx (legacy alias)
+  | 'exercisedetail' // ExerciseDetail
 
 export interface BodyMeasurements {
   waist?: number;

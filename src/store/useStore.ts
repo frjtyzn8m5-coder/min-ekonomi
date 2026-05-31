@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, FitnessPage, FitnessProfile, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, NutritionSettings } from '../types';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, FitnessPage, FitnessProfile, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, NutritionSettings, UserProfile } from '../types';
+import { saveUserProfile } from '../lib/db';
+import { calculateBMR, calculateTDEE, calculateMacroTargets, getAgeFromBirthDate } from '../utils/calculations';
 
 const DEFAULT_BUDGETS: BudgetGoal[] = [
   { category: 'Mat', limit: 2000 },
@@ -53,6 +55,10 @@ const DEFAULT_NUTRITION_SETTINGS: NutritionSettings = {
 };
 
 interface AppState {
+  userProfile: UserProfile | null;
+  setUserProfile: (profile: UserProfile) => void;
+  updateUserProfile: (partial: Partial<UserProfile>) => Promise<void>;
+
   transactions: Transaction[];
   budgets: BudgetGoal[];
   assets: AssetSnapshot[];
@@ -123,6 +129,42 @@ function mergeTxsLocal(existing: Transaction[], incoming: Transaction[]): Transa
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
+      userProfile: null,
+
+      setUserProfile: (profile) => set({ userProfile: profile }),
+
+      updateUserProfile: async (partial) => {
+        const current = useStore.getState().userProfile;
+        if (!current) return;
+        const updated: UserProfile = { ...current, ...partial, updatedAt: Date.now() };
+
+        // Auto-beräkna BMR/TDEE om relevanta fält ändrats
+        if (updated.height && updated.currentWeight && updated.birthDate && updated.gender) {
+          const age = getAgeFromBirthDate(updated.birthDate);
+          updated.bmr = Math.round(calculateBMR(updated.currentWeight, updated.height, age, updated.gender));
+          updated.estimatedTDEE = calculateTDEE(updated.bmr, updated.activityLevel);
+        }
+
+        // Auto-beräkna leanBodyMass
+        if (updated.currentWeight && updated.currentBodyFat !== undefined) {
+          updated.leanBodyMass = Math.round(updated.currentWeight * (1 - updated.currentBodyFat / 100) * 10) / 10;
+        }
+
+        // Auto-beräkna makromål
+        if (updated.estimatedTDEE && updated.currentWeight) {
+          const macros = calculateMacroTargets(
+            updated.estimatedTDEE,
+            updated.currentWeight,
+            updated.primaryGoal,
+            updated.weeklyWeightChangeTarget,
+          );
+          Object.assign(updated, macros);
+        }
+
+        set({ userProfile: updated });
+        await saveUserProfile(updated.uid, updated);
+      },
+
       transactions: [],
       budgets: DEFAULT_BUDGETS,
       assets: [],
@@ -231,6 +273,7 @@ export const useStore = create<AppState>()(
     {
       name: 'ekonomi_v5',
       partialize: (s) => ({
+        userProfile: s.userProfile,
         transactions: s.transactions,
         budgets: s.budgets,
         assets: s.assets,

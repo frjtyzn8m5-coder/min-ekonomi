@@ -1,4 +1,79 @@
-import type { Transaction, MonthData, FilterState } from '../types';
+import type { Transaction, MonthData, FilterState, Gender, ActivityLevel, PrimaryGoal } from '../types';
+
+// ── BMR / TDEE / Makromål (Sprint 0) ─────────────────────────────────────────
+
+const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
+  sedentary: 1.2,
+  lightly_active: 1.375,
+  moderately_active: 1.55,
+  highly_active: 1.725,
+  very_highly_active: 1.9,
+}
+
+export function calculateBMR(weight: number, height: number, age: number, gender: Gender): number {
+  const base = 10 * weight + 6.25 * height - 5 * age
+  return gender === 'male' ? base + 5 : base - 161
+}
+
+export function calculateTDEE(bmr: number, activityLevel: ActivityLevel): number {
+  return Math.round(bmr * ACTIVITY_MULTIPLIERS[activityLevel])
+}
+
+export interface MacroTargets {
+  dailyCalorieTarget: number
+  proteinTargetG: number
+  fatTargetG: number
+  carbTargetG: number
+}
+
+/**
+ * Beräknar dagliga makromål baserat på kroppsstatus och mål.
+ * Utökas i Sprint 4 med fullständig algoritm.
+ */
+export function calculateMacroTargets(
+  tdee: number,
+  weight: number,
+  primaryGoal: PrimaryGoal,
+  weeklyWeightChangeTarget?: number,
+): MacroTargets {
+  // Kalorideficit/surplus baserat på mål
+  const weeklyKcalPerKg = 7700 // kcal per kg kroppsvikt
+  let calorieDelta = 0
+
+  if (weeklyWeightChangeTarget !== undefined && weeklyWeightChangeTarget !== 0) {
+    calorieDelta = Math.round((weeklyWeightChangeTarget * weeklyKcalPerKg) / 7)
+  } else {
+    // Defaults per mål
+    if (primaryGoal === 'lose_fat')      calorieDelta = -500
+    else if (primaryGoal === 'gain_muscle') calorieDelta = 250
+    else if (primaryGoal === 'recomp')   calorieDelta = -200
+    // maintain / general_health → 0
+  }
+
+  const dailyCalorieTarget = Math.max(1200, Math.round(tdee + calorieDelta))
+
+  // Protein: 2.2 g/kg kroppsvikt (högt för body recomp/fettförlust)
+  const proteinTargetG = Math.round(weight * 2.2)
+  // Fett: 25% av kalorier
+  const fatTargetG = Math.round((dailyCalorieTarget * 0.25) / 9)
+  // Kolhydrater: resten
+  const proteinKcal = proteinTargetG * 4
+  const fatKcal = fatTargetG * 9
+  const carbTargetG = Math.max(0, Math.round((dailyCalorieTarget - proteinKcal - fatKcal) / 4))
+
+  return { dailyCalorieTarget, proteinTargetG, fatTargetG, carbTargetG }
+}
+
+export function getAgeFromBirthDate(birthDate: string): number {
+  const today = new Date()
+  const birth = new Date(birthDate)
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 import { isIncomeCategory, isSavingsCategory } from './categorize';
 
 export function getMonth(date: string): string {
