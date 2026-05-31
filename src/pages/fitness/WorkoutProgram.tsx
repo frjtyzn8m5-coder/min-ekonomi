@@ -142,7 +142,7 @@ function EditExerciseModal({ exercise, onSave, onClose }: EditExerciseModalProps
 
 export default function WorkoutProgramPage() {
   const { user } = useAuthStore();
-  const { setFitnessPage } = useStore();
+  const { setFitnessPage, setPendingWorkout } = useStore();
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
@@ -171,8 +171,7 @@ export default function WorkoutProgramPage() {
   }
 
   function handleStartWorkout(day: WorkoutDay) {
-    // Navigate to WorkoutLog with the day pre-loaded
-    // For now just go to workout log — full integration in a later session
+    setPendingWorkout({ exercises: day.exercises.map(e => ({ name: e.name })), dayName: day.dayName });
     setFitnessPage('workoutlog');
   }
 

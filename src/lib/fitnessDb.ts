@@ -2,7 +2,7 @@ import {
   collection, doc, setDoc, getDocs, query, orderBy, limit, where
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { BodyEntry } from '../types';
+import type { BodyEntry, WorkoutSession } from '../types';
 
 const bodyLogCol = (uid: string) => collection(db, 'users', uid, 'bodyLog');
 const bodyLogDoc = (uid: string, date: string) => doc(db, 'users', uid, 'bodyLog', date);
@@ -38,4 +38,20 @@ export async function loadAllBodyLog(uid: string): Promise<BodyEntry[]> {
 
 export async function saveFitnessSettings(uid: string, settings: object): Promise<void> {
   await setDoc(doc(db, 'users', uid, 'settings', 'fitness'), settings, { merge: true });
+}
+
+// ── Workout sessions ──────────────────────────────────────────────────────────
+
+const workoutCol = (uid: string) => collection(db, 'users', uid, 'workoutSessions');
+const workoutDoc = (uid: string, id: string) => doc(db, 'users', uid, 'workoutSessions', id);
+
+export async function saveWorkoutSession(uid: string, session: WorkoutSession): Promise<void> {
+  const clean = JSON.parse(JSON.stringify(session));
+  await setDoc(workoutDoc(uid, session.id), clean);
+}
+
+export async function loadWorkoutSessions(uid: string, limitCount = 100): Promise<WorkoutSession[]> {
+  const q = query(workoutCol(uid), orderBy('startTime', 'desc'), limit(limitCount));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => d.data() as WorkoutSession);
 }

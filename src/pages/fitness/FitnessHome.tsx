@@ -1,4 +1,4 @@
-import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket, ClipboardList } from 'lucide-react';
+import { Scale, UtensilsCrossed, Dumbbell, BookOpen, CalendarDays, ChevronRight, ShoppingBasket, ClipboardList, ListVideo } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import type { FitnessPage } from '../../types';
@@ -32,12 +32,21 @@ const MODULES: {
   },
   {
     icon: Dumbbell,
-    label: 'Träning',
-    description: 'Träningslogg, övningsdatabas med muskelkarta och styrkeprogressionsgrafer.',
+    label: 'Träningslogg',
+    description: 'Logga pass med övningar, vikt, reps och RPE. Vila-timer och sessionshistorik.',
     color: 'text-emerald-600',
     bg: 'bg-emerald-50',
     page: 'workoutlog',
-    ready: false,
+    ready: true,
+  },
+  {
+    icon: ListVideo,
+    label: 'Övningsdatabas',
+    description: 'Sök bland hundratals övningar med muskelgrupp, utrustning och videolänk.',
+    color: 'text-teal-600',
+    bg: 'bg-teal-50',
+    page: 'exercises',
+    ready: true,
   },
   {
     icon: BookOpen,

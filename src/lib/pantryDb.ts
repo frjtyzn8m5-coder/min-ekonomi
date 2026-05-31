@@ -84,7 +84,9 @@ export async function upsertPriceEntries(uid: string, entries: PriceEntry[]): Pr
   for (const entry of entries) {
     const key = entry.articleNumber ?? (entry.barcode ? `barcode_${entry.barcode}` : null);
     if (!key) continue;
-    batch.set(doc(db, 'users', uid, 'priceDB', key), entry, { merge: true });
+    // JSON round-trip strips undefined values — Firestore rejects them
+    const clean = JSON.parse(JSON.stringify(entry));
+    batch.set(doc(db, 'users', uid, 'priceDB', key), clean, { merge: true });
   }
   await batch.commit();
 }

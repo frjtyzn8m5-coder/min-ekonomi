@@ -71,7 +71,7 @@ export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'netwo
 
 export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
 
-export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry' | 'mealplan' | 'onboarding' | 'program';
+export type FitnessPage = 'home' | 'weightlog' | 'foodlog' | 'workoutlog' | 'exercises' | 'recipes' | 'pantry' | 'mealplan' | 'onboarding' | 'program' | 'exercisedetail';
 
 export interface BodyMeasurements {
   waist?: number;
@@ -254,6 +254,80 @@ export interface PriceEntry {
   unitWeightGrams?: number; // grams per unit (if known)
   store: string;
   lastUpdated: string; // YYYY-MM-DD
+}
+
+// ── Workout / Exercise types (Fas 5) ─────────────────────────────────────────
+
+export interface Exercise {
+  id: string;
+  name: string;               // Swedish name
+  nameEn?: string;            // English name
+  category: string;           // 'Ben', 'Bröst', 'Rygg', 'Axlar', 'Biceps', 'Triceps', 'Core', 'Helkropp', 'Kondition'
+  muscles: string[];          // Primary muscles
+  musclesSecondary?: string[];
+  equipment: string;          // 'Skivstång', 'Hantel', 'Kabel', 'Maskin', 'Kroppsvikt', 'Bänk', 'Smith', 'Övrigt'
+  level: 'beginner' | 'intermediate' | 'advanced';
+  mechanic: 'compound' | 'isolation' | 'cardio';
+  youtubeSearch: string;      // Search query to open on YouTube
+  instructions?: string[];
+}
+
+export interface WorkoutSet {
+  id: string;
+  weight?: number;   // kg (undefined for bodyweight)
+  reps?: number;
+  rpe?: number;      // 1–10
+  time?: number;     // seconds (for timed sets)
+  completed: boolean;
+}
+
+export interface LoggedExercise {
+  exerciseId: string;
+  exerciseName: string;
+  sets: WorkoutSet[];
+  notes?: string;
+}
+
+export interface WorkoutSession {
+  id: string;
+  date: string;              // YYYY-MM-DD
+  startTime: number;         // ms timestamp
+  endTime?: number;
+  duration?: number;         // seconds
+  exercises: LoggedExercise[];
+  notes?: string;
+  programDayName?: string;   // e.g. "Push A" if started from program
+  totalVolume?: number;      // sum of weight × reps across all sets
+}
+
+// ── Calendar types (Fas 7) ───────────────────────────────────────────────────
+
+export type CalendarSourceType = 'own' | 'ics' | 'google' | 'microsoft' | 'apple';
+
+export interface CalendarSource {
+  id: string;
+  type: CalendarSourceType;
+  name: string;
+  color: string;        // hex color e.g. "#4285F4"
+  enabled: boolean;
+  // ICS-specific
+  icsUrl?: string;
+  lastFetched?: string; // ISO datetime
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;        // ISO datetime string (stored as string for Firestore)
+  end: string;
+  allDay: boolean;
+  source: CalendarSourceType;
+  sourceId: string;     // which CalendarSource this comes from
+  color?: string;
+  location?: string;
+  description?: string;
+  url?: string;
+  uid?: string;         // iCal UID for deduplication
 }
 
 // ── Training Program types (Fas 6) ────────────────────────────────────────────

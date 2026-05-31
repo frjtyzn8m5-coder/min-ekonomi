@@ -28,6 +28,8 @@ const Recipes         = lazy(() => import('./pages/fitness/Recipes'));
 const MealPlan        = lazy(() => import('./pages/fitness/MealPlan'));
 const Onboarding      = lazy(() => import('./pages/fitness/Onboarding'));
 const WorkoutProgram  = lazy(() => import('./pages/fitness/WorkoutProgram'));
+const WorkoutLog      = lazy(() => import('./pages/fitness/WorkoutLog'));
+const ExerciseDB      = lazy(() => import('./pages/fitness/ExerciseDB'));
 const CalendarHome    = lazy(() => import('./pages/calendar/CalendarHome'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,8 +164,10 @@ export default function App() {
                   {module === 'fitness'  && fitnessPage === 'pantry'     && <Pantry />}
                   {module === 'fitness'  && fitnessPage === 'recipes'    && <Recipes />}
                   {module === 'fitness'  && fitnessPage === 'mealplan'   && <MealPlan />}
-                  {module === 'fitness'  && fitnessPage === 'onboarding' && <Onboarding />}
-                  {module === 'fitness'  && fitnessPage === 'program'    && <WorkoutProgram />}
+                  {module === 'fitness'  && fitnessPage === 'onboarding'  && <Onboarding />}
+                  {module === 'fitness'  && fitnessPage === 'program'     && <WorkoutProgram />}
+                  {module === 'fitness'  && fitnessPage === 'workoutlog'  && <WorkoutLog />}
+                  {module === 'fitness'  && fitnessPage === 'exercises'   && <ExerciseDB />}
                   {module === 'calendar' && <CalendarHome />}
                 </motion.div>
               </AnimatePresence>
