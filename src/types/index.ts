@@ -89,6 +89,54 @@ export interface UserProfile {
   appVersion: string            // '1.0.0'
 }
 
+// ── Exercise types (Sprint 2) ─────────────────────────────────────────────────
+
+export type ExerciseCategory = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core' | 'cardio' | 'full_body'
+
+export type ExerciseEquipment = 'barbell' | 'dumbbell' | 'cable' | 'machine' | 'bodyweight' | 'bench' | 'rack' | 'kettlebell' | 'resistance_band' | 'other'
+
+export type AnatomicalMuscle =
+  | 'pectoralis_major' | 'pectoralis_minor'
+  | 'latissimus_dorsi' | 'rhomboids' | 'trapezius' | 'rear_deltoid'
+  | 'anterior_deltoid' | 'medial_deltoid'
+  | 'biceps_brachii' | 'brachialis' | 'brachioradialis'
+  | 'triceps_brachii'
+  | 'quadriceps' | 'hamstrings' | 'gluteus_maximus' | 'gluteus_medius' | 'gluteus_minimus'
+  | 'gastrocnemius' | 'soleus'
+  | 'rectus_abdominis' | 'obliques' | 'transverse_abdominis'
+  | 'erector_spinae' | 'multifidus'
+  | 'forearms' | 'rotator_cuff' | 'serratus_anterior' | 'core'
+
+export interface Exercise {
+  id: string
+  name: string
+  nameSv?: string
+  category: ExerciseCategory
+  equipment: ExerciseEquipment[]
+
+  primaryMuscles: AnatomicalMuscle[]
+  secondaryMuscles: AnatomicalMuscle[]
+  stabilizers: AnatomicalMuscle[]
+
+  instructions: string[]
+  instructionsSv?: string[]
+
+  gifUrl?: string
+  imageUrls?: string[]
+
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  isCompound: boolean
+  type: 'strength' | 'cardio' | 'stretch' | 'plyometric'
+
+  defaultRepRange: [number, number]
+  defaultRPETarget: number
+  defaultRestSeconds: number
+  use1RM: boolean
+  progressionType: 'compound_apre' | 'double_progression' | 'rep_range'
+
+  youtubeSearchQuery: string
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type TransactionType = 'income' | 'expense' | 'transfer' | 'investment';
