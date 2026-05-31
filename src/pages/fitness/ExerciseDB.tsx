@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, X, ChevronLeft, ExternalLink, Filter, Dumbbell,
@@ -6,9 +6,15 @@ import {
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import type { Exercise } from '../../types';
-import exercisesRaw from '../../../data/exercises.json';
 
-const exercises = exercisesRaw as Exercise[];
+// Exercises are loaded from the static /data/ folder (same pattern as livsmedelsverket.json)
+let _exerciseCache: Exercise[] | null = null;
+async function loadExercises(): Promise<Exercise[]> {
+  if (_exerciseCache) return _exerciseCache;
+  const res = await fetch('/data/exercises.json');
+  _exerciseCache = await res.json();
+  return _exerciseCache!;
+}
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -287,6 +293,11 @@ export default function ExerciseDB({ onAddToSession, onBack, addLabel, standalon
   const [search, setSearch]       = useState('');
   const [filters, setFilters]     = useState<Filters>({ category: 'Alla', equipment: 'Alla', level: 'Alla' });
   const [selected, setSelected]   = useState<Exercise | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+
+  useEffect(() => {
+    loadExercises().then(setExercises).catch(console.error);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -336,7 +347,7 @@ export default function ExerciseDB({ onAddToSession, onBack, addLabel, standalon
                 </div>
                 <h1 className="font-semibold text-gray-900 text-sm">Övningsdatabas</h1>
               </div>
-              <span className="text-xs text-gray-400">{exercises.length} övningar</span>
+              {exercises.length > 0 && <span className="text-xs text-gray-400">{exercises.length} övningar</span>}
             </div>
 
             <div className="flex-1 overflow-auto p-4 space-y-3">
