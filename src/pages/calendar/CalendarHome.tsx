@@ -410,7 +410,7 @@ export default function CalendarHome() {
       .finally(() => setLoading(false));
 
     // Calendar sources
-    getDocs(collection(db, 'users', user.uid, 'calendar', 'sources'))
+    getDocs(collection(db, 'users', user.uid, 'calendarSources'))
       .then(snap => {
         if (!snap.empty) {
           const loaded = snap.docs.map(d => d.data() as CalendarSource);
@@ -472,20 +472,20 @@ export default function CalendarHome() {
   async function handleAddSource(s: CalendarSource) {
     if (!user) return;
     const clean = JSON.parse(JSON.stringify(s));
-    await setDoc(doc(db, 'users', user.uid, 'calendar', 'sources', s.id), clean);
+    await setDoc(doc(db, 'users', user.uid, 'calendarSources', s.id), clean);
     setSources(prev => [...prev, s]);
   }
 
   async function handleUpdateSource(s: CalendarSource) {
     if (!user) return;
     const clean = JSON.parse(JSON.stringify(s));
-    await setDoc(doc(db, 'users', user.uid, 'calendar', 'sources', s.id), clean);
+    await setDoc(doc(db, 'users', user.uid, 'calendarSources', s.id), clean);
     setSources(prev => prev.map(src => src.id === s.id ? s : src));
   }
 
   async function handleDeleteSource(id: string) {
     if (!user) return;
-    await deleteDoc(doc(db, 'users', user.uid, 'calendar', 'sources', id));
+    await deleteDoc(doc(db, 'users', user.uid, 'calendarSources', id));
     setSources(prev => prev.filter(s => s.id !== id));
     setIcsEvents(prev => prev.filter(e => e.sourceId !== id));
   }

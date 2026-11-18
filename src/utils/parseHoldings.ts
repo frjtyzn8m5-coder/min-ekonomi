@@ -94,6 +94,19 @@ export function computeHoldings(content: string): Holding[] {
   return [...map.values()].filter(h => h.shares > 0.0001);
 }
 
+/**
+ * Upsert incoming holdings into existing by ISIN+account. Holdings NOT present in
+ * the incoming file are KEPT (never wiped) — an Avanza export often covers only a
+ * date range, so replacing the whole list would delete older holdings. Incoming
+ * entries win for keys they cover.
+ */
+export function mergeHoldings(existing: Holding[], incoming: Holding[]): Holding[] {
+  const map = new Map<string, Holding>();
+  for (const h of existing) map.set(`${h.isin}::${h.account}`, h);
+  for (const h of incoming) map.set(`${h.isin}::${h.account}`, h);
+  return [...map.values()];
+}
+
 export function computeHoldingsFromXLSX(rows: string[][]): Holding[] {
   const headerIdx = rows.findIndex(r => r.some(c => /datum/i.test(String(c))));
   if (headerIdx < 0) return [];

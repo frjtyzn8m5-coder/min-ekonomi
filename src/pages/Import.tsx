@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { parseFiles } from '../utils/parsers';
-import { computeHoldings } from '../utils/parseHoldings';
+import { computeHoldings, mergeHoldings } from '../utils/parseHoldings';
 import { formatSEK } from '../utils/calculations';
 import { saveTxBatch, saveImport, deleteImport, saveHoldings } from '../lib/db';
 import type { Transaction, ImportBatch } from '../types';
@@ -306,12 +306,14 @@ export default function Import() {
     await saveImport(user.uid, imp);
     addImportBatch(imp, upload.transactions);
 
-    // If Avanza file – compute and save holdings
+    // If Avanza file – compute holdings and MERGE into existing (never wipe
+    // holdings missing from this file; an export often covers only a date range).
     if (upload.avanzaContent) {
-      const holdings = computeHoldings(upload.avanzaContent);
-      if (holdings.length) {
-        setHoldings(holdings);
-        await saveHoldings(user.uid, holdings);
+      const computed = computeHoldings(upload.avanzaContent);
+      if (computed.length) {
+        const merged = mergeHoldings(useStore.getState().holdings, computed);
+        setHoldings(merged);
+        await saveHoldings(user.uid, merged);
       }
     }
 

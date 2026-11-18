@@ -158,6 +158,8 @@ export interface Transaction {
   isTransfer: boolean;
   tags?: string[];
   source: 'seb_csv' | 'seb_xlsx' | 'avanza' | 'klarna' | 'csn' | 'manual';
+  importId?: string;        // legacy: last batch this tx was written by
+  importIds?: string[];     // all import batches this tx belongs to (delete-safety)
 }
 
 export interface Account {

@@ -1,5 +1,5 @@
 import {
-  collection, doc, setDoc, getDoc, getDocs, deleteDoc, writeBatch, query, orderBy
+  collection, doc, setDoc, getDoc, getDocs, deleteDoc, writeBatch, query, orderBy, arrayUnion
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, UserProfile } from '../types';
@@ -12,7 +12,13 @@ const userDoc = (uid: string, col: string, id: string) => doc(db, 'users', uid, 
 export async function saveTxBatch(uid: string, txs: Transaction[], importId: string) {
   const batch = writeBatch(db);
   for (const tx of txs) {
-    batch.set(userDoc(uid, 'transactions', tx.id), { ...tx, importId });
+    // merge + arrayUnion so a transaction that appears in several imports accumulates
+    // its batch memberships (importIds) instead of being reassigned to the newest one.
+    batch.set(
+      userDoc(uid, 'transactions', tx.id),
+      { ...tx, importId, importIds: arrayUnion(importId) },
+      { merge: true },
+    );
   }
   await batch.commit();
 }
@@ -29,7 +35,16 @@ export async function deleteTransaction(uid: string, txId: string) {
 export async function deleteImportTxs(uid: string, importId: string) {
   const snap = await getDocs(userCol(uid, 'transactions'));
   const batch = writeBatch(db);
-  snap.docs.filter(d => d.data().importId === importId).forEach(d => batch.delete(d.ref));
+  snap.docs.forEach(d => {
+    const data = d.data() as { importId?: string; importIds?: string[] };
+    const ids = data.importIds ?? (data.importId ? [data.importId] : []);
+    if (!ids.includes(importId)) return;
+    const remaining = ids.filter(x => x !== importId);
+    // Only delete a transaction that belonged SOLELY to this import; otherwise keep
+    // it and just drop this batch from its membership (no data loss for shared txns).
+    if (remaining.length === 0) batch.delete(d.ref);
+    else batch.update(d.ref, { importIds: remaining });
+  });
   await batch.commit();
 }
 

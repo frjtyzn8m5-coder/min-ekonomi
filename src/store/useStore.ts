@@ -260,7 +260,11 @@ export const useStore = create<AppState>()(
       removeImportBatch: (importId) =>
         set(s => ({
           importBatches: s.importBatches.filter(i => i.id !== importId),
-          transactions: s.transactions.filter(t => (t as any).importId !== importId),
+          // Keep a transaction unless it belonged SOLELY to the removed batch.
+          transactions: s.transactions.filter(t => {
+            const ids = t.importIds ?? (t.importId ? [t.importId] : []);
+            return !(ids.length > 0 && ids.every(x => x === importId));
+          }),
         })),
 
       addReminder: (r) => set(s => ({ reminders: [...s.reminders, r] })),

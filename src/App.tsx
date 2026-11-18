@@ -3,6 +3,7 @@ import { useStore } from './store/useStore';
 import { useAuthStore } from './store/useAuthStore';
 import Sidebar from './components/layout/Sidebar';
 import TopNav from './components/layout/TopNav';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 
@@ -154,7 +155,9 @@ export default function App() {
                   <Suspense fallback={<Spinner />}>
                     <AnimatePresence mode="wait">
                       <motion.div key={page} {...PAGE_TRANSITION} className="flex-1 flex flex-col min-h-0">
-                        <EconomyPage />
+                        <ErrorBoundary resetKey={page}>
+                          <EconomyPage />
+                        </ErrorBoundary>
                       </motion.div>
                     </AnimatePresence>
                   </Suspense>
@@ -171,6 +174,7 @@ export default function App() {
                   {...PAGE_TRANSITION}
                   className="min-h-full"
                 >
+                  <ErrorBoundary resetKey={`${module}-${fitnessPage}`}>
                   {module === 'home'     && <Dashboard />}
                   {module === 'fitness'  && fitnessPage === 'home'      && <FitnessHome />}
                   {module === 'fitness'  && fitnessPage === 'weightlog' && <WeightLog />}
@@ -190,6 +194,7 @@ export default function App() {
                   {module === 'fitness'  && fitnessPage === 'cyclehub'     && <CycleHub />}
                   {module === 'fitness'  && fitnessPage === 'goalcenter'   && <GoalCenter />}
                   {module === 'calendar' && <CalendarHome />}
+                  </ErrorBoundary>
                 </motion.div>
               </AnimatePresence>
             </Suspense>
