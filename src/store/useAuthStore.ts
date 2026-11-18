@@ -10,6 +10,7 @@ import {
 import { auth } from '../lib/firebase';
 import { loadTransactions, loadImports, loadBudgets, loadAssets, loadDebts, getUserProfile, loadOwnAccounts } from '../lib/db';
 import { useStore } from './useStore';
+import { isDemoMode, demoProfile, demoTransactions } from '../lib/demoData';
 
 interface AuthState {
   user: User | null;
@@ -58,6 +59,25 @@ export const useAuthStore = create<AuthState>()((set) => ({
   error: null,
 
   initAuth: () => {
+    // Demo/preview mode (?demo=1): seed a fake user + sample data, skip Firebase.
+    if (isDemoMode()) {
+      const store = useStore.getState();
+      store.setUserProfile(demoProfile);
+      store.setFirebaseTransactions(demoTransactions);
+      set({ user: { uid: 'demo-user', displayName: 'Benjamin Sköld', email: 'demo@vardagshub.app' } as User, loading: false });
+      // ?view=… lets a screenshot/preview jump straight to a module/page.
+      const view = new URLSearchParams(window.location.search).get('view');
+      if (view) {
+        const econ = ['overview', 'transactions', 'analytics', 'budget', 'networth', 'portfolio', 'import', 'reminders', 'settings'];
+        const fit = ['home', 'weightlog', 'foodlog', 'pantry', 'recipes', 'mealplan', 'program', 'workoutlog', 'exercises', 'development', 'cyclehub', 'goalcenter'];
+        if (view === 'economy') store.setModule('economy');
+        else if (view === 'calendar') store.setModule('calendar');
+        else if (econ.includes(view)) { store.setModule('economy'); store.setPage(view as never); }
+        else if (fit.includes(view)) { store.setModule('fitness'); store.setFitnessPage(view as never); }
+        else if (view === 'fitness') { store.setModule('fitness'); store.setFitnessPage('home'); }
+      }
+      return;
+    }
     onAuthStateChanged(auth, async (user) => {
       set({ user, loading: false });
       if (user) await loadUserData(user.uid);

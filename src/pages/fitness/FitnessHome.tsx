@@ -117,7 +117,7 @@ export default function FitnessHome() {
   const onboardingDone = userProfile?.onboardingCompletedModules?.includes('fitness');
 
   return (
-    <div className="min-h-full bg-bg text-ink p-6 max-w-2xl mx-auto">
+    <div className="min-h-full bg-bg text-ink p-6 lg:px-10 max-w-7xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -167,7 +167,7 @@ export default function FitnessHome() {
         </motion.div>
       )}
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {MODULES.map(({ icon: Icon, label, description, accent, page, ready }, i) => {
           const tint = TINT[accent];
           return (
