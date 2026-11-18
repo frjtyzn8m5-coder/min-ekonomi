@@ -55,7 +55,9 @@ export default function Sidebar({ isOpen, onClose, desktop = false }: SidebarPro
     onClose();
   };
 
-  const baseClasses = 'w-56 h-screen bg-panel border-r border-line flex flex-col';
+  // Desktop sits in-flow below the top bar → fill the parent (h-full); mobile is a
+  // fixed full-viewport overlay (h-screen).
+  const baseClasses = `w-56 ${desktop ? 'h-full' : 'h-screen'} bg-panel border-r border-line flex flex-col`;
 
   // Desktop variant: static, in the normal flex flow
   const positionClasses = desktop

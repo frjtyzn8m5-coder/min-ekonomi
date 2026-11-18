@@ -109,5 +109,14 @@ export default function Hero3D({ className }: { className?: string }) {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className={className} style={{ display: 'block', width: '100%', height: '100%' }} />;
+  // Absolutely positioned so the WebGL buffer can never feed back into layout
+  // (an in-flow canvas with height:100% balloons on resize). The parent must be
+  // positioned (relative/absolute) and give the box a definite size.
+  return (
+    <canvas
+      ref={canvasRef}
+      className={className}
+      style={{ position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' }}
+    />
+  );
 }
