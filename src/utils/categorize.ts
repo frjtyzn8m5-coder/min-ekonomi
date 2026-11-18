@@ -160,19 +160,92 @@ const RULES: Rule[] = [
   // Other retail
   { pattern: /TEMU|ALIEXPRESS|WISH\b/i, category: 'Handel' },
 
+  // ── Groceries (extra chains / convenience) ───────────────────────────────────
+  { pattern: /STORA COOP|COOP KONSUM|COOP NÄRA|COOP EXTRA|TEMPO\b|HANDLARN|NÄRLIVS|DIREKTEN|MATÖPPET|MATÖPPET|ÖB LIVS|GÅRDSBUTIK/i, category: 'Mat' },
+  { pattern: /CIRCLE K.*(KORV|MAT)|OKQ8.*BUTIK|PRESSBYRAN|PRESSBYRÅN|GÖTEBORGS KEX|LINAS MATKASSE|GODISKUNGEN/i, category: 'Mat' },
+
+  // ── Restaurants / café (extra common chains) ──────────────────────────────────
+  { pattern: /O'?LEARYS|VAPIANO|VIGÅRDA|BASTARD BURGER|FRASSES|CLuck|TUGG\b|FROTZ|LEVE?LS|TACO BAR|TACOBAR|PINCHOS|PHIL'?S BURGER|BURGERS?\b/i, category: 'Restaurang' },
+  { pattern: /ESPRESSO HOUSE|WAYNE'?S|CONDECO|GATEAU|BRÖD & SALT|BROD & SALT|LINDVALLS|JOE & THE JUICE/i, category: 'Restaurang' },
+  { pattern: /DELICATO|SEMLA|KONDITORI|BAGERI|FIKA\b/i, category: 'Restaurang' },
+
+  // ── Transport (extra) ─────────────────────────────────────────────────────────
+  { pattern: /SKÅNETRAFIK|JÖNKÖPINGS LÄNSTRAFIK|JLT\b|UL\b.*TRAFIK|ÖSTGÖTATRAFIKEN|VÄRMLANDSTRAFIK|LÄNSTRAFIK|TÅGAB|SNÄLLTÅGET|VY\b|FLYGBUSS|FLYGTAXI|ARLANDA EXPRESS/i, category: 'Transport' },
+  { pattern: /VOI\b|TIER\b|LIME\b|BOLT.*SCOOT|RYDE\b|DOTT\b|HYRBIL|AVIS|HERTZ|EUROPCAR|SIXT|MABI|HERTZ|GREENMOBILITY|SUNFLEET|M\s+BILPOOL/i, category: 'Transport' },
+  { pattern: /INGO\b|QSTAR|TANKA\b|GULF\b|DIN-X|DINX|TANKSTELLE/i, category: 'Transport' },
+
+  // ── Streaming / subscriptions (extra) ─────────────────────────────────────────
+  { pattern: /AUDIBLE|PATREON|TWITCH|DISCORD NITRO|OPENAI|CHATGPT|ANTHROPIC|CLAUDE\.AI|MIDJOURNEY|LINKEDIN|DUOLINGO|HEADSPACE|CALM\b|STRAVA|GARMIN CONNECT|MYFITNESSPAL/i, category: 'Streaming' },
+  { pattern: /PAYPAL.*(SPOTIFY|NETFLIX|PATREON)|GOOGLE\s*\*|GOOGLE PAYMENT|MICROSOFT\*|MSFT\*|AMZNPRIME|PRIME\b/i, category: 'Streaming' },
+
+  // ── Clothes / sport (extra) ───────────────────────────────────────────────────
+  { pattern: /NELLY\b|BOOZT|CARLINGS|JACK & JONES|GINA TRICOT|BIKBOK|CUBUS|VERO MODA|NA-KD|NAKD\b|VOLT\b|MQ\b|MARQET|BUBBLEROOM/i, category: 'Kläder' },
+  { pattern: /FOOTWAY|SCOREPLAY|RevOLUTION RACE|REVOLUTIONRACE|CRAFT SPORTS|NEWBODY|BJÖRN BORG|CASALL|ICANIWILL|RYDERWEAR/i, category: 'Kläder' },
+
+  // ── Health / beauty (extra) ───────────────────────────────────────────────────
+  { pattern: /MEDS\.SE|MEDS\b|APOHEM|HJÄRTAT APOTEK|APOTEK HJÄRTAT|DOKTOR\.SE|KRY\b|MIN DOKTOR|WELLOBE|LIFESUM|SKÖNHET|PARFYM|NORMAL\b|RITUALS|THE BODY SHOP|LUSH\b|CAIA|NYX|MAC COSMETICS/i, category: 'Hälsa' },
+  { pattern: /NOCCO|CELSIUS|BARESO|PROPUD|GAINOMAX|MM SPORTS|BODYSTORE|SVENSKT KOSTTILLSKOTT|TYNGRE|SELF OMNINUTRITION/i, category: 'Hälsa' },
+
+  // ── Activities / entertainment (extra) ────────────────────────────────────────
+  { pattern: /GRÖNA LUND|KOLMÅRDEN|SKARA SOMMARLAND|FURUVIK|TROPIKARIET|AKVARIET|DJURPARK|NÖJESPARK|LASERDOME|GOKART|GO-KART|HIGH VALLEY|ACTIONWORLD/i, category: 'Aktiviteter' },
+  { pattern: /PADEL|PADELCENTER|TENNIS|BADMINTON|SQUASH|BOULDER|KLÄTTRING|GOLFKLUBB|GOLF\b|SIMHALL|BADHUS|ÄVENTYRSBAD/i, category: 'Aktiviteter' },
+
+  // ── Shopping / electronics / home (extra) ─────────────────────────────────────
+  { pattern: /CDON|FYNDIQ|NETONNET|POWER\b|EL-GIGANTEN|TELEKRAM|MAXGAMING|PROSHOP|DATORBUTIK|KOMPONENTGIGANTEN/i, category: 'Handel' },
+  { pattern: /RUSTA\b|ÖB\b|ÖOB|DOLLARSTORE|LAGERHAUS|GRANIT\b|CERVERA|HEMTEX|MIO\b|EM HOME|CHILLI\b|SOVA\b|IKANO/i, category: 'Handel' },
+  { pattern: /APOTEK.*DJUR|ARKEN ZOO|ZOO\b|GRANNGÅRDEN|HUSDJUR|DJURMAGAZINET|VETERINÄR|AGRIA/i, category: 'Handel' },
+  { pattern: /PLANTAGEN|BLOMSTERLANDET|TRÄDGÅRD|BYGGMAX|BESLAG|SILVAN|BECKERS|FLÜGGER/i, category: 'Handel' },
+  { pattern: /AMAZON\.|AMZN\b|ETSY|EBAY|SHEIN|BANGGOOD|ASOS\b/i, category: 'Handel' },
+
   // ── Savings / Investments ─────────────────────────────────────────────────────
   { pattern: /AUTOSPAR|SPARANDE|SAVINGS|SPARKONTO|FOND.*KÖPT|AKTIEKÖP/i, category: 'Sparande' },
-  { pattern: /ROCKER AB/i, category: 'Sparande' },
+  { pattern: /ROCKER AB|LYSA\b|OPTI\b|SIGMASTOCKS|FUNDLER|SAVR\b/i, category: 'Sparande' },
 ];
 
 const TRANSFER_RX = /BENJAMIN SKÖ|SKÖLD BENJAM|95544998797|57233541345|50370098927|ÅTERFÖRT|INTERN ÖVERF|KONTOÖVERF|\bAVANZA\b/i;
+
+/**
+ * Strip card-acquirer noise so more descriptions match the merchant rules.
+ * Removes common prefixes (K-star, WWW., card-reader tags like SUMUP, IZ, ZETTLE,
+ * PAYPAL, SQ, NETS), card masks (star-star 1234), trailing dates and country codes.
+ */
+export function normalizeDesc(description: string): string {
+  let d = description.trim().toUpperCase();
+  d = d.replace(/\*{2,}\s*\d{2,4}/g, ' ');                 // card masks ****1234
+  d = d.replace(/\b\d{2}[./-]\d{2}([./-]\d{2,4})?\b/g, ' '); // dates
+  d = d.replace(/^(K\*|KK\*|W\*|WWW\.|HTTPS?:\/\/)/i, ' '); // leading acquirer/url tags
+  d = d.replace(/\b(SUMUP|IZ|ZETTLE|IZETTLE|SQ|PP|PAYPAL|NETS|SWEDBANK PAY|SWISH|KLARNA\*|STRIPE|PAY\.)\s*[*_]?\s*/gi, ' ');
+  d = d.replace(/\b(SE|SWE|SWEDEN|GBG|GÖTEBORG|STOCKHOLM|STHLM|MALMÖ)\b\s*$/i, ' '); // trailing locality
+  d = d.replace(/\s{2,}/g, ' ').trim();
+  return d;
+}
 
 export function autoCat(description: string): Category {
   const desc = description.trim().toUpperCase();
   for (const rule of RULES) {
     if (rule.pattern.test(desc)) return rule.category;
   }
+  // Second pass on the normalized form so acquirer-prefixed descriptions still match.
+  const norm = normalizeDesc(description);
+  if (norm && norm !== desc) {
+    for (const rule of RULES) {
+      if (rule.pattern.test(norm)) return rule.category;
+    }
+  }
   return 'Övrigt Utgift';
+}
+
+/**
+ * A stable merchant key for learning: the normalized description reduced to its
+ * leading alphabetic token(s), so "ICA SUPERMARKET 1234" and "ICA SUPERMARKET" share a key.
+ * Returns '' for Swish numbers and pure-numeric descriptions (not reliable merchants).
+ */
+export function merchantKey(description: string): string {
+  const norm = normalizeDesc(description);
+  if (/^46[0-9]{9}$/.test(description.trim())) return '';
+  const letters = norm.replace(/[^A-ZÅÄÖ ]/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  if (letters.length < 3) return '';
+  return letters.split(' ').slice(0, 3).join(' ');
 }
 
 export function autoIsTransfer(description: string): boolean {
@@ -196,6 +269,23 @@ export function autoIsTransfer(description: string): boolean {
  *
  * Returns a NEW array — does not mutate the input.
  */
+/**
+ * Learn merchant → category from the user's own manual edits. Any transaction the
+ * user has edited (tx.edited) teaches a rule for that merchant, so future (and
+ * sibling) transactions from the same merchant inherit the chosen category. This
+ * is the single most effective way to shrink "Övrigt Utgift" over time.
+ */
+export function buildLearnedMap(txs: Transaction[]): Record<string, Category> {
+  const map: Record<string, Category> = {};
+  for (const tx of txs) {
+    if (!tx.edited || tx.isTransfer) continue;
+    if (isIncomeCategory(tx.category) || tx.category === 'Överföring') continue;
+    const key = merchantKey(tx.description);
+    if (key) map[key] = tx.category; // later edits win (array is import order)
+  }
+  return map;
+}
+
 export function smartCategorize(txs: Transaction[]): Transaction[] {
   if (!txs.length) return txs;
 
@@ -205,6 +295,19 @@ export function smartCategorize(txs: Transaction[]): Transaction[] {
 
   // Build result array with same order as input
   const result: Transaction[] = txs.map(tx => ({ ...tx }));
+
+  // Pass 0 — apply merchant categories learned from the user's own edits to any
+  // NON-edited expense transaction sharing that merchant (never touch user edits).
+  const learned = buildLearnedMap(txs);
+  if (Object.keys(learned).length) {
+    result.forEach(tx => {
+      if (tx.edited || tx.isTransfer) return;
+      if (tx.type === 'income') return;
+      const key = merchantKey(tx.description);
+      const learnedCat = key ? learned[key] : undefined;
+      if (learnedCat) tx.category = learnedCat;
+    });
+  }
 
   const isSwish = (desc: string) => /^46[0-9]{9}$/.test(desc.trim());
 
@@ -237,6 +340,31 @@ export function smartCategorize(txs: Transaction[]): Transaction[] {
   });
 
   return result;
+}
+
+/**
+ * Diagnose what still lands on "Övrigt Utgift": groups uncategorised expenses by
+ * merchant, summed by amount and count, biggest first. A UI can surface these so
+ * the user categorises the few merchants that actually matter.
+ */
+export function diagnoseUncategorized(
+  txs: Transaction[],
+  limit = 12,
+): { merchant: string; total: number; count: number; sample: string }[] {
+  const agg = new Map<string, { total: number; count: number; sample: string }>();
+  for (const tx of txs) {
+    if (tx.isTransfer || tx.type !== 'expense') continue;
+    if (tx.category !== 'Övrigt Utgift') continue;
+    const key = merchantKey(tx.description) || tx.description.trim().toUpperCase().slice(0, 24) || '(okänt)';
+    const cur = agg.get(key) ?? { total: 0, count: 0, sample: tx.description };
+    cur.total += Math.abs(tx.amount);
+    cur.count += 1;
+    agg.set(key, cur);
+  }
+  return [...agg.entries()]
+    .map(([merchant, v]) => ({ merchant, ...v }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, limit);
 }
 
 export function isIncomeCategory(cat: Category): boolean {

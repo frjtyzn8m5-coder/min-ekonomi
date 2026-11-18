@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { saveAsset, saveDebt } from '../lib/db';
 import { formatSEK, formatMonth } from '../utils/calculations';
-import { latestPortfolioValueSEK } from '../utils/portfolio';
+import { latestPortfolioValueSEK, valuePortfolio } from '../utils/portfolio';
 import { Card, CardHeader, EmptyState } from '../components/ui/Card';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -135,6 +135,10 @@ export default function NetWorth() {
 
   const months = [...new Set([...assets.map(a => a.month), ...debts.map(d => d.month)])].sort();
 
+  // Full portfolio valuation — every holding counts (market price where known,
+  // cost basis otherwise) so nothing is silently dropped from net worth.
+  const valuation = valuePortfolio(holdings, priceCache, tickerMappings);
+
   // The latest asset snapshot's `avanza` field is a recorded value that can be stale.
   // Mirror Overview: when a live portfolio value exists it REPLACES (not adds to) the
   // recorded avanza for the most recent snapshot — so net worth stays current without
@@ -144,7 +148,7 @@ export default function NetWorth() {
   const effectiveAvanza = (a: AssetSnapshot) =>
     (a.month === latestAssetMonth && livePortfolioSEK > 0) ? livePortfolioSEK : a.avanza;
 
-  const timeline = months.map(m => {
+  const baseTimeline = months.map(m => {
     const a = assets.find(x => x.month === m);
     const d = debts.find(x => x.month === m);
     const totalAssets = a ? (a.cash + effectiveAvanza(a) + a.crypto + a.sparkonto + a.other) : 0;
@@ -156,6 +160,29 @@ export default function NetWorth() {
       Nettovärde: totalAssets - totalDebts,
     };
   });
+
+  // Robust CURRENT net worth: ALWAYS include the live portfolio, even if the user
+  // never created an asset snapshot this month. Non-investment assets + debts are
+  // carried forward from the most recent snapshot. This is the key fix — previously
+  // a user with a big Avanza portfolio but no current-month asset snapshot showed
+  // 0 assets (and thus deep "debt" vs. CSN).
+  const latestAsset = [...assets].sort((a, b) => a.month.localeCompare(b.month)).at(-1);
+  const latestDebt  = [...debts].sort((a, b) => a.month.localeCompare(b.month)).at(-1);
+  const curMonth = new Date().toISOString().slice(0, 7);
+  const curCash   = latestAsset?.cash ?? 0;
+  const curCrypto = latestAsset?.crypto ?? 0;
+  const curSpar   = latestAsset?.sparkonto ?? 0;
+  const curOther  = latestAsset?.other ?? 0;
+  const curAssets = curCash + livePortfolioSEK + curCrypto + curSpar + curOther;
+  const curDebts  = latestDebt ? (latestDebt.csn + latestDebt.klarna + latestDebt.other) : 0;
+
+  // Append a synthetic "Nu" point when we have a live portfolio and the latest
+  // recorded month isn't the current month, so the chart reflects today's reality.
+  const lastMonth = months[months.length - 1];
+  const hasCurrent = lastMonth === curMonth;
+  const timeline = (livePortfolioSEK > 0 || curAssets > 0 || curDebts > 0) && !hasCurrent
+    ? [...baseTimeline, { name: 'Nu', Tillgångar: curAssets, Skulder: curDebts, Nettovärde: curAssets - curDebts }]
+    : baseTimeline;
 
   // Asset breakdown over time (latest month uses the live portfolio value too)
   const assetBreakdown = assets.map(a => ({
@@ -183,8 +210,9 @@ export default function NetWorth() {
     };
   });
 
-  const currentTotalAssets = latest?.Tillgångar || 0;
-  const currentTotalDebts  = latest?.Skulder || 0;
+  // Always reflect the live portfolio + carried-forward balances in the KPIs.
+  const currentTotalAssets = curAssets;
+  const currentTotalDebts  = curDebts;
   const currentNetWorth    = currentTotalAssets - currentTotalDebts;
 
   return (
@@ -220,6 +248,23 @@ export default function NetWorth() {
             )}
           </Card>
         </motion.div>
+
+        {/* Honesty note: portfolio is always included; flag any unpriced holdings */}
+        {valuation.totalCount > 0 && (
+          <motion.div {...FADE} transition={{ delay: 0.03 }}
+            className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-mut bg-soft rounded-xl px-3 py-2">
+            <span>
+              Nettovärdet inkluderar din <span className="text-gold font-medium">live-portfölj</span>
+              {' '}({formatSEK(livePortfolioSEK)}) för alla {valuation.totalCount} innehav.
+            </span>
+            {valuation.unpricedCount > 0 && (
+              <span className="text-faint">
+                {valuation.unpricedCount} innehav saknar aktuellt pris och värderas till anskaffningskostnad
+                {valuation.costFallbackSEK > 0 ? ` (${formatSEK(valuation.costFallbackSEK)})` : ''}.
+              </span>
+            )}
+          </motion.div>
+        )}
 
         {/* Net worth + asset breakdown (full-width multi-column) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">

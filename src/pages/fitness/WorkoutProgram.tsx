@@ -1,14 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
-import type { WorkoutProgram, WorkoutDay, ProgramExercise } from '../../types';
+import type {
+  WorkoutProgram, WorkoutDay, ProgramExercise,
+  TrainingGoal, ExperienceLevel, ExerciseEquipment,
+} from '../../types';
 import {
   Dumbbell, ChevronRight, ArrowLeft, Play, Edit2, X, Plus, Trash2, Clock, RotateCcw,
+  Sparkles, Check, RefreshCw,
 } from 'lucide-react';
 import { IDumbbell, ITrend } from '../../components/ui/Icons';
-import { getExerciseByName } from '../../utils/exerciseUtils';
+import { getExerciseByName, EQUIPMENT_LABELS } from '../../utils/exerciseUtils';
+import { saveWorkoutProgram } from '../../lib/fitnessDb';
+import {
+  generateProgram, GROUP_LABELS,
+  type GeneratedProgram, type GenerateProgramOptions, type ProgramFocus, type MuscleGroup,
+} from '../../utils/programGenerator';
 
 // ── Hjälpare ──────────────────────────────────────────────────────────────────
 
@@ -146,11 +155,312 @@ function EditExerciseModal({ exercise, onSave, onClose }: EditExerciseModalProps
   );
 }
 
+// ── CreateProgramView – evidensbaserad program-generator ──────────────────────
+
+const GOAL_OPTIONS: { value: TrainingGoal; label: string }[] = [
+  { value: 'gain_muscle', label: '💪 Muskelbygge' },
+  { value: 'strength', label: '🏋️ Styrka' },
+  { value: 'recomp', label: '⚡ Recomp' },
+  { value: 'lose_fat', label: '🔥 Fettförbränning' },
+  { value: 'endurance', label: '🏃 Kondition' },
+];
+
+const EXP_OPTIONS: { value: ExperienceLevel; label: string }[] = [
+  { value: 'beginner', label: 'Nybörjare' },
+  { value: 'intermediate', label: 'Medel' },
+  { value: 'advanced', label: 'Avancerad' },
+];
+
+const EQUIPMENT_OPTIONS: ExerciseEquipment[] = [
+  'barbell', 'dumbbell', 'cable', 'machine', 'bench', 'rack', 'bodyweight', 'kettlebell', 'resistance_band',
+];
+
+const SESSION_LENGTHS = [45, 60, 75, 90];
+
+const FOCUS_OPTIONS: { value: ProgramFocus; label: string }[] = [
+  { value: 'balanced', label: 'Balanserat' },
+  ...(Object.keys(GROUP_LABELS) as MuscleGroup[]).map((g) => ({ value: g as ProgramFocus, label: GROUP_LABELS[g] })),
+];
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors ${active ? 'text-gold border-[rgba(233,193,120,.45)]' : 'text-mut border-line hover:border-[rgba(233,193,120,.25)]'}`}
+      style={active ? { background: 'rgba(233,193,120,.12)' } : undefined}
+    >
+      {children}
+    </button>
+  );
+}
+
+interface CreateProgramViewProps {
+  onClose: () => void;
+  onActivate: (gen: GeneratedProgram) => Promise<void>;
+  defaults: Partial<GenerateProgramOptions>;
+}
+
+function CreateProgramView({ onClose, onActivate, defaults }: CreateProgramViewProps) {
+  const [goal, setGoal] = useState<TrainingGoal>(defaults.goal ?? 'gain_muscle');
+  const [days, setDays] = useState<number>(defaults.trainingDaysPerWeek ?? 4);
+  const [experience, setExperience] = useState<ExperienceLevel>(defaults.experienceLevel ?? 'intermediate');
+  const [equipment, setEquipment] = useState<ExerciseEquipment[]>(
+    (defaults.availableEquipment as ExerciseEquipment[])?.length
+      ? (defaults.availableEquipment as ExerciseEquipment[])
+      : ['barbell', 'dumbbell', 'cable', 'machine', 'bench', 'rack', 'bodyweight'],
+  );
+  const [sessionLength, setSessionLength] = useState<number>(60);
+  const [focus, setFocus] = useState<ProgramFocus>('balanced');
+  const [injuries, setInjuries] = useState<string>(defaults.injuries ?? '');
+  const [seed, setSeed] = useState<number>(0);
+  const [generated, setGenerated] = useState<GeneratedProgram | null>(null);
+  const [activeWeek, setActiveWeek] = useState(0);
+  const [activating, setActivating] = useState(false);
+
+  function toggleEquip(e: ExerciseEquipment) {
+    setEquipment((prev) => prev.includes(e) ? prev.filter((x) => x !== e) : [...prev, e]);
+  }
+
+  function runGenerate(nextSeed?: number) {
+    const s = nextSeed ?? seed;
+    const opts: GenerateProgramOptions = {
+      goal, trainingDaysPerWeek: days, experienceLevel: experience,
+      availableEquipment: equipment, sessionLengthMin: sessionLength,
+      focus, injuries: injuries.trim() || undefined, seed: s,
+    };
+    setGenerated(generateProgram(opts));
+    setActiveWeek(0);
+  }
+
+  async function handleActivate() {
+    if (!generated) return;
+    setActivating(true);
+    try {
+      await onActivate(generated);
+    } finally {
+      setActivating(false);
+    }
+  }
+
+  return (
+    <div className="min-h-full bg-bg text-ink">
+      {/* Header */}
+      <div className="bg-panel border-b border-line px-4 sm:px-6 lg:px-10 py-4 sticky top-0 z-10">
+        <div className="max-w-[1600px] mx-auto flex items-center gap-2">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 -ml-1">
+            <ArrowLeft size={18} className="text-mut" />
+          </button>
+          <span className="vh-tile vh-tile--gold w-8 h-8"><Sparkles size={16} /></span>
+          <div>
+            <h1 className="font-display text-base text-ink">Skapa eget program</h1>
+            <p className="text-xs text-faint">Evidensbaserad generator · volym, periodisering & deload</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 grid grid-cols-1 xl:grid-cols-[minmax(0,380px)_1fr] gap-6 items-start">
+        {/* ── Formulär ── */}
+        <div className="vh-card p-5 space-y-5">
+          <div>
+            <p className="text-xs tracking-[0.18em] uppercase text-faint font-medium mb-2">Mål</p>
+            <div className="flex flex-wrap gap-2">
+              {GOAL_OPTIONS.map((o) => (
+                <Chip key={o.value} active={goal === o.value} onClick={() => setGoal(o.value)}>{o.label}</Chip>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs tracking-[0.18em] uppercase text-faint font-medium mb-2">Pass per vecka</p>
+            <div className="flex flex-wrap gap-2">
+              {[2, 3, 4, 5, 6].map((d) => (
+                <Chip key={d} active={days === d} onClick={() => setDays(d)}>{d}×</Chip>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs tracking-[0.18em] uppercase text-faint font-medium mb-2">Erfarenhet</p>
+            <div className="flex flex-wrap gap-2">
+              {EXP_OPTIONS.map((o) => (
+                <Chip key={o.value} active={experience === o.value} onClick={() => setExperience(o.value)}>{o.label}</Chip>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs tracking-[0.18em] uppercase text-faint font-medium mb-2">Passlängd</p>
+            <div className="flex flex-wrap gap-2">
+              {SESSION_LENGTHS.map((m) => (
+                <Chip key={m} active={sessionLength === m} onClick={() => setSessionLength(m)}>{m} min</Chip>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs tracking-[0.18em] uppercase text-faint font-medium mb-2">Utrustning</p>
+            <div className="flex flex-wrap gap-2">
+              {EQUIPMENT_OPTIONS.map((e) => (
+                <Chip key={e} active={equipment.includes(e)} onClick={() => toggleEquip(e)}>{EQUIPMENT_LABELS[e]}</Chip>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs tracking-[0.18em] uppercase text-faint font-medium mb-2">Fokus</p>
+            <div className="flex flex-wrap gap-2">
+              {FOCUS_OPTIONS.map((o) => (
+                <Chip key={o.value} active={focus === o.value} onClick={() => setFocus(o.value)}>{o.label}</Chip>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs tracking-[0.18em] uppercase text-faint font-medium mb-2">Skador / begränsningar (valfritt)</p>
+            <input
+              className="w-full bg-soft text-ink border border-line rounded-xl px-3 py-2.5 text-sm placeholder-faint focus:outline-none focus:ring-2 focus:ring-[rgba(233,193,120,.4)]"
+              placeholder="t.ex. ont i axel, känsligt knä"
+              value={injuries}
+              onChange={(e) => setInjuries(e.target.value)}
+            />
+          </div>
+
+          <button
+            onClick={() => runGenerate()}
+            className="w-full py-3 text-[#2a1d08] rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
+          >
+            <Sparkles size={16} />
+            {generated ? 'Generera om' : 'Generera program'}
+          </button>
+        </div>
+
+        {/* ── Förhandsvisning ── */}
+        <div>
+          {!generated ? (
+            <div className="vh-card p-10 text-center text-faint">
+              <Dumbbell size={36} className="mx-auto mb-3 text-faint" />
+              <p className="text-sm">Fyll i dina val och tryck <span className="text-gold">Generera program</span> för att se ett förslag.</p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {/* Titel + meta */}
+              <div className="vh-card p-5">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div>
+                    <h2 className="font-display text-lg text-ink">{generated.name}</h2>
+                    <p className="text-xs text-faint tnum mt-0.5">
+                      {GOAL_LABELS[generated.goal]} · {SPLIT_LABELS[generated.split]} · {generated.daysPerWeek}×/vecka · {generated.blockLengthWeeks} veckor
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { const ns = seed + 1; setSeed(ns); runGenerate(ns); }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-line text-sm font-medium text-mut hover:border-[rgba(233,193,120,.3)]"
+                    >
+                      <RefreshCw size={14} /> Variera
+                    </button>
+                    <button
+                      onClick={handleActivate}
+                      disabled={activating}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[#2a1d08] text-sm font-semibold disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
+                    >
+                      <Check size={15} /> {activating ? 'Aktiverar…' : 'Aktivera program'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Designanteckningar */}
+                <ul className="mt-4 space-y-1.5">
+                  {generated.designNotes.map((n, i) => (
+                    <li key={i} className="flex gap-2 text-xs text-mut">
+                      <span className="text-gold mt-0.5">▸</span>
+                      <span>{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Muskel-täckning */}
+              <div className="vh-card p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="vh-tile vh-tile--gold w-7 h-7"><ITrend size={14} /></span>
+                  <p className="text-sm font-semibold text-ink">Veckovolym per muskelgrupp</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
+                  {generated.weeklySetsPerMuscle.map((v) => {
+                    const pct = Math.min(100, (v.sets / v.mav) * 100);
+                    const color = v.status === 'optimal' ? '#bfe26a' : v.status === 'high' ? '#ff8f7a' : '#9b8cff';
+                    return (
+                      <div key={v.group}>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-mut">{v.label}</span>
+                          <span className="text-faint tnum">{v.sets} set <span className="opacity-60">(MEV {v.mev}/MAV {v.mav})</span></span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-soft overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Veckor */}
+              <div className="vh-card p-5">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {generated.weeks.map((w, i) => (
+                    <button
+                      key={w.week}
+                      onClick={() => setActiveWeek(i)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${activeWeek === i ? 'text-gold border-[rgba(233,193,120,.45)]' : 'text-mut border-line'}`}
+                      style={activeWeek === i ? { background: 'rgba(233,193,120,.12)' } : undefined}
+                    >
+                      {w.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
+                  {generated.weeks[activeWeek].days.map((day, di) => (
+                    <div key={di} className="bg-card rounded-2xl border border-line overflow-hidden">
+                      <div className="px-4 py-3 border-b border-line flex items-center justify-between">
+                        <h3 className="font-display text-sm text-ink">{day.splitLabel}</h3>
+                        <span className="text-[11px] text-faint tnum">{day.exercises.length} övningar</span>
+                      </div>
+                      <div className="divide-y divide-line">
+                        {day.exercises.map((ex, ei) => (
+                          <div key={ei} className="px-4 py-2.5">
+                            <p className="text-sm font-medium text-ink">{ex.name}</p>
+                            <p className="text-xs text-faint tnum">
+                              {ex.sets} × {ex.repsRange} · {formatRest(ex.rest)} vila{ex.note ? ` · ${ex.note}` : ''}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-faint text-center">
+                Utkast genererat automatiskt – granska gärna övningsvalen innan du aktiverar.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Huvud-komponent ───────────────────────────────────────────────────────────
 
 export default function WorkoutProgramPage() {
   const { user } = useAuthStore();
-  const { setFitnessPage, setPendingWorkout, setSelectedExerciseId } = useStore();
+  const { setFitnessPage, setPendingWorkout, setSelectedExerciseId, userProfile, updateUserProfile } = useStore();
 
   function openExerciseDetail(name: string) {
     const resolved = getExerciseByName(name);
@@ -160,6 +470,7 @@ export default function WorkoutProgramPage() {
   }
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'program' | 'create'>('program');
   const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editExercise, setEditExercise] = useState<{ dayIdx: number; exIdx: number } | null>(null);
@@ -183,6 +494,27 @@ export default function WorkoutProgramPage() {
       console.error('Kunde inte spara program:', err);
     }
     setSaving(false);
+  }
+
+  // Aktivera ett genererat program: spara (via fitnessDb som rensar undefined),
+  // uppdatera profilen (activeProgramId + startdatum + veckoräknare) och visa det.
+  async function handleActivateGenerated(gen: GeneratedProgram) {
+    if (!user) return;
+    await saveWorkoutProgram(user.uid, gen);
+    setProgram(gen);
+    if (userProfile) {
+      try {
+        await updateUserProfile({
+          activeProgramId: gen.id,
+          activeProgramStartDate: new Date().toISOString().slice(0, 10),
+          currentProgramWeek: 1,
+          currentProgramDayIndex: 0,
+        });
+      } catch (err) {
+        console.error('Kunde inte uppdatera profil:', err);
+      }
+    }
+    setView('program');
   }
 
   function handleStartWorkout(day: WorkoutDay) {
@@ -219,6 +551,25 @@ export default function WorkoutProgramPage() {
     setEditExercise({ dayIdx, exIdx: newProg.schedule[dayIdx].exercises.length - 1 });
   }
 
+  // Standardvärden till generatorformuläret hämtas från profilen om möjlig.
+  const createDefaults: Partial<GenerateProgramOptions> = {
+    experienceLevel: userProfile?.experienceLevel,
+    trainingDaysPerWeek: userProfile?.trainingDaysPerWeek,
+    availableEquipment: userProfile?.availableEquipment,
+    injuries: userProfile?.injuries,
+    goal: program?.goal,
+  };
+
+  if (view === 'create') {
+    return (
+      <CreateProgramView
+        onClose={() => setView('program')}
+        onActivate={handleActivateGenerated}
+        defaults={createDefaults}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-full bg-bg flex items-center justify-center py-20">
@@ -232,11 +583,16 @@ export default function WorkoutProgramPage() {
       <div className="min-h-full bg-bg text-ink flex flex-col items-center justify-center p-6 text-center">
         <Dumbbell size={40} className="text-faint mb-3" />
         <p className="font-medium text-mut">Inget program hittat</p>
-        <p className="text-sm text-faint mt-1 mb-4">Gör onboarding för att få ett personligt program</p>
-        <button onClick={() => setFitnessPage('onboarding')} className="px-5 py-2.5 text-[#2a1d08] rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
-          Starta onboarding
-        </button>
+        <p className="text-sm text-faint mt-1 mb-4">Skapa ett eget program eller gör onboarding</p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button onClick={() => setView('create')} className="px-5 py-2.5 text-[#2a1d08] rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
+            <Sparkles size={16} /> Skapa eget program
+          </button>
+          <button onClick={() => setFitnessPage('onboarding')} className="px-5 py-2.5 rounded-xl border border-line text-sm font-medium text-mut">
+            Starta onboarding
+          </button>
+        </div>
       </div>
     );
   }
@@ -265,8 +621,13 @@ export default function WorkoutProgramPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              <button onClick={() => setView('create')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-soft text-mut hover:bg-card" title="Skapa eget program">
+                <Sparkles size={14} />
+                <span className="hidden sm:inline">Skapa eget</span>
+              </button>
               <button onClick={() => setFitnessPage('onboarding')}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5" title="Nytt program">
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5" title="Nytt program via onboarding">
                 <RotateCcw size={16} className="text-mut" />
               </button>
               <button onClick={() => setEditMode(v => !v)}
@@ -349,7 +710,7 @@ export default function WorkoutProgramPage() {
                         {ex.name || <span className="text-faint italic">Namnlös</span>}
                         {resolved && <ChevronRight size={13} className="text-faint group-hover/ex:text-gold" />}
                       </p>
-                      <p className="text-xs text-faint tnum">{ex.sets} × {ex.repsRange} · {formatRest(ex.rest)} vila</p>
+                      <p className="text-xs text-faint tnum">{ex.sets} × {ex.repsRange} · {formatRest(ex.rest)} vila{ex.note ? ` · ${ex.note}` : ''}</p>
                     </div>
                     {editMode && (
                       <div className="flex gap-1 flex-shrink-0">
