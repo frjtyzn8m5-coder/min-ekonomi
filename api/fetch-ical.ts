@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { assertPublicHttpUrl } from './_lib/safeFetch';
 
 // ── Lightweight ICS / iCal parser ─────────────────────────────────────────────
 // Parses VEVENT blocks without any external dependency.
@@ -116,9 +117,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing url' });
   }
 
+  let safeUrl: URL;
+  try {
+    safeUrl = await assertPublicHttpUrl(url);
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message ?? 'URL not allowed' });
+  }
+
   let icsText: string;
   try {
-    const response = await fetch(url, {
+    const response = await fetch(safeUrl, {
       headers: { 'User-Agent': 'Vardagshub/1.0 iCal-importer' },
       signal: AbortSignal.timeout(10_000),
     });

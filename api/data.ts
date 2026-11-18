@@ -1,39 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { Redis } from '@upstash/redis';
 
-const redis = Redis.fromEnv();
-const DATA_KEY = 'app_data_v1';
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (req.method === 'GET') {
-    try {
-      const data = await redis.get(DATA_KEY);
-      return res.status(200).json(data ?? null);
-    } catch (e) {
-      return res.status(500).json({ error: String(e) });
-    }
-  }
-
-  if (req.method === 'POST') {
-    try {
-      const body = req.body;
-      if (!body || typeof body !== 'object') {
-        return res.status(400).json({ error: 'Invalid body' });
-      }
-      // Store with last-modified timestamp
-      const payload = { ...body, _savedAt: Date.now() };
-      await redis.set(DATA_KEY, JSON.stringify(payload));
-      return res.status(200).json({ ok: true, savedAt: payload._savedAt });
-    } catch (e) {
-      return res.status(500).json({ error: String(e) });
-    }
-  }
-
-  return res.status(405).end();
+// ── DISABLED ────────────────────────────────────────────────────────────────────
+// This endpoint previously stored the entire app dataset in a single, GLOBALLY
+// read/writable Upstash Redis key ('app_data_v1') with no authentication and
+// `Access-Control-Allow-Origin: *` — meaning anyone on the internet could read or
+// overwrite all app data. The client no longer calls it (data lives in Firestore,
+// scoped per user under users/{uid}/…), so it is permanently disabled.
+//
+// Safe to delete this file entirely.
+export default function handler(_req: VercelRequest, res: VercelResponse) {
+  return res.status(410).json({ error: 'This endpoint has been removed.' });
 }

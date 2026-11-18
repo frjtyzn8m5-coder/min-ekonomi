@@ -79,6 +79,7 @@ export default function Settings() {
         updateTransactionDoc(user.uid, tx.id, { isTransfer: true, category: 'Överföring', type: 'transfer' })
       )
     );
+    toUpdate.forEach(tx => updateTransaction(tx.id, { isTransfer: true, category: 'Överföring', type: 'transfer' }));
     setApplying(false);
   };
 
@@ -125,13 +126,13 @@ export default function Settings() {
 
   return (
     <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
-      <h1 className="text-xl font-bold text-gray-900">Inställningar</h1>
+      <h1 className="font-display text-2xl text-ink">Inställningar</h1>
 
       {/* Own accounts */}
       <Card className="p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">Egna kontonummer</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <h2 className="font-display text-sm text-ink">Egna kontonummer</h2>
+          <p className="text-xs text-faint mt-0.5">
             Transaktioner till/från dessa nummer klassas automatiskt som överföringar och påverkar inte din budget.
           </p>
         </div>
@@ -139,19 +140,20 @@ export default function Settings() {
         {/* Auto-detected candidates */}
         {candidates.length > 0 && (
           <div className="space-y-2">
-            <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1">
-              <Zap size={11} className="text-yellow-500" /> Hittade möjliga egna konton
+            <p className="text-[11px] font-medium text-mut uppercase tracking-wide flex items-center gap-1">
+              <Zap size={11} className="text-gold" /> Hittade möjliga egna konton
             </p>
             <div className="flex flex-wrap gap-2">
               {candidates.map(c => (
                 <button
                   key={c}
                   onClick={() => add(c)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed border-blue-300 bg-blue-50 text-blue-700 text-xs hover:bg-blue-100 transition-all"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed text-gold text-xs transition-all"
+                  style={{ borderColor: 'rgba(233,193,120,.5)', background: 'rgba(233,193,120,.12)' }}
                 >
                   <Plus size={11} />
                   {c}
-                  <span className="text-blue-400 text-[10px]">({txCountForAccount(c)} tr.)</span>
+                  <span className="text-mut text-[10px]">({txCountForAccount(c)} tr.)</span>
                 </button>
               ))}
             </div>
@@ -161,15 +163,15 @@ export default function Settings() {
         {/* Current own accounts */}
         {ownAccounts.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Sparade konton</p>
+            <p className="text-[11px] font-medium text-mut uppercase tracking-wide">Sparade konton</p>
             {ownAccounts.map(acc => (
-              <div key={acc} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg">
+              <div key={acc} className="flex items-center justify-between px-3 py-2 bg-soft rounded-lg">
                 <div>
-                  <span className="text-sm font-mono text-gray-800">{acc}</span>
-                  <span className="ml-2 text-[11px] text-gray-400">{txCountForAccount(acc)} transaktioner</span>
+                  <span className="text-sm font-mono text-ink">{acc}</span>
+                  <span className="ml-2 text-[11px] text-faint">{txCountForAccount(acc)} transaktioner</span>
                 </div>
                 <button onClick={() => remove(acc)}
-                  className="text-gray-300 hover:text-red-400 transition-colors p-1">
+                  className="text-faint hover:text-coral transition-colors p-1">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -185,12 +187,13 @@ export default function Settings() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && add(input)}
-            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+            className="flex-1 bg-soft text-ink border border-line rounded-lg px-3 py-2 text-sm outline-none focus:border-gold/50"
           />
           <button
             onClick={() => add(input)}
             disabled={!input.trim() || saving}
-            className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-40 transition-all"
+            className="px-3 py-2 text-[#2a1d08] rounded-lg text-sm disabled:opacity-40 transition-all"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             <Plus size={16} />
           </button>
@@ -198,21 +201,21 @@ export default function Settings() {
 
         {/* Apply button */}
         {ownAccounts.length > 0 && (
-          <div className="flex items-center gap-3 pt-1 border-t border-gray-100">
+          <div className="flex items-center gap-3 pt-1 border-t border-line">
             <button
               onClick={applyToTransactions}
               disabled={applying}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gray-900 text-white rounded-lg text-sm hover:bg-gray-700 disabled:opacity-40 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 bg-soft text-ink border border-line rounded-lg text-sm hover:bg-card disabled:opacity-40 transition-all"
             >
               {applying ? (
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-ink border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Zap size={14} />
+                <Zap size={14} className="text-gold" />
               )}
               Tillämpa på befintliga transaktioner
             </button>
             {saved && (
-              <span className="flex items-center gap-1 text-xs text-green-600">
+              <span className="flex items-center gap-1 text-xs text-cyan">
                 <Check size={12} /> Sparat
               </span>
             )}
@@ -223,8 +226,8 @@ export default function Settings() {
       {/* Re-categorize */}
       <Card className="p-5 space-y-3">
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">Omklassificera transaktioner</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <h2 className="font-display text-sm text-ink">Omklassificera transaktioner</h2>
+          <p className="text-xs text-faint mt-0.5">
             Kör om auto-kategoriseringen på alla befintliga transaktioner med de senaste reglerna. Bekräftade överföringar ändras inte.
           </p>
         </div>
@@ -232,17 +235,18 @@ export default function Settings() {
           <button
             onClick={recategorizeAll}
             disabled={recatting || transactions.length === 0}
-            className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-40 transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 text-[#2a1d08] rounded-lg text-sm disabled:opacity-40 transition-all"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             {recatting ? (
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-[#2a1d08] border-t-transparent rounded-full animate-spin" />
             ) : (
               <RefreshCw size={14} />
             )}
             {recatting ? 'Bearbetar...' : `Omklassificera ${transactions.length.toLocaleString('sv-SE')} transaktioner`}
           </button>
           {recatResult && (
-            <span className="flex items-center gap-1 text-xs text-green-600">
+            <span className="flex items-center gap-1 text-xs text-cyan">
               <Check size={12} /> {recatResult}
             </span>
           )}

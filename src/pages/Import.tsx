@@ -41,39 +41,41 @@ function PendingCard({ upload, onSave, onDiscard }: {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
-      className="bg-white rounded-2xl border-2 border-blue-200 shadow-sm overflow-hidden"
+      className="vh-card overflow-hidden"
+      style={{ border: '1px solid rgba(233,193,120,.35)' }}
     >
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-              <FileText size={18} className="text-blue-500" />
+            <div className="vh-tile vh-tile--gold w-10 h-10 text-[#2a1d08]">
+              <FileText size={18} />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{upload.filename}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{upload.dateFrom} → {upload.dateTo} · {upload.account}</p>
+              <p className="text-sm font-semibold text-ink truncate">{upload.filename}</p>
+              <p className="text-xs text-faint mt-0.5">{upload.dateFrom} → {upload.dateTo} · {upload.account}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+            <span className="text-xs text-gold px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(233,193,120,.12)' }}>
               {upload.transactions.length} tr.
             </span>
           </div>
         </div>
 
         <div className="flex gap-4 mt-3 text-xs">
-          <span className="text-green-600">+{formatSEK(income)}</span>
-          <span className="text-gray-500">−{formatSEK(expense)}</span>
+          <span className="text-cyan">+{formatSEK(income)}</span>
+          <span className="text-mut">−{formatSEK(expense)}</span>
         </div>
 
         <div className="flex gap-2 mt-3">
           <button
             onClick={handle}
             disabled={saving}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white text-xs font-semibold rounded-xl transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[#2a1d08] text-xs font-semibold rounded-xl transition-colors disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             {saving ? (
-              <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+              <span className="w-3 h-3 border border-[#2a1d08] border-t-transparent rounded-full animate-spin" />
             ) : (
               <Check size={13} />
             )}
@@ -81,7 +83,7 @@ function PendingCard({ upload, onSave, onDiscard }: {
           </button>
           <button
             onClick={onDiscard}
-            className="px-3 py-2 border border-gray-200 text-gray-500 hover:bg-gray-50 text-xs rounded-xl transition-colors"
+            className="px-3 py-2 border border-line text-mut hover:bg-soft text-xs rounded-xl transition-colors"
           >
             <X size={13} />
           </button>
@@ -92,7 +94,7 @@ function PendingCard({ upload, onSave, onDiscard }: {
         <>
           <button
             onClick={() => setExpanded(v => !v)}
-            className="w-full px-4 py-2 bg-gray-50 text-xs text-gray-500 flex items-center justify-center gap-1 hover:bg-gray-100"
+            className="w-full px-4 py-2 bg-soft text-xs text-mut flex items-center justify-center gap-1 hover:bg-card"
           >
             {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
             {expanded ? 'Dölj' : 'Förhandsgranska'}
@@ -103,20 +105,20 @@ function PendingCard({ upload, onSave, onDiscard }: {
                 initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="divide-y divide-gray-50 max-h-52 overflow-y-auto">
+                <div className="divide-y divide-line max-h-52 overflow-y-auto">
                   {upload.transactions.slice(0, 20).map(tx => (
                     <div key={tx.id} className="flex items-center justify-between px-4 py-2">
                       <div className="min-w-0">
-                        <p className="text-xs text-gray-700 truncate max-w-[200px]">{tx.description}</p>
-                        <p className="text-[10px] text-gray-400">{tx.date} · {tx.category}</p>
+                        <p className="text-xs text-mut truncate max-w-[200px]">{tx.description}</p>
+                        <p className="text-[10px] text-faint">{tx.date} · {tx.category}</p>
                       </div>
-                      <span className={`text-xs font-medium flex-shrink-0 ml-2 ${tx.amount >= 0 ? 'text-green-600' : 'text-gray-700'}`}>
+                      <span className={`text-xs font-medium flex-shrink-0 ml-2 ${tx.amount >= 0 ? 'text-cyan' : 'text-ink'}`}>
                         {tx.amount >= 0 ? '+' : ''}{formatSEK(tx.amount)}
                       </span>
                     </div>
                   ))}
                   {upload.transactions.length > 20 && (
-                    <p className="text-center text-xs text-gray-400 py-2">
+                    <p className="text-center text-xs text-faint py-2">
                       +{upload.transactions.length - 20} fler...
                     </p>
                   )}
@@ -142,30 +144,31 @@ function SavedCard({ imp, onDelete }: { imp: ImportBatch; onDelete: () => Promis
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3">
-      <div className="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
-        <Check size={16} className="text-green-500" />
+    <div className="vh-card p-4 flex items-center gap-3">
+      <div className="vh-tile vh-tile--cyan w-9 h-9 text-[#2a1d08]">
+        <Check size={16} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 truncate">{imp.filename}</p>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-sm font-medium text-ink truncate">{imp.filename}</p>
+        <p className="text-xs text-faint mt-0.5">
           {imp.txCount} transaktioner · {imp.dateFrom} → {imp.dateTo}
         </p>
       </div>
       {confirm ? (
         <div className="flex gap-1.5 flex-shrink-0">
           <button onClick={handleDelete} disabled={deleting}
-            className="text-xs px-2.5 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50">
+            className="text-xs px-2.5 py-1.5 text-[#2a1d08] rounded-lg disabled:opacity-50"
+            style={{ background: 'var(--coral)' }}>
             {deleting ? '...' : 'Ja, ta bort'}
           </button>
           <button onClick={() => setConfirm(false)}
-            className="text-xs px-2.5 py-1.5 border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50">
+            className="text-xs px-2.5 py-1.5 border border-line text-mut rounded-lg hover:bg-soft">
             Avbryt
           </button>
         </div>
       ) : (
         <button onClick={() => setConfirm(true)}
-          className="flex-shrink-0 p-2 text-gray-300 hover:text-red-400 transition-colors">
+          className="flex-shrink-0 p-2 text-faint hover:text-coral transition-colors">
           <Trash2 size={15} />
         </button>
       )}
@@ -192,14 +195,15 @@ function DropZone({ onFiles }: { onFiles: (files: File[]) => void }) {
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
       className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
-        dragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+        dragging ? 'bg-soft' : 'border-line hover:bg-soft'
       }`}
+      style={dragging ? { borderColor: 'rgba(233,193,120,.5)' } : undefined}
     >
       <input ref={inputRef} type="file" multiple accept=".csv,.xlsx,.xls"
         className="hidden" onChange={e => e.target.files && onFiles(Array.from(e.target.files))} />
-      <Upload size={32} className={`mx-auto mb-3 ${dragging ? 'text-blue-400' : 'text-gray-300'}`} />
-      <p className="text-sm font-medium text-gray-600">Dra hit eller klicka för att välja filer</p>
-      <p className="text-xs text-gray-400 mt-1">SEB CSV/XLSX · Avanza · Klarna · CSN</p>
+      <Upload size={32} className={`mx-auto mb-3 ${dragging ? 'text-gold' : 'text-faint'}`} />
+      <p className="text-sm font-medium text-mut">Dra hit eller klicka för att välja filer</p>
+      <p className="text-xs text-faint mt-1">SEB CSV/XLSX · Avanza · Klarna · CSN</p>
     </div>
   );
 }
@@ -233,13 +237,13 @@ function ExportButton() {
   return (
     <div className="relative">
       <button onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5">
+        className="flex items-center gap-1.5 text-xs text-mut hover:text-ink border border-line rounded-lg px-3 py-1.5">
         <Download size={13} /> Exportera
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 w-36">
-          <button onClick={exportCSV} className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50">CSV</button>
-          <button onClick={exportJSON} className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50">JSON (debug)</button>
+        <div className="absolute right-0 mt-1 bg-card border border-line rounded-xl shadow-lg overflow-hidden z-10 w-36">
+          <button onClick={exportCSV} className="w-full text-left px-4 py-2.5 text-xs text-ink hover:bg-soft">CSV</button>
+          <button onClick={exportJSON} className="w-full text-left px-4 py-2.5 text-xs text-ink hover:bg-soft">JSON (debug)</button>
         </div>
       )}
     </div>
@@ -327,8 +331,8 @@ export default function Import() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Importera</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Ladda upp kontoutdrag</p>
+          <h1 className="font-display text-2xl text-ink">Importera</h1>
+          <p className="text-sm text-faint mt-0.5">Ladda upp kontoutdrag</p>
         </div>
         <ExportButton />
       </div>
@@ -337,7 +341,7 @@ export default function Import() {
       <DropZone onFiles={handleFiles} />
 
       {error && (
-        <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{error}</p>
+        <p className="text-sm text-coral rounded-xl px-4 py-3" style={{ background: 'rgba(255,143,122,.12)' }}>{error}</p>
       )}
 
       {/* Pending uploads */}
@@ -345,12 +349,12 @@ export default function Import() {
         {pending.length > 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-700">
+              <h2 className="font-display text-sm text-ink">
                 Väntar på sparande
-                <span className="ml-2 text-xs font-normal text-blue-500">{newTxCount} nya transaktioner</span>
+                <span className="ml-2 text-xs font-normal text-gold">{newTxCount} nya transaktioner</span>
               </h2>
               <button onClick={() => setPending([])}
-                className="text-xs text-gray-400 hover:text-gray-600">
+                className="text-xs text-faint hover:text-ink">
                 Rensa alla
               </button>
             </div>
@@ -369,7 +373,7 @@ export default function Import() {
       {/* Saved imports */}
       {importBatches.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-gray-700">Sparade uppladdningar</h2>
+          <h2 className="font-display text-sm text-ink">Sparade uppladdningar</h2>
           {importBatches.map(imp => (
             <SavedCard
               key={imp.id}

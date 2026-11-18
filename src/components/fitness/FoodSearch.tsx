@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, ScanLine, X, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { ScanLine, X, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { ISearch } from '../ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FoodItem } from '../../types';
 import BarcodeScanner from './BarcodeScanner';
@@ -215,27 +216,27 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="fixed inset-0 z-40 bg-white flex flex-col"
+      className="fixed inset-0 z-40 bg-bg text-ink flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-100">
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+      <div className="flex items-center gap-3 p-4 border-b border-line">
+        <button onClick={onClose} className="text-mut hover:text-ink">
           <X size={20} />
         </button>
         <div className="flex-1 relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <ISearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => { setQuery(e.target.value); setSelected(null); }}
             placeholder="Sök livsmedel…"
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+            className="w-full pl-9 pr-4 py-2 bg-soft rounded-xl text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
           />
           {query && (
             <button
               onClick={() => { setQuery(''); setResults([]); setSelected(null); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-faint"
             >
               <X size={14} />
             </button>
@@ -243,7 +244,7 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
         </div>
         <button
           onClick={() => setShowScanner(true)}
-          className="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500"
+          className="vh-tile vh-tile--gold w-9 h-9"
         >
           <ScanLine size={18} />
         </button>
@@ -258,26 +259,26 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-4 bg-orange-50 border-b border-orange-100">
-              <p className="text-sm font-semibold text-gray-900 mb-1">{selected.name}</p>
-              <p className="text-xs text-gray-500 mb-3">
+            <div className="p-4 border-b border-line" style={{ background: 'rgba(233,193,120,.08)' }}>
+              <p className="text-sm font-semibold text-ink mb-1">{selected.name}</p>
+              <p className="text-xs text-mut mb-3">
                 {selected.energy_kcal} kcal / 100g · P {selected.protein}g · F {selected.fat}g · K {selected.carbs}g
               </p>
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <label className="text-xs text-gray-500 mb-1 block">Mängd (gram)</label>
+                  <label className="text-xs text-mut mb-1 block">Mängd (gram)</label>
                   <input
                     type="number"
                     value={amount}
                     onChange={e => setAmount(e.target.value)}
                     min="1"
                     max="5000"
-                    className="w-full px-3 py-2 bg-white rounded-xl border border-orange-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    className="w-full px-3 py-2 bg-card rounded-xl border border-gold/30 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold/40"
                   />
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-500">Totalt</p>
-                  <p className="text-sm font-bold text-orange-500">
+                  <p className="text-xs text-mut">Totalt</p>
+                  <p className="text-sm font-bold text-gold tabular-nums">
                     {Math.round(selected.energy_kcal * parseFloat(amount || '0') / 100)} kcal
                   </p>
                 </div>
@@ -290,9 +291,10 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
                     onClick={() => setAmount(String(g))}
                     className={`flex-1 py-1 rounded-lg text-xs font-medium transition-colors ${
                       amount === String(g)
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-white text-gray-600 border border-gray-200'
+                        ? 'text-[#2a1d08]'
+                        : 'bg-card text-mut border border-line'
                     }`}
+                    style={amount === String(g) ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
                   >
                     {g}g
                   </button>
@@ -300,7 +302,8 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
               </div>
               <button
                 onClick={handleConfirm}
-                className="w-full mt-3 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+                className="w-full mt-3 py-2.5 text-[#2a1d08] rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
               >
                 <Plus size={16} />
                 Lägg till
@@ -314,23 +317,23 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
       <div className="flex-1 overflow-y-auto">
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <Loader2 size={24} className="text-orange-400 animate-spin" />
+            <Loader2 size={24} className="text-gold animate-spin" />
           </div>
         )}
         {error && !loading && (
-          <div className="flex items-center gap-2 p-4 text-red-500 text-sm">
+          <div className="flex items-center gap-2 p-4 text-coral text-sm">
             <AlertCircle size={16} />
             {error}
           </div>
         )}
         {!loading && !error && results.length === 0 && query.trim() && (
-          <p className="text-center text-gray-400 text-sm py-12">
+          <p className="text-center text-faint text-sm py-12">
             Inga träffar för "{query}"
           </p>
         )}
         {!loading && !error && results.length === 0 && !query.trim() && (
-          <div className="p-6 text-center text-gray-400 text-sm">
-            <ScanLine size={32} className="mx-auto mb-2 text-gray-300" />
+          <div className="p-6 text-center text-faint text-sm">
+            <ScanLine size={32} className="mx-auto mb-2 text-faint" />
             <p>Sök på livsmedelsnamn eller skanna streckkod</p>
           </div>
         )}
@@ -338,23 +341,22 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
           <button
             key={item.id}
             onClick={() => setSelected(item)}
-            className={`w-full p-4 text-left border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-              selected?.id === item.id ? 'bg-orange-50' : ''
-            }`}
+            className="w-full p-4 text-left border-b border-line hover:bg-white/5 transition-colors"
+            style={selected?.id === item.id ? { background: 'rgba(233,193,120,.08)' } : undefined}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-sm font-medium text-ink truncate">{item.name}</p>
+                <p className="text-xs text-faint mt-0.5">
                   {item.source === 'livsmedelsverket' ? 'Livsmedelsverket' : 'Open Food Facts'}
                 </p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-sm font-semibold text-gray-900">{item.energy_kcal} kcal</p>
-                <p className="text-[10px] text-gray-400">per 100g</p>
+                <p className="text-sm font-semibold text-ink tabular-nums">{item.energy_kcal} kcal</p>
+                <p className="text-[10px] text-faint">per 100g</p>
               </div>
             </div>
-            <div className="flex gap-3 mt-1.5 text-[11px] text-gray-500">
+            <div className="flex gap-3 mt-1.5 text-[11px] text-mut">
               <span>P {item.protein}g</span>
               <span>F {item.fat}g</span>
               <span>K {item.carbs}g</span>

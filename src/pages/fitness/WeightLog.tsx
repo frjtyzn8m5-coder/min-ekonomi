@@ -230,16 +230,18 @@ function PhotoLightbox({ entries, currentIndex, compareA, compareB, onSelectA, o
         <button
           onClick={() => onSelectA(entry.date)}
           className={`flex-1 py-3 rounded-2xl text-sm font-semibold transition-colors ${
-            isA ? 'bg-blue-500 text-white' : 'bg-white/15 text-white hover:bg-white/25'
+            isA ? 'text-[#2a1d08]' : 'bg-white/15 text-white hover:bg-white/25'
           }`}
+          style={isA ? { background: 'var(--gold)' } : undefined}
         >
           {isA ? '✓ Vald som A' : 'Välj som A'}
         </button>
         <button
           onClick={() => onSelectB(entry.date)}
           className={`flex-1 py-3 rounded-2xl text-sm font-semibold transition-colors ${
-            isB ? 'bg-orange-500 text-white' : 'bg-white/15 text-white hover:bg-white/25'
+            isB ? 'text-[#2a1d08]' : 'bg-white/15 text-white hover:bg-white/25'
           }`}
+          style={isB ? { background: 'var(--coral)' } : undefined}
         >
           {isB ? '✓ Vald som B' : 'Välj som B'}
         </button>
@@ -307,7 +309,7 @@ function CompareModal({ entryA, entryB, layout, onLayoutChange, onClose }: Compa
             {[entryA, entryB].map((e, i) => (
               <div key={i} className="relative h-full">
                 <img src={e.photoUrl!} alt="" className="w-full h-full object-contain" />
-                <span className={`absolute bottom-3 ${i === 0 ? 'left-3' : 'right-3'} text-xs font-semibold px-2 py-0.5 rounded-full ${i === 0 ? 'bg-blue-500' : 'bg-orange-500'} text-white`}>
+                <span className={`absolute bottom-3 ${i === 0 ? 'left-3' : 'right-3'} text-xs font-semibold px-2 py-0.5 rounded-full text-[#2a1d08]`} style={{ background: i === 0 ? 'var(--gold)' : 'var(--coral)' }}>
                   {i === 0 ? 'A' : 'B'} · {formatDate(e.date)}
                 </span>
               </div>
@@ -331,17 +333,17 @@ function CompareModal({ entryA, entryB, layout, onLayoutChange, onClose }: Compa
 function MeasurementInstructions() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="bg-blue-50 rounded-xl overflow-hidden">
+    <div className="rounded-xl overflow-hidden border border-line" style={{ background: 'rgba(233,193,120,.08)' }}>
       <button
         className="w-full flex items-center gap-2 px-4 py-3 text-left"
         onClick={() => setOpen(v => !v)}
       >
-        <Info size={16} className="text-blue-500 flex-shrink-0" />
-        <span className="text-sm text-blue-700 font-medium">Råd för konsekventa mätningar</span>
-        {open ? <ChevronUp size={14} className="ml-auto text-blue-400" /> : <ChevronDown size={14} className="ml-auto text-blue-400" />}
+        <Info size={16} className="text-gold flex-shrink-0" />
+        <span className="text-sm text-gold font-medium">Råd för konsekventa mätningar</span>
+        {open ? <ChevronUp size={14} className="ml-auto text-gold" /> : <ChevronDown size={14} className="ml-auto text-gold" />}
       </button>
       {open && (
-        <div className="px-4 pb-4 text-sm text-blue-800 space-y-1.5 leading-relaxed">
+        <div className="px-4 pb-4 text-sm text-mut space-y-1.5 leading-relaxed">
           <p>📅 <strong>Mät samma dag varje vecka</strong> — t.ex. alltid måndag morgon.</p>
           <p>🌅 <strong>Mät på morgonen</strong> — innan frukost och efter toa.</p>
           <p>👕 <strong>Mät utan kläder</strong> eller i samma tunna kläder varje gång.</p>
@@ -423,6 +425,8 @@ export default function WeightLog() {
     const entry: BodyEntry = { date: dateStr, weight: w };
     try {
       await saveBodyEntry(user.uid, entry);
+      // Feed main body weight into the TDEE loop so BMR/TDEE/macros auto-recompute
+      await useStore.getState().updateUserProfile({ currentWeight: w });
       setEntries(prev => {
         const without = prev.filter(e => e.date !== dateStr);
         return [...without, { ...prev.find(e => e.date === dateStr), ...entry }]
@@ -572,36 +576,36 @@ export default function WeightLog() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center py-20">
-        <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+      <div className="flex-1 flex items-center justify-center py-20 bg-bg">
+        <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-full pb-24 lg:pb-8">
+    <div className="min-h-full bg-bg text-ink pb-24 lg:pb-8">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-bg/80 backdrop-blur border-b border-line px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => setFitnessPage('home')}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-mut hover:bg-white/5 hover:text-ink transition-colors"
         >
-          <ArrowLeft size={18} className="text-gray-600" />
+          <ArrowLeft size={18} />
         </button>
-        <h1 className="text-base font-semibold text-gray-900">Vikt & Kropp</h1>
+        <h1 className="font-display text-xl text-ink">Vikt & Kropp</h1>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 space-y-5">
 
         {/* ── Quick log ──────────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <p className="text-xs font-medium text-gray-400 mb-3 uppercase tracking-wide">Logga vikt idag</p>
+        <div className="vh-card p-5">
+          <p className="text-xs font-medium text-mut mb-3 uppercase tracking-wide">Logga vikt idag</p>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setWeightInput(v => String(Math.max(0, parseFloat(v || '0') - 0.1).toFixed(1)))}
-              className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="w-10 h-10 rounded-xl bg-soft border border-line flex items-center justify-center text-mut hover:text-ink hover:bg-white/5 transition-colors"
             >
-              <Minus size={16} className="text-gray-600" />
+              <Minus size={16} />
             </button>
             <div className="flex-1 relative">
               <input
@@ -610,23 +614,23 @@ export default function WeightLog() {
                 value={weightInput}
                 onChange={e => setWeightInput(e.target.value)}
                 placeholder="0.0"
-                className="w-full text-center text-3xl font-bold text-gray-900 border-none outline-none bg-transparent"
+                className="w-full text-center font-display tnum text-3xl text-ink border-none outline-none bg-transparent"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-400">kg</span>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-faint">kg</span>
             </div>
             <button
               onClick={() => setWeightInput(v => String((parseFloat(v || '0') + 0.1).toFixed(1)))}
-              className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="w-10 h-10 rounded-xl bg-soft border border-line flex items-center justify-center text-mut hover:text-ink hover:bg-white/5 transition-colors"
             >
-              <Plus size={16} className="text-gray-600" />
+              <Plus size={16} />
             </button>
           </div>
 
           {latestWeight && (
-            <p className="text-center text-xs text-gray-400 mt-1">
+            <p className="text-center text-xs text-faint mt-1">
               Senast loggat: {latestWeight.toFixed(1)} kg
               {currentEMA && latestWeight && (
-                <span className={`ml-2 font-medium ${latestWeight < currentEMA ? 'text-emerald-500' : 'text-rose-400'}`}>
+                <span className={`ml-2 font-medium ${latestWeight < currentEMA ? 'text-cyan' : 'text-coral'}`}>
                   ({latestWeight < currentEMA ? '▼' : '▲'} {Math.abs(latestWeight - currentEMA).toFixed(1)} vs. trend)
                 </span>
               )}
@@ -636,21 +640,22 @@ export default function WeightLog() {
           <button
             onClick={handleLogWeight}
             disabled={!weightInput || saving}
-            className="mt-4 w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="mt-4 w-full py-3 text-[#2a1d08] text-sm font-semibold rounded-xl transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
-            {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+            {saving && <span className="w-4 h-4 border-2 border-[#2a1d08] border-t-transparent rounded-full animate-spin" />}
             Logga vikt
           </button>
         </div>
 
         {/* ── Measurements ─────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="vh-card overflow-hidden">
           <button
-            className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-between p-5 hover:bg-white/5 transition-colors"
             onClick={() => setShowMeasurements(v => !v)}
           >
-            <span className="text-sm font-semibold text-gray-900">Kroppsmått</span>
-            {showMeasurements ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+            <span className="text-sm font-semibold text-ink">Kroppsmått</span>
+            {showMeasurements ? <ChevronUp size={16} className="text-faint" /> : <ChevronDown size={16} className="text-faint" />}
           </button>
 
           <AnimatePresence>
@@ -661,11 +666,11 @@ export default function WeightLog() {
                 exit={{ height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="px-5 pb-5 space-y-3 border-t border-gray-50">
+                <div className="px-5 pb-5 space-y-3 border-t border-line">
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     {MEASUREMENT_FIELDS.map(({ key, label }) => (
                       <div key={key}>
-                        <label className="block text-xs text-gray-400 mb-1">{label}</label>
+                        <label className="block text-xs text-faint mb-1">{label}</label>
                         <input
                           type="number"
                           step="0.1"
@@ -675,7 +680,7 @@ export default function WeightLog() {
                             [key]: e.target.value ? parseFloat(e.target.value) : undefined,
                           }))}
                           placeholder="–"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                          className="w-full px-3 py-2 rounded-xl bg-soft border border-line text-sm text-ink outline-none focus:border-gold"
                         />
                       </div>
                     ))}
@@ -687,9 +692,9 @@ export default function WeightLog() {
                     if (!bf) return null;
                     const lm = latestWeight ? ((100 - bf) / 100) * latestWeight : null;
                     return (
-                      <div className="mt-3 p-3 bg-blue-50 rounded-xl">
-                        <p className="text-xs font-medium text-blue-700">Navy-metoden</p>
-                        <p className="text-sm text-blue-900 mt-0.5">
+                      <div className="mt-3 p-3 rounded-xl" style={{ background: 'rgba(233,193,120,.12)' }}>
+                        <p className="text-xs font-medium text-gold">Navy-metoden</p>
+                        <p className="text-sm text-ink mt-0.5">
                           Kroppsfett: <strong>{bf.toFixed(1)}%</strong>
                           {lm && <span className="ml-3">Muskelmassa: <strong>{lm.toFixed(1)} kg</strong></span>}
                         </p>
@@ -700,13 +705,13 @@ export default function WeightLog() {
                   <button
                     onClick={handleSaveMeasurements}
                     disabled={Object.keys(measurements).length === 0 || saving}
-                    className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-semibold rounded-xl transition-colors"
+                    className="w-full py-2.5 bg-soft border border-line hover:bg-white/5 disabled:opacity-40 text-ink text-sm font-semibold rounded-xl transition-colors"
                   >
                     Spara mätningar
                   </button>
 
                   {calcBF != null && (
-                    <p className="text-center text-xs text-emerald-600 font-medium">
+                    <p className="text-center text-xs text-cyan font-medium">
                       ✓ Sparat – kroppsfett {calcBF.toFixed(1)}%
                     </p>
                   )}
@@ -717,17 +722,18 @@ export default function WeightLog() {
         </div>
 
         {/* ── Weight chart ──────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="vh-card p-5">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold text-gray-900">Viktkurva</p>
+            <p className="text-sm font-semibold text-ink">Viktkurva</p>
             <div className="flex gap-1">
               {RANGES.map(r => (
                 <button
                   key={r}
                   onClick={() => setRange(r)}
-                  className={`px-2 py-0.5 rounded-md text-xs font-medium transition-colors ${
-                    range === r ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-gray-600'
-                  }`}
+                  className="px-2 py-0.5 rounded-md text-xs font-medium transition-colors"
+                  style={range === r
+                    ? { background: 'rgba(233,193,120,.12)', color: 'var(--gold)' }
+                    : { color: 'var(--mut)' }}
                 >
                   {r}
                 </button>
@@ -736,40 +742,42 @@ export default function WeightLog() {
           </div>
 
           {chartData.length < 2 ? (
-            <div className="h-48 flex items-center justify-center text-sm text-gray-400">
+            <div className="h-48 flex items-center justify-center text-sm text-faint">
               Logga minst 2 viktvärden för att se grafen
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <ComposedChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,241,234,.08)" />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 10, fill: '#9ca3af' }}
+                  tick={{ fontSize: 10, fill: '#9b9688' }}
                   interval="preserveStartEnd"
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: '#9ca3af' }}
+                  tick={{ fontSize: 10, fill: '#9b9688' }}
                   tickLine={false}
                   axisLine={false}
                   domain={['auto', 'auto']}
                   tickFormatter={v => `${v}`}
                 />
                 <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 10, border: '1px solid #e5e7eb' }}
+                  contentStyle={{ fontSize: 12, borderRadius: 10, background: '#15151b', border: '1px solid rgba(244,241,234,.09)', color: '#f4f1ea' }}
+                  itemStyle={{ color: '#f4f1ea' }}
+                  labelStyle={{ color: '#9b9688' }}
                   formatter={(v: any, name: string) => {
                     const labels: Record<string, string> = { actual: 'Vikt', ema: 'Trend (EMA)', forecast: 'Prognos' };
                     return [`${Number(v).toFixed(1)} kg`, labels[name] ?? name];
                   }}
                 />
                 {/* Actual weights */}
-                <Scatter dataKey="actual" fill="#93c5fd" opacity={0.6} name="actual" />
+                <Scatter dataKey="actual" fill="#e9c178" opacity={0.6} name="actual" />
                 {/* EMA trend */}
                 <Line
                   dataKey="ema"
-                  stroke="#3b82f6"
+                  stroke="#e9c178"
                   strokeWidth={2.5}
                   dot={false}
                   name="ema"
@@ -778,7 +786,7 @@ export default function WeightLog() {
                 {/* Forecast */}
                 <Line
                   dataKey="forecast"
-                  stroke="#3b82f6"
+                  stroke="#9b8cff"
                   strokeWidth={1.5}
                   strokeDasharray="5 5"
                   dot={false}
@@ -789,9 +797,9 @@ export default function WeightLog() {
                 {fitnessProfile.targetWeight && (
                   <ReferenceLine
                     y={fitnessProfile.targetWeight}
-                    stroke="#10b981"
+                    stroke="#5fe0d0"
                     strokeDasharray="4 4"
-                    label={{ value: `Mål ${fitnessProfile.targetWeight} kg`, fontSize: 10, fill: '#10b981', position: 'insideTopRight' }}
+                    label={{ value: `Mål ${fitnessProfile.targetWeight} kg`, fontSize: 10, fill: '#5fe0d0', position: 'insideTopRight' }}
                   />
                 )}
               </ComposedChart>
@@ -801,14 +809,14 @@ export default function WeightLog() {
           {/* Legend */}
           <div className="flex gap-4 mt-2 justify-center">
             {[
-              { color: '#93c5fd', label: 'Faktisk vikt' },
-              { color: '#3b82f6', label: 'Trend (EMA)' },
-              { color: '#3b82f6', label: 'Prognos', dashed: true },
+              { color: '#e9c178', label: 'Faktisk vikt' },
+              { color: '#e9c178', label: 'Trend (EMA)' },
+              { color: '#9b8cff', label: 'Prognos', dashed: true },
             ].map(({ color, label, dashed }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <div className={`h-0.5 w-4 ${dashed ? 'border-t-2 border-dashed' : ''}`}
                   style={{ backgroundColor: dashed ? 'transparent' : color, borderColor: color }} />
-                <span className="text-[10px] text-gray-400">{label}</span>
+                <span className="text-[10px] text-faint">{label}</span>
               </div>
             ))}
           </div>
@@ -821,60 +829,60 @@ export default function WeightLog() {
               label: 'Nuvarande (trend)',
               value: currentEMA ? `${currentEMA.toFixed(1)} kg` : '–',
               sub: latestWeight ? `Råvärde ${latestWeight.toFixed(1)} kg` : undefined,
-              color: 'text-blue-600',
+              color: 'text-gold',
             },
             {
               label: 'Förändring (4v)',
               value: change4W != null ? `${change4W >= 0 ? '+' : ''}${change4W.toFixed(1)} kg` : '–',
               sub: changeTotal != null ? `Totalt ${changeTotal >= 0 ? '+' : ''}${changeTotal.toFixed(1)} kg` : undefined,
-              color: change4W != null ? (change4W < 0 ? 'text-emerald-600' : 'text-rose-500') : 'text-gray-600',
+              color: change4W != null ? (change4W < 0 ? 'text-cyan' : 'text-coral') : 'text-mut',
             },
             {
               label: 'Kroppsfett',
               value: latestBF != null ? `${latestBF.toFixed(1)}%` : '–',
               sub: latestBF ? 'Navy-metoden' : 'Logga mätningar',
-              color: 'text-violet-600',
+              color: 'text-violet',
             },
             {
               label: 'Muskelmassa',
               value: latestLeanMass != null ? `${latestLeanMass.toFixed(1)} kg` : '–',
               sub: latestBF ? `${(100 - latestBF).toFixed(1)}% av kroppsvikt` : undefined,
-              color: 'text-emerald-600',
+              color: 'text-lime',
             },
           ].map(({ label, value, sub, color }) => (
-            <div key={label} className="bg-white rounded-2xl border border-gray-100 p-4">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
-              <p className={`text-xl font-bold ${color}`}>{value}</p>
-              {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+            <div key={label} className="vh-card p-4">
+              <p className="text-xs text-faint mb-1">{label}</p>
+              <p className={`font-display tnum text-xl ${color}`}>{value}</p>
+              {sub && <p className="text-[10px] text-faint mt-0.5">{sub}</p>}
             </div>
           ))}
         </div>
 
         {/* ── Prognosis ─────────────────────────────────────────────────────── */}
         {currentEMA != null && emaAll.length >= 14 && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <p className="text-sm font-semibold text-gray-900 mb-3">Prognos</p>
+          <div className="vh-card p-5">
+            <p className="text-sm font-semibold text-ink mb-3">Prognos</p>
             <div className="space-y-2">
               {[4, 8, 12].map(weeks => {
                 const predicted = currentEMA + weeklyChange * weeks;
                 return (
-                  <div key={weeks} className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
-                    <span className="text-xs text-gray-500">Om {weeks} veckor</span>
-                    <span className="text-sm font-semibold text-gray-900">{predicted.toFixed(1)} kg</span>
+                  <div key={weeks} className="flex justify-between items-center py-1 border-b border-line last:border-0">
+                    <span className="text-xs text-mut">Om {weeks} veckor</span>
+                    <span className="font-display tnum text-sm text-ink">{predicted.toFixed(1)} kg</span>
                   </div>
                 );
               })}
               {daysToTarget && fitnessProfile.targetWeight && (
                 <div className="flex justify-between items-center pt-2">
-                  <span className="text-xs text-gray-500">Beräknad målvikt ({fitnessProfile.targetWeight} kg)</span>
-                  <span className="text-sm font-semibold text-emerald-600">
+                  <span className="text-xs text-mut">Beräknad målvikt ({fitnessProfile.targetWeight} kg)</span>
+                  <span className="font-display tnum text-sm text-cyan">
                     {Math.round(daysToTarget)} dagar
                   </span>
                 </div>
               )}
               {Math.abs(weeklyChange) > latestWeight! * 0.01 && (
-                <div className="mt-2 p-3 bg-amber-50 rounded-xl">
-                  <p className="text-xs text-amber-700">
+                <div className="mt-2 p-3 rounded-xl" style={{ background: 'rgba(233,193,120,.12)' }}>
+                  <p className="text-xs text-gold">
                     ⚠️ Takten ({Math.abs(weeklyChange).toFixed(2)} kg/vecka) överstiger 1% av kroppsvikten – risk för muskelmassaförlust.
                   </p>
                 </div>
@@ -896,22 +904,24 @@ export default function WeightLog() {
           const canCompare = !!(entryA?.photoUrl && entryB?.photoUrl);
 
           return (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <div className="vh-card p-5">
               {/* Header */}
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-gray-900">Progress-foton</p>
+                <p className="text-sm font-semibold text-ink">Progress-foton</p>
                 <div className="flex gap-2 flex-wrap justify-end">
                   {canCompare && (
                     <>
                       <button
                         onClick={() => { setCompareLayout('side'); setShowCompare(true); }}
-                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium text-[#2a1d08] transition-opacity hover:opacity-90"
+                        style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
                       >
                         <Columns2 size={12} /> Sida vid sida
                       </button>
                       <button
                         onClick={() => { setCompareLayout('slider'); setShowCompare(true); }}
-                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium text-[#2a1d08] transition-opacity hover:opacity-90"
+                        style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
                       >
                         <SlidersHorizontal size={12} /> Slider
                       </button>
@@ -919,7 +929,7 @@ export default function WeightLog() {
                   )}
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-1.5 text-xs bg-gray-900 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                    className="flex items-center gap-1.5 text-xs bg-soft border border-line text-ink px-3 py-1.5 rounded-lg font-medium hover:bg-white/5 transition-colors"
                   >
                     <Camera size={13} /> Foto
                   </button>
@@ -930,36 +940,36 @@ export default function WeightLog() {
               {(compareA || compareB) && (
                 <div className="flex gap-2 mb-3">
                   {compareA && entryA && (
-                    <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-xl px-2 py-1.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 rounded-xl px-2 py-1.5 flex-1 min-w-0 border" style={{ background: 'rgba(233,193,120,.12)', borderColor: 'rgba(233,193,120,.3)' }}>
                       <img src={entryA.photoUrl!} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-bold text-blue-700">A</p>
-                        <p className="text-[10px] text-blue-600 truncate">{formatDate(entryA.date)}</p>
+                        <p className="text-[10px] font-bold text-gold">A</p>
+                        <p className="text-[10px] text-gold truncate">{formatDate(entryA.date)}</p>
                       </div>
-                      <button onClick={() => setCompareA(null)} className="text-blue-400 hover:text-blue-600 flex-shrink-0">
+                      <button onClick={() => setCompareA(null)} className="text-gold hover:opacity-70 flex-shrink-0">
                         <X size={12} />
                       </button>
                     </div>
                   )}
                   {!compareA && (
-                    <div className="flex items-center justify-center gap-1 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl px-3 py-2 flex-1 text-xs text-gray-400">
+                    <div className="flex items-center justify-center gap-1 bg-soft border-2 border-dashed border-line rounded-xl px-3 py-2 flex-1 text-xs text-faint">
                       Klicka ett foto → Välj som A
                     </div>
                   )}
                   {compareB && entryB && (
-                    <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-xl px-2 py-1.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 rounded-xl px-2 py-1.5 flex-1 min-w-0 border" style={{ background: 'rgba(255,143,122,.12)', borderColor: 'rgba(255,143,122,.3)' }}>
                       <img src={entryB.photoUrl!} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-bold text-orange-700">B</p>
-                        <p className="text-[10px] text-orange-600 truncate">{formatDate(entryB.date)}</p>
+                        <p className="text-[10px] font-bold text-coral">B</p>
+                        <p className="text-[10px] text-coral truncate">{formatDate(entryB.date)}</p>
                       </div>
-                      <button onClick={() => setCompareB(null)} className="text-orange-400 hover:text-orange-600 flex-shrink-0">
+                      <button onClick={() => setCompareB(null)} className="text-coral hover:opacity-70 flex-shrink-0">
                         <X size={12} />
                       </button>
                     </div>
                   )}
                   {!compareB && (
-                    <div className="flex items-center justify-center gap-1 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl px-3 py-2 flex-1 text-xs text-gray-400">
+                    <div className="flex items-center justify-center gap-1 bg-soft border-2 border-dashed border-line rounded-xl px-3 py-2 flex-1 text-xs text-faint">
                       Klicka ett foto → Välj som B
                     </div>
                   )}
@@ -972,36 +982,37 @@ export default function WeightLog() {
                   <button
                     key={part}
                     onClick={() => setUploadBodyPart(part)}
-                    className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
-                      uploadBodyPart === part ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
+                    className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                    style={uploadBodyPart === part
+                      ? { background: 'rgba(233,193,120,.12)', color: 'var(--gold)' }
+                      : { background: 'var(--soft)', color: 'var(--mut)' }}
                   >
                     {part}
                   </button>
                 ))}
               </div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs text-gray-400">Datum:</span>
+                <span className="text-xs text-faint">Datum:</span>
                 <input
                   type="date"
                   value={photoDate}
                   max={today()}
                   onChange={e => setPhotoDate(e.target.value || today())}
-                  className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  className="text-xs bg-soft border border-line text-ink rounded-lg px-2 py-1 focus:outline-none focus:border-gold"
                 />
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
 
               {daysSinceLastPhoto !== null && daysSinceLastPhoto > 14 && (
-                <div className="mb-3 p-3 bg-blue-50 rounded-xl">
-                  <p className="text-xs text-blue-700">📸 Dags för ett progress-foto! Senaste var för {daysSinceLastPhoto} dagar sedan.</p>
+                <div className="mb-3 p-3 rounded-xl" style={{ background: 'rgba(233,193,120,.12)' }}>
+                  <p className="text-xs text-gold">📸 Dags för ett progress-foto! Senaste var för {daysSinceLastPhoto} dagar sedan.</p>
                 </div>
               )}
 
               {photoEntries.length === 0 ? (
                 <div className="text-center py-6 space-y-2">
-                  <p className="text-xs text-gray-400">Inga foton ännu. Välj kroppsdel, välj datum och ladda upp ditt första foto!</p>
-                  <p className="text-[10px] text-gray-300">Klicka ett foto → välj som A eller B → jämför med Sida vid sida eller Slider.</p>
+                  <p className="text-xs text-faint">Inga foton ännu. Välj kroppsdel, välj datum och ladda upp ditt första foto!</p>
+                  <p className="text-[10px] text-faint">Klicka ett foto → välj som A eller B → jämför med Sida vid sida eller Slider.</p>
                 </div>
               ) : (
                 <>
@@ -1011,9 +1022,10 @@ export default function WeightLog() {
                       <button
                         key={part}
                         onClick={() => setFilterBodyPart(part)}
-                        className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
-                          filterBodyPart === part ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        }`}
+                        className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                        style={filterBodyPart === part
+                          ? { background: 'rgba(233,193,120,.12)', color: 'var(--gold)' }
+                          : { background: 'var(--soft)', color: 'var(--mut)' }}
                       >
                         {part}
                       </button>
@@ -1041,31 +1053,31 @@ export default function WeightLog() {
                           />
                           {/* A/B badge */}
                           {isA && (
-                            <span className="absolute top-1 left-1 text-[10px] font-bold bg-blue-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow">A</span>
+                            <span className="absolute top-1 left-1 text-[10px] font-bold text-[#2a1d08] w-5 h-5 flex items-center justify-center rounded-full shadow" style={{ background: 'var(--gold)' }}>A</span>
                           )}
                           {isB && (
-                            <span className="absolute top-1 left-1 text-[10px] font-bold bg-orange-500 text-white w-5 h-5 flex items-center justify-center rounded-full shadow">B</span>
+                            <span className="absolute top-1 left-1 text-[10px] font-bold text-[#2a1d08] w-5 h-5 flex items-center justify-center rounded-full shadow" style={{ background: 'var(--coral)' }}>B</span>
                           )}
                           <span className="absolute bottom-1 left-1 text-[9px] bg-black/50 text-white px-1.5 py-0.5 rounded-full">
                             {formatDate(e.date)}
                           </span>
                           {e.notes && (
-                            <span className="absolute top-1 right-1 text-[8px] bg-blue-500/70 text-white px-1.5 py-0.5 rounded-full">
+                            <span className="absolute top-1 right-1 text-[8px] text-[#2a1d08] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(233,193,120,.85)' }}>
                               {e.notes}
                             </span>
                           )}
                           {/* Hover overlay */}
-                          <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/10 transition-colors" />
+                          <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/20 transition-colors" />
                         </button>
                       );
                     })}
                   </div>
                   {filteredPhotos.length > 12 && (
-                    <p className="text-xs text-gray-400 text-center mt-2">+{filteredPhotos.length - 12} fler foton</p>
+                    <p className="text-xs text-faint text-center mt-2">+{filteredPhotos.length - 12} fler foton</p>
                   )}
 
                   {!compareA && !compareB && (
-                    <p className="text-[10px] text-gray-400 text-center mt-2">
+                    <p className="text-[10px] text-faint text-center mt-2">
                       Klicka ett foto för att se det i helskärm och välja det för jämförelse
                     </p>
                   )}
@@ -1107,63 +1119,63 @@ export default function WeightLog() {
 
         {/* ── Measurement radar ─────────────────────────────────────────────── */}
         {radarData.length >= 3 && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <p className="text-sm font-semibold text-gray-900 mb-1">Mätningstrend</p>
-            <p className="text-xs text-gray-400 mb-4">Procentuell förändring sedan start</p>
+          <div className="vh-card p-5">
+            <p className="text-sm font-semibold text-ink mb-1">Mätningstrend</p>
+            <p className="text-xs text-faint mb-4">Procentuell förändring sedan start</p>
             <ResponsiveContainer width="100%" height={200}>
               <RadarChart data={radarData}>
-                <PolarGrid stroke="#f0f0f0" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                <PolarGrid stroke="rgba(244,241,234,.08)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#9b9688' }} />
                 <PolarRadiusAxis tick={false} axisLine={false} />
-                <Radar name="Start" dataKey="start" stroke="#d1d5db" fill="#d1d5db" fillOpacity={0.3} />
-                <Radar name="Nu" dataKey="current" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
+                <Radar name="Start" dataKey="start" stroke="#625d52" fill="#625d52" fillOpacity={0.25} />
+                <Radar name="Nu" dataKey="current" stroke="#e9c178" fill="#e9c178" fillOpacity={0.4} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
         )}
 
         {/* ── Profile settings ──────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <p className="text-sm font-semibold text-gray-900 mb-4">Profilinställningar</p>
+        <div className="vh-card p-5">
+          <p className="text-sm font-semibold text-ink mb-4">Profilinställningar</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Kön</label>
+              <label className="block text-xs text-faint mb-1">Kön</label>
               <select
                 value={fitnessProfile.gender}
                 onChange={e => useStore.getState().setFitnessProfile({ gender: e.target.value as 'male' | 'female' })}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                className="w-full px-3 py-2 rounded-xl bg-soft border border-line text-sm text-ink outline-none focus:border-gold"
               >
                 <option value="male">Man</option>
                 <option value="female">Kvinna</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Längd (cm)</label>
+              <label className="block text-xs text-faint mb-1">Längd (cm)</label>
               <input
                 type="number"
                 value={fitnessProfile.height}
                 onChange={e => useStore.getState().setFitnessProfile({ height: Number(e.target.value) })}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                className="w-full px-3 py-2 rounded-xl bg-soft border border-line text-sm text-ink outline-none focus:border-gold"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Ålder</label>
+              <label className="block text-xs text-faint mb-1">Ålder</label>
               <input
                 type="number"
                 value={fitnessProfile.age}
                 onChange={e => useStore.getState().setFitnessProfile({ age: Number(e.target.value) })}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                className="w-full px-3 py-2 rounded-xl bg-soft border border-line text-sm text-ink outline-none focus:border-gold"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Målvikt (kg)</label>
+              <label className="block text-xs text-faint mb-1">Målvikt (kg)</label>
               <input
                 type="number"
                 step="0.5"
                 value={fitnessProfile.targetWeight ?? ''}
                 onChange={e => useStore.getState().setFitnessProfile({ targetWeight: e.target.value ? Number(e.target.value) : undefined })}
                 placeholder="–"
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                className="w-full px-3 py-2 rounded-xl bg-soft border border-line text-sm text-ink outline-none focus:border-gold"
               />
             </div>
           </div>

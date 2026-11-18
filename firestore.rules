@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Least-privilege rules: every document lives under users/{uid}/… and may only be
+// read or written by that signed-in user. Nothing else is accessible.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // All user data: users/{uid} and every subcollection beneath it.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Deny everything not explicitly matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

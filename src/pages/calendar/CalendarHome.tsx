@@ -8,9 +8,10 @@ import type { CalendarEvent, CalendarSource, CalendarSourceType } from '../../ty
 import CalendarView from '../../components/calendar/CalendarView';
 import { nanoid } from 'nanoid';
 import {
-  CalendarDays, Plus, Settings, X, Trash2,
+  Plus, Settings, X, Trash2,
   Globe, Link, Loader2,
 } from 'lucide-react';
+import { ICalendar } from '../../components/ui/Icons';
 import { motion } from 'framer-motion';
 
 // ── Standardkälla "Egna events" ───────────────────────────────────────────────
@@ -70,32 +71,32 @@ function EventModal({ initialDate, event, onSave, onDelete, onClose }: EventModa
   const isView = !!event && event.source !== 'own';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-4">
+      <div className="vh-card w-full max-w-md">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+          <h2 className="font-display text-ink">
             {isView ? 'Event' : event ? 'Redigera event' : 'Nytt event'}
           </h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
-            <X size={16} className="text-gray-500" />
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-mut hover:bg-white/5">
+            <X size={16} />
           </button>
         </div>
 
         {isView ? (
           // Read-only view for external events
           <div className="p-5 space-y-3">
-            <h3 className="font-semibold text-gray-900 text-lg">{event.title}</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="font-display text-ink text-lg">{event.title}</h3>
+            <p className="text-sm text-mut">
               {event.allDay ? 'Heldag' : `${new Date(event.start).toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' })} – ${new Date(event.end).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}`}
             </p>
-            {event.location && <p className="text-sm text-gray-600">📍 {event.location}</p>}
-            {event.description && <p className="text-sm text-gray-600 whitespace-pre-line">{event.description}</p>}
-            {event.url && <a href={event.url} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 hover:underline flex items-center gap-1"><Link size={12} />Öppna länk</a>}
+            {event.location && <p className="text-sm text-mut">📍 {event.location}</p>}
+            {event.description && <p className="text-sm text-mut whitespace-pre-line">{event.description}</p>}
+            {event.url && <a href={event.url} target="_blank" rel="noreferrer" className="text-sm text-gold hover:underline flex items-center gap-1"><Link size={12} />Öppna länk</a>}
           </div>
         ) : (
           <div className="p-5 space-y-3">
             <input
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
               placeholder="Titel *"
               value={title}
               onChange={e => setTitle(e.target.value)}
@@ -104,7 +105,8 @@ function EventModal({ initialDate, event, onSave, onDelete, onClose }: EventModa
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setAllDay(v => !v)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${allDay ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${allDay ? 'text-[#2a1d08] border-transparent' : 'border-line text-mut'}`}
+                style={allDay ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
               >
                 Heldag
               </button>
@@ -112,49 +114,49 @@ function EventModal({ initialDate, event, onSave, onDelete, onClose }: EventModa
             {allDay ? (
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Startdatum</label>
-                  <input type="date" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" value={start.slice(0, 10)} onChange={e => setStart(e.target.value)} />
+                  <label className="text-xs text-faint mb-1 block">Startdatum</label>
+                  <input type="date" className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold/40" value={start.slice(0, 10)} onChange={e => setStart(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Slutdatum</label>
-                  <input type="date" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" value={(end || start).slice(0, 10)} onChange={e => setEnd(e.target.value)} />
+                  <label className="text-xs text-faint mb-1 block">Slutdatum</label>
+                  <input type="date" className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold/40" value={(end || start).slice(0, 10)} onChange={e => setEnd(e.target.value)} />
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Start</label>
-                  <input type="datetime-local" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" value={start} onChange={e => setStart(e.target.value)} />
+                  <label className="text-xs text-faint mb-1 block">Start</label>
+                  <input type="datetime-local" className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold/40" value={start} onChange={e => setStart(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Slut</label>
-                  <input type="datetime-local" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" value={end} onChange={e => setEnd(e.target.value)} />
+                  <label className="text-xs text-faint mb-1 block">Slut</label>
+                  <input type="datetime-local" className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold/40" value={end} onChange={e => setEnd(e.target.value)} />
                 </div>
               </div>
             )}
             <input
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
               placeholder="Plats (valfritt)"
               value={location}
               onChange={e => setLocation(e.target.value)}
             />
             <textarea
               rows={2}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+              className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40 resize-none"
               placeholder="Beskrivning (valfritt)"
               value={description}
               onChange={e => setDescription(e.target.value)}
             />
             {/* Color */}
             <div>
-              <label className="text-xs text-gray-400 mb-2 block">Färg</label>
+              <label className="text-xs text-faint mb-2 block">Färg</label>
               <div className="flex gap-2 flex-wrap">
                 {COLORS.map(c => (
                   <button
                     key={c}
                     onClick={() => setColor(c)}
                     className="w-7 h-7 rounded-full border-2 transition-all"
-                    style={{ backgroundColor: c, borderColor: color === c ? '#1e293b' : 'transparent' }}
+                    style={{ backgroundColor: c, borderColor: color === c ? 'var(--gold)' : 'transparent' }}
                   />
                 ))}
               </div>
@@ -165,24 +167,25 @@ function EventModal({ initialDate, event, onSave, onDelete, onClose }: EventModa
         <div className="px-5 pb-5 flex gap-3">
           {event && !isView && onDelete && (
             <button onClick={() => onDelete(event.id)}
-              className="px-4 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-medium hover:bg-red-50">
+              className="px-4 py-2.5 rounded-xl border border-coral/40 text-coral text-sm font-medium hover:bg-coral/10">
               <Trash2 size={14} />
             </button>
           )}
           {!isView && (
             <>
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600">Avbryt</button>
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-sm font-medium text-mut hover:bg-white/5">Avbryt</button>
               <button
                 onClick={handleSave}
                 disabled={!title.trim()}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-40"
+                className="flex-1 py-2.5 rounded-xl text-[#2a1d08] text-sm font-semibold disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
               >
                 Spara
               </button>
             </>
           )}
           {isView && (
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gray-100 text-sm font-medium text-gray-700">Stäng</button>
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-soft text-sm font-medium text-ink">Stäng</button>
           )}
         </div>
       </div>
@@ -243,12 +246,12 @@ function SourceSettingsModal({ sources, onAdd, onUpdate, onDelete, onClose }: So
   const externalSources = sources.filter(s => s.id !== 'own');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
-          <h2 className="font-semibold text-gray-900">Kalenderkällor</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
-            <X size={16} className="text-gray-500" />
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-4">
+      <div className="vh-card w-full max-w-md max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line flex-shrink-0">
+          <h2 className="font-display text-ink">Kalenderkällor</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-mut hover:bg-white/5">
+            <X size={16} />
           </button>
         </div>
 
@@ -256,38 +259,39 @@ function SourceSettingsModal({ sources, onAdd, onUpdate, onDelete, onClose }: So
           {tab === 'list' && (
             <div className="p-5 space-y-3">
               {/* Own events source */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-center gap-3 p-3 bg-soft rounded-xl">
                 <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: OWN_SOURCE.color }} />
-                <span className="flex-1 text-sm font-medium text-gray-700">Egna events</span>
-                <span className="text-xs text-gray-400">Inbyggt</span>
+                <span className="flex-1 text-sm font-medium text-ink">Egna events</span>
+                <span className="text-xs text-faint">Inbyggt</span>
               </div>
 
               {externalSources.map(s => (
-                <div key={s.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                <div key={s.id} className="flex items-center gap-3 p-3 bg-soft rounded-xl">
                   <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-700 truncate">{s.name}</p>
-                    <p className="text-xs text-gray-400">{s.type === 'ics' ? 'iCal/ICS' : s.type}</p>
+                    <p className="text-sm font-medium text-ink truncate">{s.name}</p>
+                    <p className="text-xs text-faint">{s.type === 'ics' ? 'iCal/ICS' : s.type}</p>
                   </div>
                   <button
                     onClick={() => onUpdate({ ...s, enabled: !s.enabled })}
-                    className={`w-8 h-5 rounded-full transition-colors relative flex-shrink-0 ${s.enabled ? 'bg-indigo-500' : 'bg-gray-300'}`}
+                    className="w-8 h-5 rounded-full transition-colors relative flex-shrink-0"
+                    style={{ background: s.enabled ? 'var(--gold)' : 'rgba(244,241,234,.15)' }}
                   >
-                    <span className={`block w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all ${s.enabled ? 'left-4' : 'left-0.5'}`} />
+                    <span className={`block w-3.5 h-3.5 bg-bg rounded-full absolute top-0.5 transition-all ${s.enabled ? 'left-4' : 'left-0.5'}`} />
                   </button>
-                  <button onClick={() => onDelete(s.id)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 flex-shrink-0">
+                  <button onClick={() => onDelete(s.id)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-coral/10 text-faint hover:text-coral flex-shrink-0">
                     <Trash2 size={13} />
                   </button>
                 </div>
               ))}
 
               {externalSources.length === 0 && (
-                <p className="text-xs text-gray-400 text-center py-4">Inga externa kalendrar tillagda</p>
+                <p className="text-xs text-faint text-center py-4">Inga externa kalendrar tillagda</p>
               )}
 
               <button
                 onClick={() => setTab('add')}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-sm text-gray-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-line text-sm text-mut hover:border-gold/50 hover:text-gold transition-colors"
               >
                 <Plus size={16} />
                 Lägg till kalender
@@ -295,19 +299,19 @@ function SourceSettingsModal({ sources, onAdd, onUpdate, onDelete, onClose }: So
 
               {/* OAuth integrations (stubs) */}
               <div className="pt-2">
-                <p className="text-xs text-gray-400 font-medium mb-2">Kalenderintegrationer (kräver konfiguration)</p>
+                <p className="text-xs text-faint font-medium mb-2">Kalenderintegrationer (kräver konfiguration)</p>
                 {[
                   { label: 'Google Calendar', color: '#EA4335', note: 'Kräver Google OAuth-app i Firebase Console' },
                   { label: 'Microsoft Outlook/Teams', color: '#0078D4', note: 'Kräver Azure AD-app med Calendars.Read' },
                   { label: 'Apple iCloud', color: '#555555', note: 'Kräver app-lösenord från appleid.apple.com' },
                 ].map(({ label, color: c, note }) => (
-                  <div key={label} className="flex items-start gap-3 p-3 border border-gray-100 rounded-xl mb-2 opacity-60">
+                  <div key={label} className="flex items-start gap-3 p-3 border border-line rounded-xl mb-2 opacity-60">
                     <div className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5" style={{ backgroundColor: c }} />
                     <div>
-                      <p className="text-sm font-medium text-gray-700">{label}</p>
-                      <p className="text-[11px] text-gray-400">{note}</p>
+                      <p className="text-sm font-medium text-ink">{label}</p>
+                      <p className="text-[11px] text-faint">{note}</p>
                     </div>
-                    <span className="ml-auto text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full flex-shrink-0">Snart</span>
+                    <span className="ml-auto text-[10px] bg-soft text-faint px-2 py-0.5 rounded-full flex-shrink-0">Snart</span>
                   </div>
                 ))}
               </div>
@@ -316,22 +320,23 @@ function SourceSettingsModal({ sources, onAdd, onUpdate, onDelete, onClose }: So
 
           {tab === 'add' && (
             <div className="p-5 space-y-4">
-              <button onClick={() => setTab('list')} className="text-sm text-indigo-600 hover:underline flex items-center gap-1">
+              <button onClick={() => setTab('list')} className="text-sm text-gold hover:underline flex items-center gap-1">
                 ← Tillbaka
               </button>
 
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Typ</label>
+                <label className="text-xs text-mut mb-1 block">Typ</label>
                 <div className="flex gap-2">
                   <button onClick={() => setAddType('ics')}
-                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${addType === 'ics' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600'}`}>
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${addType === 'ics' ? 'text-[#2a1d08] border-transparent' : 'border-line text-mut'}`}
+                    style={addType === 'ics' ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
                     <Globe size={14} className="inline mr-1" />iCal/ICS URL
                   </button>
                 </div>
               </div>
 
               <input
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
                 placeholder="Namn *"
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -340,32 +345,33 @@ function SourceSettingsModal({ sources, onAdd, onUpdate, onDelete, onClose }: So
               {addType === 'ics' && (
                 <div>
                   <input
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full bg-soft border border-line rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
                     placeholder="iCal URL (webcal:// eller https://)"
                     value={icsUrl}
                     onChange={e => setIcsUrl(e.target.value.replace('webcal://', 'https://'))}
                   />
-                  <p className="text-[11px] text-gray-400 mt-1">Klistra in iCal-prenumerationslänk. Google Calendar → Inställningar → Exportera.</p>
+                  <p className="text-[11px] text-faint mt-1">Klistra in iCal-prenumerationslänk. Google Calendar → Inställningar → Exportera.</p>
                 </div>
               )}
 
               <div>
-                <label className="text-xs text-gray-400 mb-2 block">Färg</label>
+                <label className="text-xs text-faint mb-2 block">Färg</label>
                 <div className="flex gap-2 flex-wrap">
                   {COLORS.map(c => (
                     <button key={c} onClick={() => setColor(c)}
                       className="w-7 h-7 rounded-full border-2 transition-all"
-                      style={{ backgroundColor: c, borderColor: color === c ? '#1e293b' : 'transparent' }} />
+                      style={{ backgroundColor: c, borderColor: color === c ? 'var(--gold)' : 'transparent' }} />
                   ))}
                 </div>
               </div>
 
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && <p className="text-sm text-coral">{error}</p>}
 
               <button
                 onClick={handleAddICS}
                 disabled={!name.trim() || !icsUrl.trim() || loading}
-                className="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl text-[#2a1d08] text-sm font-semibold disabled:opacity-40 flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
               >
                 {loading ? <><Loader2 size={14} className="animate-spin" />Hämtar…</> : 'Lägg till'}
               </button>
@@ -499,15 +505,13 @@ export default function CalendarHome() {
   const allEvents = [...events, ...icsEvents];
 
   return (
-    <div className="min-h-full bg-gray-50">
+    <div className="min-h-full bg-bg text-ink">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-10">
+      <div className="bg-panel border-b border-line px-4 py-4 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
-              <CalendarDays size={16} className="text-indigo-600" />
-            </div>
-            <h1 className="text-lg font-bold text-gray-900">Kalender</h1>
+            <span className="vh-tile vh-tile--gold w-8 h-8"><ICalendar size={16} /></span>
+            <h1 className="font-display text-lg text-ink">Kalender</h1>
           </div>
           <div className="flex gap-2">
             {/* Source layer toggles */}
@@ -517,20 +521,21 @@ export default function CalendarHome() {
                   key={s.id}
                   onClick={() => handleUpdateSource({ ...s, enabled: !s.enabled })}
                   title={s.name}
-                  className={`w-5 h-5 rounded-full border-2 transition-all ${s.enabled ? 'border-transparent' : 'border-gray-300 opacity-40'}`}
-                  style={{ backgroundColor: s.enabled ? s.color : '#d1d5db' }}
+                  className={`w-5 h-5 rounded-full border-2 transition-all ${s.enabled ? 'border-transparent' : 'border-line opacity-40'}`}
+                  style={{ backgroundColor: s.enabled ? s.color : 'rgba(244,241,234,.15)' }}
                 />
               ))}
             </div>
             <button
               onClick={() => setShowSettings(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-mut hover:bg-white/5"
             >
-              <Settings size={16} className="text-gray-500" />
+              <Settings size={16} />
             </button>
             <button
               onClick={() => { setSelectedDate(null); setSelectedEvent(null); setShowEventModal(true); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#2a1d08] text-sm font-semibold"
+              style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
             >
               <Plus size={15} />
               Nytt
@@ -543,7 +548,7 @@ export default function CalendarHome() {
       <div className="max-w-2xl mx-auto px-4 py-4">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 size={24} className="animate-spin text-indigo-400" />
+            <Loader2 size={24} className="animate-spin text-gold" />
           </div>
         ) : (
           <CalendarView

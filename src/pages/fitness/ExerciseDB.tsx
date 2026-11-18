@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, X, ChevronLeft, ExternalLink, Star, Dumbbell, Filter,
+  Search, X, ChevronLeft, ExternalLink, Star, Filter,
 } from 'lucide-react';
+import { IDumbbell } from '../../components/ui/Icons';
 import { useStore } from '../../store/useStore';
 import {
   EXERCISES, filterExercises, CATEGORY_LABELS, EQUIPMENT_LABELS,
@@ -18,9 +19,9 @@ const CATEGORIES: Array<ExerciseCategory | 'all'> = [
 ];
 
 const DIFFICULTY_COLOR: Record<string, string> = {
-  beginner: 'text-emerald-600 bg-emerald-50',
-  intermediate: 'text-amber-600 bg-amber-50',
-  advanced: 'text-red-600 bg-red-50',
+  beginner: 'text-cyan bg-[rgba(95,224,208,.12)]',
+  intermediate: 'text-gold bg-[rgba(233,193,120,.12)]',
+  advanced: 'text-coral bg-[rgba(255,143,122,.12)]',
 };
 
 // ── Exercise Card ─────────────────────────────────────────────────────────────
@@ -44,20 +45,18 @@ function ExerciseCard({
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.18 }}
       onClick={() => onSelect(exercise)}
-      className="bg-white rounded-2xl border border-gray-100 p-4 cursor-pointer hover:border-gray-200 hover:shadow-sm transition-all active:scale-[0.99]"
+      className="vh-card p-4 cursor-pointer transition-all active:scale-[0.99]"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">
-          <Dumbbell size={16} className="text-gray-400" />
-        </div>
+        <span className="vh-tile vh-tile--gold w-10 h-10"><IDumbbell size={18} /></span>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div>
-              <p className="font-semibold text-sm text-gray-900 leading-tight">
+              <p className="font-semibold text-sm text-ink leading-tight">
                 {exercise.nameSv || exercise.name}
               </p>
               {exercise.nameSv && (
-                <p className="text-[11px] text-gray-400">{exercise.name}</p>
+                <p className="text-[11px] text-faint">{exercise.name}</p>
               )}
             </div>
             <button
@@ -66,16 +65,16 @@ function ExerciseCard({
             >
               <Star
                 size={14}
-                className={isFav ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}
+                className={isFav ? 'text-gold fill-[#e9c178]' : 'text-faint'}
               />
             </button>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-1.5">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-soft text-mut">
               {CATEGORY_LABELS[exercise.category]}
             </span>
             {exercise.equipment.slice(0, 2).map((eq) => (
-              <span key={eq} className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+              <span key={eq} className="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(155,140,255,.12)] text-violet">
                 {EQUIPMENT_LABELS[eq]}
               </span>
             ))}
@@ -83,13 +82,13 @@ function ExerciseCard({
               {DIFFICULTY_LABELS[exercise.difficulty]}
             </span>
             {exercise.isCompound && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[rgba(95,224,208,.12)] text-cyan">
                 Flerled
               </span>
             )}
           </div>
           {exercise.primaryMuscles.length > 0 && (
-            <p className="text-[11px] text-gray-400 mt-1.5">
+            <p className="text-[11px] text-faint mt-1.5">
               Primär: {exercise.primaryMuscles.map(m => MUSCLE_LABELS[m] || m).slice(0, 2).join(', ')}
             </p>
           )}
@@ -127,58 +126,58 @@ function DetailPanel({
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-      className="absolute inset-0 bg-gray-50 overflow-auto z-10"
+      className="absolute inset-0 bg-bg overflow-auto z-10"
     >
       {/* Header */}
-      <div className="sticky top-0 bg-white/90 backdrop-blur border-b border-gray-100 px-5 py-4 flex items-center gap-3 z-10">
+      <div className="sticky top-0 bg-panel/90 backdrop-blur border-b border-line px-5 py-4 flex items-center gap-3 z-10">
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
+          className="w-8 h-8 rounded-full bg-soft flex items-center justify-center"
         >
-          <ChevronLeft size={16} className="text-gray-600" />
+          <ChevronLeft size={16} className="text-mut" />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm text-gray-900 truncate">
+          <p className="font-bold text-sm text-ink truncate">
             {exercise.nameSv || exercise.name}
           </p>
           {exercise.nameSv && (
-            <p className="text-[11px] text-gray-400 truncate">{exercise.name}</p>
+            <p className="text-[11px] text-faint truncate">{exercise.name}</p>
           )}
         </div>
         <button onClick={() => onToggleFav(exercise.id)} className="p-1.5">
           <Star
             size={16}
-            className={isFav ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}
+            className={isFav ? 'text-gold fill-[#e9c178]' : 'text-faint'}
           />
         </button>
       </div>
 
       <div className="p-5 space-y-4">
         {/* Muscle Map */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <p className="text-xs font-semibold text-gray-500 mb-3">Muskelaktivering</p>
+        <div className="vh-card p-4">
+          <p className="text-xs font-semibold text-mut mb-3">Muskelaktivering</p>
           <MuscleMap mode="exercise" exerciseId={exercise.id} compact />
           <div className="mt-3 space-y-1.5">
             {exercise.primaryMuscles.length > 0 && (
               <div className="flex gap-2 items-start">
-                <span className="text-[10px] font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">Primär</span>
-                <span className="text-xs text-gray-600">
+                <span className="text-[10px] font-medium text-coral bg-[rgba(255,143,122,.12)] px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">Primär</span>
+                <span className="text-xs text-mut">
                   {exercise.primaryMuscles.map(m => MUSCLE_LABELS[m] || m).join(', ')}
                 </span>
               </div>
             )}
             {exercise.secondaryMuscles.length > 0 && (
               <div className="flex gap-2 items-start">
-                <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">Sekundär</span>
-                <span className="text-xs text-gray-600">
+                <span className="text-[10px] font-medium text-violet bg-[rgba(155,140,255,.12)] px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">Sekundär</span>
+                <span className="text-xs text-mut">
                   {exercise.secondaryMuscles.map(m => MUSCLE_LABELS[m] || m).join(', ')}
                 </span>
               </div>
             )}
             {exercise.stabilizers.length > 0 && (
               <div className="flex gap-2 items-start">
-                <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">Stab.</span>
-                <span className="text-xs text-gray-500">
+                <span className="text-[10px] font-medium text-mut bg-soft px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5">Stab.</span>
+                <span className="text-xs text-faint">
                   {exercise.stabilizers.map(m => MUSCLE_LABELS[m] || m).join(', ')}
                 </span>
               </div>
@@ -189,32 +188,32 @@ function DetailPanel({
         {/* Meta chips */}
         <div className="flex flex-wrap gap-2">
           {exercise.equipment.map(eq => (
-            <span key={eq} className="text-xs px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-medium">
+            <span key={eq} className="text-xs px-3 py-1 rounded-full bg-[rgba(155,140,255,.12)] text-violet font-medium">
               {EQUIPMENT_LABELS[eq]}
             </span>
           ))}
           <span className={`text-xs px-3 py-1 rounded-full font-medium ${DIFFICULTY_COLOR[exercise.difficulty]}`}>
             {DIFFICULTY_LABELS[exercise.difficulty]}
           </span>
-          <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+          <span className="text-xs px-3 py-1 rounded-full bg-soft text-mut">
             {exercise.isCompound ? 'Flerledsövning' : 'Isolationsövning'}
           </span>
-          <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+          <span className="text-xs px-3 py-1 rounded-full bg-soft text-mut tnum">
             {exercise.defaultRepRange[0]}–{exercise.defaultRepRange[1]} reps
           </span>
-          <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+          <span className="text-xs px-3 py-1 rounded-full bg-soft text-mut tnum">
             Vila {exercise.defaultRestSeconds}s
           </span>
         </div>
 
         {/* Instructions */}
         {instructionsSv.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-4">
-            <p className="text-xs font-semibold text-gray-500 mb-3">Instruktioner</p>
+          <div className="vh-card p-4">
+            <p className="text-xs font-semibold text-mut mb-3">Instruktioner</p>
             <ol className="space-y-2">
               {instructionsSv.map((step, i) => (
-                <li key={i} className="flex gap-3 text-sm text-gray-700">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                <li key={i} className="flex gap-3 text-sm text-ink">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[rgba(233,193,120,.15)] text-gold text-[11px] font-bold flex items-center justify-center mt-0.5 tnum">
                     {i + 1}
                   </span>
                   {step}
@@ -227,7 +226,7 @@ function DetailPanel({
         {/* YouTube */}
         <button
           onClick={handleYouTube}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[rgba(255,143,122,.12)] text-coral font-semibold text-sm hover:bg-[rgba(255,143,122,.18)] transition-colors"
         >
           <ExternalLink size={15} />
           Se teknikvideo på YouTube
@@ -282,39 +281,39 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
   const visible = filtered.slice(0, displayCount);
 
   return (
-    <div className="relative h-full flex flex-col overflow-hidden">
+    <div className="relative h-full flex flex-col overflow-hidden bg-bg text-ink">
       {/* Header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
+      <div className="flex-shrink-0 bg-panel border-b border-line px-4 pt-4 pb-3">
         <div className="flex items-center gap-3 mb-1">
           <button
             onClick={() => onBack ? onBack() : setFitnessPage('home')}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
+            className="w-8 h-8 rounded-full bg-soft flex items-center justify-center"
           >
-            <ChevronLeft size={16} className="text-gray-600" />
+            <ChevronLeft size={16} className="text-mut" />
           </button>
-          <h1 className="text-lg font-bold text-gray-900">Övningsdatabas</h1>
+          <h1 className="font-display text-lg text-ink">Övningsdatabas</h1>
         </div>
-        <p className="text-xs text-gray-400 ml-11 mb-3">
+        <p className="text-xs text-faint ml-11 mb-3 tnum">
           {EXERCISES.length} övningar · {filtered.length} visas
         </p>
 
         {/* Search */}
         <div className="flex gap-2">
           <div className="flex-1 relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
             <input
               type="text"
               placeholder="Sök övning..."
               value={query}
               onChange={(e) => { setQuery(e.target.value); setDisplayCount(30); }}
-              className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-gray-50 text-sm placeholder-gray-400 border border-gray-100 focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-200"
+              className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-soft text-ink text-sm placeholder-faint border border-line focus:outline-none focus:border-[rgba(233,193,120,.5)] focus:ring-1 focus:ring-[rgba(233,193,120,.3)]"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2"
               >
-                <X size={14} className="text-gray-400" />
+                <X size={14} className="text-faint" />
               </button>
             )}
           </div>
@@ -322,14 +321,16 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
             onClick={() => setShowFilter((v) => !v)}
             className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors flex items-center gap-1.5 ${
               showFilter || selectedEquipment.length > 0
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                : 'bg-gray-50 border-gray-100 text-gray-600'
+                ? 'border-[rgba(233,193,120,.3)] text-gold'
+                : 'bg-soft border-line text-mut'
             }`}
+            style={showFilter || selectedEquipment.length > 0 ? { background: 'rgba(233,193,120,.12)' } : undefined}
           >
             <Filter size={14} />
             Filter
             {selectedEquipment.length > 0 && (
-              <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center font-bold">
+              <span className="w-4 h-4 rounded-full text-[#2a1d08] text-[9px] flex items-center justify-center font-bold tnum"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
                 {selectedEquipment.length}
               </span>
             )}
@@ -347,7 +348,7 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
               className="overflow-hidden"
             >
               <div className="pt-3">
-                <p className="text-[11px] font-semibold text-gray-400 mb-2">Utrustning</p>
+                <p className="text-[11px] font-semibold text-faint mb-2">Utrustning</p>
                 <div className="flex flex-wrap gap-2">
                   {(['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'kettlebell'] as ExerciseEquipment[]).map((eq) => {
                     const active = selectedEquipment.includes(eq);
@@ -361,9 +362,10 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
                         }
                         className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                           active
-                            ? 'bg-emerald-600 text-white border-emerald-600'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300'
+                            ? 'text-[#2a1d08] border-transparent font-semibold'
+                            : 'bg-card text-mut border-line hover:border-[rgba(233,193,120,.4)]'
                         }`}
+                        style={active ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
                       >
                         {EQUIPMENT_LABELS[eq]}
                       </button>
@@ -383,9 +385,10 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
               onClick={() => { setActiveCategory(cat); setDisplayCount(30); }}
               className={`flex-shrink-0 text-xs px-3.5 py-1.5 rounded-full font-medium transition-colors ${
                 activeCategory === cat
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'text-[#2a1d08]'
+                  : 'bg-soft text-mut hover:bg-card'
               }`}
+              style={activeCategory === cat ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
             >
               {CATEGORY_LABELS[cat]}
             </button>
@@ -409,14 +412,14 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
 
         {filtered.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-gray-400 text-sm">Inga övningar hittades</p>
+            <p className="text-faint text-sm">Inga övningar hittades</p>
           </div>
         )}
 
         {filtered.length > displayCount && (
           <button
             onClick={() => setDisplayCount((n) => n + 30)}
-            className="w-full py-3 rounded-2xl bg-white border border-gray-100 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+            className="w-full py-3 rounded-2xl bg-card border border-line text-sm text-mut hover:bg-soft transition-colors tnum"
           >
             Ladda fler... ({filtered.length - displayCount} kvar)
           </button>

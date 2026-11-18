@@ -79,12 +79,12 @@ function MonthView({ events, sources, year, month, today, onDayClick, onEventCli
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 mb-1">
         {SV_DAYS_SHORT.map(d => (
-          <div key={d} className="text-center text-[11px] font-semibold text-gray-400 py-1">{d}</div>
+          <div key={d} className="text-center text-[11px] font-semibold text-faint py-1">{d}</div>
         ))}
       </div>
 
       {/* Cells */}
-      <div className="grid grid-cols-7 gap-px bg-gray-100 rounded-xl overflow-hidden border border-gray-100">
+      <div className="grid grid-cols-7 gap-px bg-line rounded-xl overflow-hidden border border-line">
         {cells.map((d, i) => {
           const ds = isoDate(d);
           const isCurrentMonth = d.getMonth() === month;
@@ -95,10 +95,11 @@ function MonthView({ events, sources, year, month, today, onDayClick, onEventCli
             <div
               key={i}
               onClick={() => onDayClick(ds)}
-              className={`bg-white min-h-[72px] p-1 cursor-pointer hover:bg-gray-50 transition-colors ${!isCurrentMonth ? 'opacity-40' : ''}`}
+              className={`bg-card min-h-[72px] p-1 cursor-pointer hover:bg-white/5 transition-colors ${!isCurrentMonth ? 'opacity-40' : ''}`}
             >
-              <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-medium mb-1 mx-auto
-                ${isToday ? 'bg-indigo-600 text-white' : 'text-gray-700'}`}>
+              <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-medium mb-1 mx-auto tabular-nums
+                ${isToday ? 'text-[#2a1d08]' : 'text-mut'}`}
+                style={isToday ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
                 {d.getDate()}
               </div>
               <div className="space-y-0.5">
@@ -107,14 +108,14 @@ function MonthView({ events, sources, year, month, today, onDayClick, onEventCli
                     key={e.id}
                     onClick={ev => { ev.stopPropagation(); onEventClick(e); }}
                     title={e.title}
-                    className="text-[10px] leading-tight px-1 py-0.5 rounded font-medium truncate text-white cursor-pointer hover:opacity-80"
-                    style={{ backgroundColor: sourceColor(e) }}
+                    className="text-[10px] leading-tight px-1 py-0.5 rounded font-medium truncate cursor-pointer hover:opacity-80"
+                    style={{ backgroundColor: sourceColor(e) + '26', color: sourceColor(e) }}
                   >
                     {e.allDay ? '' : formatTime(e.start) + ' '}{e.title}
                   </div>
                 ))}
                 {visibleEvents.filter(e => sameDay(e.start, ds)).length > 3 && (
-                  <div className="text-[9px] text-gray-400 px-1">
+                  <div className="text-[9px] text-faint px-1">
                     +{visibleEvents.filter(e => sameDay(e.start, ds)).length - 3} till
                   </div>
                 )}
@@ -158,8 +159,8 @@ function AgendaView({ events, sources, onEventClick }: {
   if (upcoming.length === 0) {
     return (
       <div className="text-center py-16">
-        <Calendar size={32} className="mx-auto mb-3 text-gray-300" />
-        <p className="text-gray-400 text-sm">Inga kommande events</p>
+        <Calendar size={32} className="mx-auto mb-3 text-faint" />
+        <p className="text-mut text-sm">Inga kommande events</p>
       </div>
     );
   }
@@ -168,28 +169,28 @@ function AgendaView({ events, sources, onEventClick }: {
     <div className="space-y-4">
       {Object.entries(grouped).map(([dateStr, dayEvents]) => (
         <div key={dateStr}>
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 capitalize">
+          <h3 className="text-xs font-semibold text-faint uppercase tracking-wide mb-2 capitalize">
             {formatDate(dateStr)}
           </h3>
-          <div className="bg-white rounded-2xl divide-y divide-gray-50 overflow-hidden shadow-sm">
+          <div className="vh-card divide-y divide-line overflow-hidden">
             {dayEvents.map(e => (
               <button
                 key={e.id}
                 onClick={() => onEventClick(e)}
-                className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 text-left transition-colors"
+                className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/5 text-left transition-colors"
               >
                 <div
                   className="w-1 self-stretch rounded-full flex-shrink-0 mt-0.5"
                   style={{ backgroundColor: sourceColor(e), minHeight: '16px' }}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{e.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-sm font-medium text-ink truncate">{e.title}</p>
+                  <p className="text-xs text-faint mt-0.5">
                     {e.allDay ? 'Heldag' : `${formatTime(e.start)} – ${formatTime(e.end)}`}
                     {e.location ? ` · ${e.location}` : ''}
                   </p>
                   {e.description && (
-                    <p className="text-xs text-gray-400 mt-0.5 truncate">{e.description}</p>
+                    <p className="text-xs text-faint mt-0.5 truncate">{e.description}</p>
                   )}
                 </div>
               </button>
@@ -223,34 +224,36 @@ export default function CalendarView({ events, sources, onDayClick, onEventClick
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
-            <ChevronLeft size={16} className="text-gray-600" />
+          <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg text-mut hover:bg-white/5">
+            <ChevronLeft size={16} />
           </button>
-          <h2 className="text-base font-bold text-gray-900 min-w-[160px] text-center">
+          <h2 className="font-display text-base text-ink min-w-[160px] text-center">
             {SV_MONTHS[month]} {year}
           </h2>
-          <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
-            <ChevronRight size={16} className="text-gray-600" />
+          <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg text-mut hover:bg-white/5">
+            <ChevronRight size={16} />
           </button>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => { setYear(new Date().getFullYear()); setMonth(new Date().getMonth()); }}
-            className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+            className="text-xs px-3 py-1.5 rounded-lg border border-line text-mut hover:bg-white/5"
           >
             Idag
           </button>
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="flex rounded-lg border border-line overflow-hidden">
             <button
               onClick={() => setView('month')}
-              className={`px-2.5 py-1.5 ${view === 'month' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`px-2.5 py-1.5 ${view === 'month' ? 'text-[#2a1d08]' : 'bg-card text-mut hover:bg-white/5'}`}
+              style={view === 'month' ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
             >
               <Calendar size={14} />
             </button>
             <button
               onClick={() => setView('agenda')}
-              className={`px-2.5 py-1.5 ${view === 'agenda' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`px-2.5 py-1.5 ${view === 'agenda' ? 'text-[#2a1d08]' : 'bg-card text-mut hover:bg-white/5'}`}
+              style={view === 'agenda' ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
             >
               <List size={14} />
             </button>

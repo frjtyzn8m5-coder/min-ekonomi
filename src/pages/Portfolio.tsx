@@ -17,9 +17,9 @@ import type { TickerMapping, PriceData, PortfolioSnapshot } from '../types';
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const CHART_COLORS = [
-  '#007aff', '#34c759', '#ff9f0a', '#ff375f', '#bf5af2',
-  '#5e5ce6', '#64d2ff', '#ff6b35', '#30d158', '#ffd60a',
-  '#ff6961', '#0071e3', '#a2845e',
+  '#e9c178', '#5fe0d0', '#9b8cff', '#ff8f7a', '#bfe26a',
+  '#f4d79a', '#34c3b2', '#7b67f0', '#f06a52', '#9ec23e',
+  '#cf9a3f', '#c3b8ff', '#9bf0e4',
 ];
 
 const PRICE_TTL_MS = 4 * 60 * 60 * 1000; // 4h
@@ -80,20 +80,20 @@ function ClassManager({ assetClasses, onSetClasses }: { assetClasses: string[]; 
   const add = () => { const v = newCls.trim(); if (!v || assetClasses.includes(v)) return; onSetClasses([...assetClasses, v]); setNewCls(''); };
   const remove = (cls: string) => onSetClasses(assetClasses.filter(c => c !== cls));
   return (
-    <div className="mt-3 p-3 bg-gray-50 rounded-xl space-y-2">
+    <div className="mt-3 p-3 bg-soft rounded-xl space-y-2">
       <div className="flex flex-wrap gap-1.5">
         {assetClasses.map(cls => (
-          <span key={cls} className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2.5 py-0.5 text-xs text-gray-700">
+          <span key={cls} className="flex items-center gap-1 bg-card border border-line rounded-full px-2.5 py-0.5 text-xs text-mut">
             {cls}
-            <button onClick={() => remove(cls)} className="text-gray-300 hover:text-red-400 ml-0.5"><X size={9} /></button>
+            <button onClick={() => remove(cls)} className="text-faint hover:text-coral ml-0.5"><X size={9} /></button>
           </span>
         ))}
       </div>
       <div className="flex gap-2">
         <input value={newCls} onChange={e => setNewCls(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()}
           placeholder="Ny klass, t.ex. Ädelmetaller…"
-          className="flex-1 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-300" />
-        <button onClick={add} className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-500 text-white rounded-lg text-xs hover:bg-blue-600">
+          className="flex-1 text-xs bg-card text-ink border border-line rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-gold/50" />
+        <button onClick={add} className="flex items-center gap-1 px-2.5 py-1.5 text-[#2a1d08] rounded-lg text-xs" style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
           <Plus size={11} /> Lägg till
         </button>
       </div>
@@ -107,7 +107,7 @@ function ClassBreakdown({ enriched, assetClasses, selectedClass, onSelect }: {
   enriched: any[]; assetClasses: string[]; selectedClass: string | null; onSelect: (c: string | null) => void;
 }) {
   const totalSEK = enriched.reduce((s, h) => s + h.valueSEK, 0);
-  if (totalSEK === 0) return <p className="text-xs text-gray-400 text-center py-2">Uppdatera kurser för att se fördelning.</p>;
+  if (totalSEK === 0) return <p className="text-xs text-faint text-center py-2">Uppdatera kurser för att se fördelning.</p>;
 
   const bars: { name: string; value: number; pct: number }[] = [];
   for (const cls of assetClasses) {
@@ -122,19 +122,20 @@ function ClassBreakdown({ enriched, assetClasses, selectedClass, onSelect }: {
     <div className="space-y-1.5">
       {bars.map((bar, i) => (
         <button key={bar.name} onClick={() => onSelect(selectedClass === bar.name ? null : bar.name)}
-          className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors ${selectedClass === bar.name ? 'bg-blue-50 ring-1 ring-blue-200' : 'hover:bg-gray-50'}`}>
+          className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors ${selectedClass === bar.name ? '' : 'hover:bg-soft'}`}
+          style={selectedClass === bar.name ? { background: 'rgba(233,193,120,.12)', boxShadow: 'inset 0 0 0 1px rgba(233,193,120,.4)' } : undefined}>
           <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-          <span className="text-xs font-medium text-gray-700 w-32 flex-shrink-0 truncate">{bar.name}</span>
-          <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+          <span className="text-xs font-medium text-mut w-32 flex-shrink-0 truncate">{bar.name}</span>
+          <div className="flex-1 bg-soft rounded-full h-1.5">
             <div className="h-1.5 rounded-full transition-all" style={{ width: `${bar.pct}%`, background: CHART_COLORS[i % CHART_COLORS.length] }} />
           </div>
-          <span className="text-xs text-gray-500 flex-shrink-0 text-right w-36">
-            {formatSEK(bar.value)} <span className="text-gray-400">({bar.pct.toFixed(1)}%)</span>
+          <span className="text-xs text-mut flex-shrink-0 text-right w-36">
+            {formatSEK(bar.value)} <span className="text-faint">({bar.pct.toFixed(1)}%)</span>
           </span>
         </button>
       ))}
       {selectedClass && (
-        <button onClick={() => onSelect(null)} className="text-xs text-blue-500 hover:text-blue-700 pt-1 pl-2">
+        <button onClick={() => onSelect(null)} className="text-xs text-gold hover:text-gold-2 pt-1 pl-2">
           Visa alla innehav
         </button>
       )}
@@ -637,15 +638,15 @@ export default function Portfolio() {
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (!holdings.length) return (
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="text-center space-y-2">
-        <p className="text-gray-500 text-sm">Inga innehav ännu.</p>
-        <p className="text-gray-400 text-xs">Ladda upp en Avanza-fil under <strong>Importera</strong> för att komma igång.</p>
+        <p className="text-mut text-sm">Inga innehav ännu.</p>
+        <p className="text-faint text-xs">Ladda upp en Avanza-fil under <strong className="text-mut">Importera</strong> för att komma igång.</p>
       </div>
     </div>
   );
@@ -658,18 +659,18 @@ export default function Portfolio() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-gray-900">Portfölj</h1>
+            <h1 className="font-display text-2xl text-ink">Portfölj</h1>
             {priceAgeMinutes !== null && (
-              <p className="text-[11px] text-gray-400">Kurser uppdaterade för {priceAgeMinutes} min sedan</p>
+              <p className="text-[11px] text-faint">Kurser uppdaterade för {priceAgeMinutes} min sedan</p>
             )}
             {searchStatus === 'searching' && (
-              <p className="text-[11px] text-blue-400 flex items-center gap-1">
-                <span className="w-2.5 h-2.5 border border-blue-400 border-t-transparent rounded-full animate-spin" />
+              <p className="text-[11px] text-gold flex items-center gap-1">
+                <span className="w-2.5 h-2.5 border border-gold border-t-transparent rounded-full animate-spin" />
                 Söker tickers…
               </p>
             )}
             {searchStatus === 'done' && remapCount !== null && (
-              <p className="text-[11px] text-green-600">{remapCount} ticker{remapCount !== 1 ? 's' : ''} uppdaterade</p>
+              <p className="text-[11px] text-cyan">{remapCount} ticker{remapCount !== 1 ? 's' : ''} uppdaterade</p>
             )}
           </div>
 
@@ -678,14 +679,16 @@ export default function Portfolio() {
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
               <button
                 onClick={() => setSelectedAccounts([])}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${selectedAccounts.length === 0 ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${selectedAccounts.length === 0 ? 'text-[#2a1d08]' : 'bg-soft text-mut hover:bg-card'}`}
+                style={selectedAccounts.length === 0 ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
                 Alla
               </button>
               {allAccounts.map(acc => (
                 <div key={acc} className="flex items-center group">
                   <button
                     onClick={() => toggleAccount(acc)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${selectedAccounts.includes(acc) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${selectedAccounts.includes(acc) ? 'text-[#2a1d08]' : 'bg-soft text-mut hover:bg-card'}`}
+                    style={selectedAccounts.includes(acc) ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
                     {accountNames[acc] || acc}
                   </button>
                   {/* Rename inline */}
@@ -693,13 +696,13 @@ export default function Portfolio() {
                     <div className="flex items-center gap-1 ml-1">
                       <input autoFocus value={editAccountValue} onChange={e => setEditAccountValue(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') saveAccountName(acc); if (e.key === 'Escape') setEditingAccount(null); }}
-                        className="w-24 text-xs border border-blue-300 rounded px-1.5 py-0.5 outline-none" />
-                      <button onClick={() => saveAccountName(acc)} className="text-green-500"><Check size={11} /></button>
-                      <button onClick={() => setEditingAccount(null)} className="text-gray-400"><X size={11} /></button>
+                        className="w-24 text-xs bg-soft text-ink rounded px-1.5 py-0.5 outline-none border" style={{ borderColor: 'rgba(233,193,120,.5)' }} />
+                      <button onClick={() => saveAccountName(acc)} className="text-cyan"><Check size={11} /></button>
+                      <button onClick={() => setEditingAccount(null)} className="text-faint"><X size={11} /></button>
                     </div>
                   ) : (
                     <button onClick={() => { setEditingAccount(acc); setEditAccountValue(accountNames[acc] || acc); }}
-                      className="ml-0.5 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity">
+                      className="ml-0.5 opacity-0 group-hover:opacity-100 text-faint hover:text-mut transition-opacity">
                       <Pencil size={10} />
                     </button>
                   )}
@@ -714,15 +717,16 @@ export default function Portfolio() {
             onClick={remapAllTickers}
             disabled={refreshing || searchStatus === 'searching'}
             title="Söker om alla automatiska tickers via Morningstar och Yahoo"
-            className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 disabled:opacity-40 transition-all">
+            className="flex items-center gap-1.5 px-3 py-2 bg-soft text-mut border border-line rounded-lg text-sm hover:bg-card disabled:opacity-40 transition-all">
             {searchStatus === 'searching'
-              ? <><span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" /> Söker…</>
+              ? <><span className="w-3 h-3 border border-mut border-t-transparent rounded-full animate-spin" /> Söker…</>
               : 'Återsök tickers'}
           </button>
           <button
             onClick={() => refreshPrices()}
             disabled={refreshing || !tickerMappings.length}
-            className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-40 transition-all">
+            className="flex items-center gap-1.5 px-3 py-2 text-[#2a1d08] rounded-lg text-sm disabled:opacity-40 transition-all"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
             <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
             Uppdatera kurser
           </button>
@@ -730,7 +734,7 @@ export default function Portfolio() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-coral" style={{ background: 'rgba(255,143,122,.12)', border: '1px solid rgba(255,143,122,.3)' }}>
           <AlertCircle size={14} /> {error}
         </div>
       )}
@@ -739,9 +743,9 @@ export default function Portfolio() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
         {/* Value card */}
         <Card className="p-4 lg:col-span-2">
-          <p className="text-xs text-gray-400 mb-1">Totalt värde {selectedAccounts.length > 0 ? `· ${selectedAccounts.map(a => accountNames[a] || a).join(', ')}` : ''}</p>
-          <p className="text-2xl font-bold text-gray-900">{formatSEK(totalValueSEK)}</p>
-          <p className={`text-xs mt-1 font-medium ${totalGainSEK >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+          <p className="text-xs text-faint mb-1">Totalt värde {selectedAccounts.length > 0 ? `· ${selectedAccounts.map(a => accountNames[a] || a).join(', ')}` : ''}</p>
+          <p className="font-display tabular-nums text-2xl text-ink">{formatSEK(totalValueSEK)}</p>
+          <p className={`text-xs mt-1 font-medium ${totalGainSEK >= 0 ? 'text-cyan' : 'text-coral'}`}>
             {totalGainSEK >= 0 ? <TrendingUp size={11} className="inline mr-0.5" /> : <TrendingDown size={11} className="inline mr-0.5" />}
             {formatSEK(totalGainSEK)} ({formatPct(totalGainPct)}) vs inköpspris
           </p>
@@ -751,8 +755,8 @@ export default function Portfolio() {
                 const accVal = enriched.filter(h => h.account === acc).reduce((s, h) => s + h.valueSEK, 0);
                 return accVal > 0 ? (
                   <div key={acc} className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">{accountNames[acc] || acc}</span>
-                    <span className="font-medium text-gray-700">{formatSEK(accVal)}</span>
+                    <span className="text-mut">{accountNames[acc] || acc}</span>
+                    <span className="font-medium text-ink tabular-nums">{formatSEK(accVal)}</span>
                   </div>
                 ) : null;
               })}
@@ -762,16 +766,16 @@ export default function Portfolio() {
 
         {/* Pie chart */}
         <Card className="p-4 lg:col-span-3">
-          <p className="text-xs text-gray-400 mb-2">Fördelning per innehav (top {PIE_MAX_SLICES})</p>
+          <p className="text-xs text-faint mb-2">Fördelning per innehav (top {PIE_MAX_SLICES})</p>
           {pieData.length > 0 ? (
             <div className="flex gap-4 items-center">
               <div className="flex-shrink-0" style={{ width: 140, height: 140 }}>
                 <ResponsiveContainer width={140} height={140}>
                   <PieChart>
-                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={38} outerRadius={60} paddingAngle={2}>
+                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={38} outerRadius={60} paddingAngle={2} stroke="#15151b">
                       {pieData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => formatSEK(v)} />
+                    <Tooltip formatter={(v: number) => formatSEK(v)} contentStyle={{ background: '#15151b', border: '1px solid rgba(244,241,234,.09)', color: '#f4f1ea', borderRadius: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -779,14 +783,14 @@ export default function Portfolio() {
                 {pieData.map((item, i) => (
                   <div key={item.name} className="flex items-center gap-2 text-xs">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                    <span className="text-gray-600 truncate flex-1">{item.name}</span>
-                    <span className="text-gray-400 flex-shrink-0">{((item.value / (aggregatedEnriched.reduce((s: number, h: any) => s + h.valueSEK, 0))) * 100).toFixed(1)}%</span>
+                    <span className="text-mut truncate flex-1">{item.name}</span>
+                    <span className="text-faint flex-shrink-0">{((item.value / (aggregatedEnriched.reduce((s: number, h: any) => s + h.valueSEK, 0))) * 100).toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <p className="text-xs text-gray-400 py-8 text-center">Uppdatera kurser för att se fördelning</p>
+            <p className="text-xs text-faint py-8 text-center">Uppdatera kurser för att se fördelning</p>
           )}
         </Card>
       </div>
@@ -794,8 +798,8 @@ export default function Portfolio() {
       {/* ── Asset class breakdown ─────────────────────────────────────────── */}
       <Card className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-900">Tillgångsklasser</h2>
-          <button onClick={() => setShowClassManager(v => !v)} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+          <h2 className="font-display text-sm text-ink">Tillgångsklasser</h2>
+          <button onClick={() => setShowClassManager(v => !v)} className="flex items-center gap-1 text-xs text-faint hover:text-mut">
             <Settings2 size={12} /> {showClassManager ? 'Stäng' : 'Hantera klasser'}
           </button>
         </div>
@@ -804,7 +808,7 @@ export default function Portfolio() {
           <ClassBreakdown enriched={enrichedForClass} assetClasses={assetClasses} selectedClass={selectedClass} onSelect={setSelectedClass} />
         </div>
         {totalValueSEK > 0 && enrichedForClass.some(h => !h.assetClass) && (
-          <p className="text-[11px] text-orange-500 mt-2 flex items-center gap-1">
+          <p className="text-[11px] text-gold mt-2 flex items-center gap-1">
             <AlertCircle size={10} />
             {enrichedForClass.filter(h => !h.assetClass).length} innehav saknar tillgångsklass — välj i tabellen nedan.
           </p>
@@ -813,11 +817,11 @@ export default function Portfolio() {
 
       {/* ── Holdings table ───────────────────────────────────────────────── */}
       <Card className="overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">
+        <div className="px-4 py-3 border-b border-line flex items-center justify-between">
+          <h2 className="font-display text-sm text-ink">
             Innehav
             {(selectedClass || selectedAccounts.length > 0) && (
-              <span className="ml-2 text-xs font-normal text-blue-500">
+              <span className="ml-2 text-xs font-normal text-gold">
                 {[selectedAccounts.length > 0 && selectedAccounts.map(a => accountNames[a] || a).join(', '), selectedClass].filter(Boolean).join(' · ')}
                 {' '}· {filteredEnriched.length} st
               </span>
@@ -827,12 +831,12 @@ export default function Portfolio() {
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-[11px] text-gray-400 border-b border-gray-100">
+              <tr className="text-[11px] text-faint border-b border-line">
                 {(() => {
                   const th = (key: typeof sortKey | null, label: string, align: 'left' | 'right' = 'right') => {
                     const active = key === sortKey;
                     const arrow = active ? (sortDir === 'desc' ? ' ↓' : ' ↑') : '';
-                    const cls = `px-3 py-2 ${align === 'right' ? 'text-right' : 'text-left'} ${key ? 'cursor-pointer select-none hover:text-gray-600' : ''} ${active ? 'text-blue-500' : ''}`;
+                    const cls = `px-3 py-2 ${align === 'right' ? 'text-right' : 'text-left'} ${key ? 'cursor-pointer select-none hover:text-mut' : ''} ${active ? 'text-gold' : ''}`;
                     const onClick = key ? () => { if (active) setSortDir(d => d === 'desc' ? 'asc' : 'desc'); else { setSortKey(key); setSortDir('desc'); } } : undefined;
                     return <th key={label} className={cls} onClick={onClick}>{label}{arrow}</th>;
                   };
@@ -854,20 +858,20 @@ export default function Portfolio() {
               {filteredEnriched.map(h => {
                 const rowKey = selectedAccounts.length === 0 ? h.isin : `${h.isin}::${h.account}`;
                 return (
-                  <tr key={rowKey} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <tr key={rowKey} className="border-b border-line hover:bg-soft transition-colors">
                     {/* Name */}
                     <td className="px-4 py-2.5">
-                      <p className="font-medium text-gray-900 text-[12px]">{h.name}</p>
-                      <p className="text-gray-400 text-[10px]">
+                      <p className="font-medium text-ink text-[12px]">{h.name}</p>
+                      <p className="text-faint text-[10px]">
                         {h.isin}
-                        {h.category && <span className="ml-1.5 text-gray-300">· {h.category}</span>}
+                        {h.category && <span className="ml-1.5 text-faint">· {h.category}</span>}
                       </p>
                     </td>
 
                     {/* Account (only shown when a specific account filter is active) */}
                     {allAccounts.length > 1 && selectedAccounts.length > 0 && (
                       <td className="px-3 py-2.5">
-                        <span className="text-[11px] text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
+                        <span className="text-[11px] text-mut bg-soft rounded-full px-2 py-0.5">
                           {accountNames[h.account] || h.account}
                         </span>
                       </td>
@@ -876,7 +880,7 @@ export default function Portfolio() {
                     {/* Asset class */}
                     <td className="px-3 py-2.5">
                       <select value={h.assetClass} onChange={e => handleSetAssetClass(h.isin, e.target.value)}
-                        className="text-[11px] border border-gray-200 rounded-lg px-1.5 py-0.5 text-gray-600 bg-white focus:outline-none focus:border-blue-300 max-w-[110px]">
+                        className="text-[11px] border border-line rounded-lg px-1.5 py-0.5 text-mut bg-soft focus:outline-none focus:border-gold/50 max-w-[110px]">
                         <option value="">–</option>
                         {assetClasses.map(cls => <option key={cls} value={cls}>{cls}</option>)}
                       </select>
@@ -889,37 +893,37 @@ export default function Portfolio() {
                           <input value={editValue} onChange={e => setEditValue(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && saveTicker(h.isin)}
                             placeholder="t.ex. AFRY.ST"
-                            className="w-28 border border-blue-300 rounded px-1.5 py-0.5 text-xs outline-none" autoFocus />
-                          <button onClick={() => saveTicker(h.isin)} className="text-green-500"><Check size={12} /></button>
-                          <button onClick={() => setEditTicker(null)} className="text-gray-300"><X size={12} /></button>
+                            className="w-28 bg-soft text-ink rounded px-1.5 py-0.5 text-xs outline-none border" style={{ borderColor: 'rgba(233,193,120,.5)' }} autoFocus />
+                          <button onClick={() => saveTicker(h.isin)} className="text-cyan"><Check size={12} /></button>
+                          <button onClick={() => setEditTicker(null)} className="text-faint"><X size={12} /></button>
                         </div>
                       ) : (
                         <button onClick={() => { setEditTicker(rowKey); setEditValue(h.ticker === '–' ? '' : h.ticker); }}
-                          className="flex items-center gap-1 ml-auto text-gray-600 hover:text-blue-500 group">
-                          <span className={h.hasTicker ? 'font-mono' : 'text-orange-400'}>{h.ticker}</span>
+                          className="flex items-center gap-1 ml-auto text-mut hover:text-gold group">
+                          <span className={h.hasTicker ? 'font-mono' : 'text-coral'}>{h.ticker}</span>
                           <Edit2 size={10} className="opacity-0 group-hover:opacity-100" />
                         </button>
                       )}
                     </td>
 
-                    <td className="px-3 py-2.5 text-right font-mono text-gray-700">
+                    <td className="px-3 py-2.5 text-right font-mono text-mut">
                       {h.shares % 1 === 0 ? h.shares : h.shares.toFixed(4)}
                     </td>
-                    <td className="px-3 py-2.5 text-right font-mono text-gray-700">
+                    <td className="px-3 py-2.5 text-right font-mono text-mut">
                       {h.currentPrice > 0 ? h.currentPrice.toFixed(2) : '–'}
-                      {h.currentPrice > 0 && <span className="text-gray-400 ml-0.5">{h.currency}</span>}
+                      {h.currentPrice > 0 && <span className="text-faint ml-0.5">{h.currency}</span>}
                     </td>
-                    <td className="px-3 py-2.5 text-right font-medium text-gray-900">
+                    <td className="px-3 py-2.5 text-right font-medium text-ink tabular-nums">
                       {h.valueSEK > 0 ? formatSEK(h.valueSEK) : '–'}
                     </td>
-                    <td className={`px-3 py-2.5 text-right font-medium ${h.valueSEK === 0 && h.costSEK > 0 ? 'text-gray-400' : h.gainSEK >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    <td className={`px-3 py-2.5 text-right font-medium tabular-nums ${h.valueSEK === 0 && h.costSEK > 0 ? 'text-faint' : h.gainSEK >= 0 ? 'text-cyan' : 'text-coral'}`}>
                       {h.costSEK > 0 && h.valueSEK > 0
                         ? <>{formatSEK(h.gainSEK)}<span className="text-[10px] ml-1 opacity-70">({formatPct(h.gainPct)})</span></>
                         : h.costSEK > 0
-                          ? <span className="text-[11px] text-orange-400">Ingen kurs</span>
+                          ? <span className="text-[11px] text-coral">Ingen kurs</span>
                           : '–'}
                     </td>
-                    <td className={`px-3 py-2.5 text-right ${h.changePercent >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    <td className={`px-3 py-2.5 text-right tabular-nums ${h.changePercent >= 0 ? 'text-cyan' : 'text-coral'}`}>
                       {h.currentPrice > 0 ? formatPct(h.changePercent) : '–'}
                     </td>
                   </tr>
@@ -929,7 +933,7 @@ export default function Portfolio() {
           </table>
         </div>
         {enriched.some(h => !h.hasTicker) && (
-          <div className="px-4 py-2 bg-orange-50 border-t border-orange-100 text-[11px] text-orange-600 flex items-center gap-1">
+          <div className="px-4 py-2 border-t text-[11px] text-gold flex items-center gap-1" style={{ background: 'rgba(233,193,120,.1)', borderColor: 'rgba(233,193,120,.2)' }}>
             <AlertCircle size={11} />
             Klicka på en orange ticker för att ange manuellt — prova också "Återsök tickers"-knappen.
           </div>
@@ -940,19 +944,19 @@ export default function Portfolio() {
       {comparisonChartData.length >= 2 && (
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-900">Avkastning jämfört med index</h2>
-            <div className="flex items-center gap-3 text-[11px] text-gray-500">
-              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-500 inline-block" /> Portfölj</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-orange-400 inline-block" /> OMXS30</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-purple-500 inline-block" /> Nasdaq</span>
+            <h2 className="font-display text-sm text-ink">Avkastning jämfört med index</h2>
+            <div className="flex items-center gap-3 text-[11px] text-mut">
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 inline-block" style={{ background: '#e9c178' }} /> Portfölj</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 inline-block" style={{ background: '#5fe0d0' }} /> OMXS30</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 inline-block" style={{ background: '#9b8cff' }} /> Nasdaq</span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={comparisonChartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,241,234,.08)" />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9b9688' }} />
               <YAxis
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: '#9b9688' }}
                 tickFormatter={v => `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`}
                 width={46}
               />
@@ -961,17 +965,18 @@ export default function Portfolio() {
                   `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
                   name === 'portfolio' ? 'Portfölj' : name === 'omxs30' ? 'OMXS30' : 'Nasdaq',
                 ]}
+                contentStyle={{ background: '#15151b', border: '1px solid rgba(244,241,234,.09)', color: '#f4f1ea', borderRadius: 12 }}
               />
-              <Line type="monotone" dataKey="portfolio" stroke="#007aff" strokeWidth={2} dot={false} activeDot={{ r: 4 }} connectNulls />
-              <Line type="monotone" dataKey="omxs30"    stroke="#ff9f0a" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} connectNulls strokeDasharray="4 2" />
-              <Line type="monotone" dataKey="nasdaq"    stroke="#bf5af2" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} connectNulls strokeDasharray="4 2" />
+              <Line type="monotone" dataKey="portfolio" stroke="#e9c178" strokeWidth={2} dot={false} activeDot={{ r: 4 }} connectNulls />
+              <Line type="monotone" dataKey="omxs30"    stroke="#5fe0d0" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} connectNulls strokeDasharray="4 2" />
+              <Line type="monotone" dataKey="nasdaq"    stroke="#9b8cff" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} connectNulls strokeDasharray="4 2" />
             </LineChart>
           </ResponsiveContainer>
           {!indexHistory && (
-            <p className="text-[11px] text-gray-400 text-center mt-2">Laddar indexdata…</p>
+            <p className="text-[11px] text-faint text-center mt-2">Laddar indexdata…</p>
           )}
           {comparisonChartData.length < 5 && (
-            <p className="text-[11px] text-gray-400 text-center mt-1">Jämförelsen blir mer meningsfull med fler sparade snapshots — kurser sparas automatiskt vid varje uppdatering.</p>
+            <p className="text-[11px] text-faint text-center mt-1">Jämförelsen blir mer meningsfull med fler sparade snapshots — kurser sparas automatiskt vid varje uppdatering.</p>
           )}
         </Card>
       )}

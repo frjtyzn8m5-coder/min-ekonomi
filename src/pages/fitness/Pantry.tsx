@@ -8,7 +8,7 @@ import ReceiptScanner from '../../components/fitness/ReceiptScanner';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
 import {
-  Package, Plus, Trash2, ScanBarcode, FileText, Search, ChevronDown,
+  Package, Plus, Trash2, ScanBarcode, FileText, Search,
   AlertTriangle, Edit2, Check, X, ArrowLeft,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
@@ -23,10 +23,10 @@ function daysUntilExpiry(dateStr?: string): number | null {
 
 function expiryColor(days: number | null): string {
   if (days === null) return '';
-  if (days <= 0) return 'text-red-600 bg-red-50';
-  if (days <= 3) return 'text-orange-500 bg-orange-50';
-  if (days <= 7) return 'text-yellow-600 bg-yellow-50';
-  return 'text-green-600 bg-green-50';
+  if (days <= 0) return 'text-coral bg-[rgba(255,143,122,0.14)]';
+  if (days <= 3) return 'text-gold bg-[rgba(233,193,120,0.14)]';
+  if (days <= 7) return 'text-gold bg-[rgba(233,193,120,0.1)]';
+  return 'text-cyan bg-[rgba(95,224,208,0.12)]';
 }
 
 // ─── Receipt import dialog ────────────────────────────────────────────────────
@@ -51,12 +51,12 @@ function ReceiptReview({ items, onConfirm, onClose }: ReceiptReviewProps) {
   const count = selected.filter(s => s.selected).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[85vh]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
-          <h2 className="font-semibold text-gray-900">Välj produkter att lägga till</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
-            <X size={16} className="text-gray-500" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-card border border-line rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[85vh]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line flex-shrink-0">
+          <h2 className="font-display text-ink">Välj produkter att lägga till</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">
+            <X size={16} className="text-mut" />
           </button>
         </div>
 
@@ -64,22 +64,22 @@ function ReceiptReview({ items, onConfirm, onClose }: ReceiptReviewProps) {
           {selected.map((item, idx) => (
             <div
               key={idx}
-              className={`flex items-center gap-3 px-5 py-3 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors ${item.selected ? '' : 'opacity-40'}`}
+              className={`flex items-center gap-3 px-5 py-3 border-b border-line cursor-pointer hover:bg-white/5 transition-colors ${item.selected ? '' : 'opacity-40'}`}
               onClick={() => toggle(idx)}
             >
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${item.selected ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
-                {item.selected && <Check size={12} className="text-white" />}
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${item.selected ? 'bg-gold border-gold' : 'border-faint'}`}>
+                {item.selected && <Check size={12} className="text-[#2a1d08]" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
-                <p className="text-xs text-gray-400">Art.nr {item.articleNumber}</p>
+                <p className="text-sm font-medium text-ink truncate">{item.name}</p>
+                <p className="text-xs text-faint">Art.nr {item.articleNumber}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-sm font-semibold text-gray-800">{item.pris.toFixed(2)} kr</p>
+                <p className="text-sm font-semibold text-ink tnum">{item.pris.toFixed(2)} kr</p>
                 <div className="flex items-center gap-1 justify-end">
-                  <p className="text-xs text-gray-400">{item.amount} {item.unit}</p>
+                  <p className="text-xs text-faint tnum">{item.amount} {item.unit}</p>
                   {item.hasDiscount && (
-                    <span className="text-[10px] font-medium bg-red-100 text-red-600 px-1 rounded">REA</span>
+                    <span className="text-[10px] font-medium bg-[rgba(255,143,122,0.15)] text-coral px-1 rounded">REA</span>
                   )}
                 </div>
               </div>
@@ -87,13 +87,14 @@ function ReceiptReview({ items, onConfirm, onClose }: ReceiptReviewProps) {
           ))}
         </div>
 
-        <div className="px-5 py-4 border-t border-gray-100 flex-shrink-0 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">
+        <div className="px-5 py-4 border-t border-line flex-shrink-0 flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-sm font-medium text-mut hover:bg-white/5">
             Avbryt
           </button>
           <button
             onClick={() => onConfirm(selected.filter(s => s.selected))}
-            className="flex-1 py-2.5 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700"
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-[#2a1d08]"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             Lägg till {count} produkter
           </button>
@@ -212,34 +213,34 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">{prefill?.id ? 'Redigera' : 'Lägg till manuellt'}</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
-            <X size={16} className="text-gray-500" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-card border border-line rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+          <h2 className="font-display text-ink">{prefill?.id ? 'Redigera' : 'Lägg till manuellt'}</h2>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">
+            <X size={16} className="text-mut" />
           </button>
         </div>
         <div className="p-5 space-y-3">
           {/* Name field with combined autocomplete */}
           <div className="relative">
             <input
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Namn * (börja skriva för förslag)"
               value={name}
               onChange={e => handleNameChange(e.target.value)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             />
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden max-h-60 overflow-y-auto">
+              <div className="absolute z-10 top-full left-0 right-0 bg-card border border-line rounded-xl shadow-lg mt-1 overflow-hidden max-h-60 overflow-y-auto">
                 {suggestions.map((s, i) => (
                   <button
                     key={i}
                     onMouseDown={s.onSelect}
-                    className="w-full text-left px-3 py-2 hover:bg-green-50 text-sm border-b border-gray-50 last:border-0"
+                    className="w-full text-left px-3 py-2 hover:bg-white/5 text-sm border-b border-line last:border-0"
                   >
-                    <span className="font-medium text-gray-800 block">{s.label}</span>
-                    <span className="text-xs text-gray-400">{s.sub}</span>
+                    <span className="font-medium text-ink block">{s.label}</span>
+                    <span className="text-xs text-faint">{s.sub}</span>
                   </button>
                 ))}
               </div>
@@ -248,9 +249,9 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
 
           {/* Matched LV nutrition */}
           {matchedLv && (
-            <div className="bg-green-50 rounded-xl px-3 py-2 flex items-center gap-2">
-              <Check size={14} className="text-green-600 flex-shrink-0" />
-              <span className="text-xs text-green-700">
+            <div className="bg-[rgba(95,224,208,0.1)] rounded-xl px-3 py-2 flex items-center gap-2">
+              <Check size={14} className="text-cyan flex-shrink-0" />
+              <span className="text-xs text-cyan">
                 {matchedLv.energy_kcal} kcal/100g · {matchedLv.protein}g P · {matchedLv.fat}g F · {matchedLv.carbs}g KH
               </span>
             </div>
@@ -260,13 +261,13 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
           <div className="flex gap-2">
             <input
               type="number"
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="flex-1 border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Mängd *"
               value={amount}
               onChange={e => setAmount(e.target.value)}
             />
             <select
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               value={unit}
               onChange={e => setUnit(e.target.value as 'g' | 'st')}
             >
@@ -277,7 +278,7 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
           {unit === 'st' && (
             <input
               type="number"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Gram per förpackning (t.ex. 500)"
               value={unitWeight}
               onChange={e => setUnitWeight(e.target.value)}
@@ -289,31 +290,31 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
             <input
               type="number"
               step="0.01"
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${
-                pricePerUnit ? 'border-green-300 bg-green-50' : 'border-orange-300 bg-orange-50'
+              className={`w-full border rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold ${
+                pricePerUnit ? 'border-lime/40 bg-[rgba(191,226,106,0.08)]' : 'border-gold/50 bg-[rgba(233,193,120,0.08)]'
               }`}
               placeholder="Pris per förpackning (kr) *"
               value={pricePerUnit}
               onChange={e => setPricePerUnit(e.target.value)}
             />
             {!pricePerUnit && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-orange-500">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gold">
                 Viktigt!
               </span>
             )}
           </div>
           {!pricePerUnit && (
-            <p className="text-[11px] text-orange-500 -mt-1">
+            <p className="text-[11px] text-gold -mt-1">
               Pris behövs för receptkostnader och inköpslista.
             </p>
           )}
 
           {/* Expiry date — pre-filled with today */}
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Bäst före</label>
+            <label className="text-xs text-mut mb-1 block">Bäst före</label>
             <input
               type="date"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               value={expiry}
               onChange={e => setExpiry(e.target.value)}
             />
@@ -321,9 +322,9 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
 
           {/* Category — dropdown with filter */}
           <div className="relative">
-            <label className="text-xs text-gray-500 mb-1 block">Kategori</label>
+            <label className="text-xs text-mut mb-1 block">Kategori</label>
             <input
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Välj eller skriv kategori…"
               value={category}
               onChange={e => { setCategory(e.target.value); setShowCatDropdown(true); }}
@@ -331,14 +332,15 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
               onBlur={() => setTimeout(() => setShowCatDropdown(false), 150)}
             />
             {showCatDropdown && filteredCats.length > 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
+              <div className="absolute z-10 top-full left-0 right-0 bg-card border border-line rounded-xl shadow-lg mt-1 overflow-hidden">
                 {filteredCats.map(cat => (
                   <button
                     key={cat}
                     onMouseDown={() => { setCategory(cat); setShowCatDropdown(false); }}
-                    className={`w-full text-left px-3 py-2 hover:bg-green-50 text-sm border-b border-gray-50 last:border-0 ${
-                      category === cat ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-700'
+                    className={`w-full text-left px-3 py-2 hover:bg-white/5 text-sm border-b border-line last:border-0 ${
+                      category === cat ? 'text-gold font-medium' : 'text-mut'
                     }`}
+                    style={category === cat ? { background: 'rgba(233,193,120,.12)' } : undefined}
                   >
                     {cat}
                   </button>
@@ -348,13 +350,14 @@ function ManualAdd({ onSave, onClose, prefill, existingItems = [] }: ManualAddPr
           </div>
         </div>
         <div className="px-5 pb-5 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-sm font-medium text-mut hover:bg-white/5">
             Avbryt
           </button>
           <button
             onClick={handleSave}
             disabled={!name.trim() || !amount}
-            className="flex-1 py-2.5 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-40"
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-[#2a1d08] disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             Spara
           </button>
@@ -544,36 +547,38 @@ export default function Pantry() {
   });
 
   return (
-    <div className="min-h-full bg-gray-50">
+    <div className="min-h-full bg-bg text-ink">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-10">
+      <div className="bg-panel border-b border-line px-4 py-4 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <button onClick={() => setFitnessPage('recipes')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 -ml-1">
-                <ArrowLeft size={18} className="text-gray-600" />
+              <button onClick={() => setFitnessPage('recipes')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 -ml-1">
+                <ArrowLeft size={18} className="text-mut" />
               </button>
-              <Package size={20} className="text-green-600" />
-              <h1 className="text-lg font-bold text-gray-900">Skafferi</h1>
+              <Package size={20} className="text-gold" />
+              <h1 className="font-display text-lg text-ink">Skafferi</h1>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setView(v => v === 'barcode' ? 'list' : 'barcode')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${view === 'barcode' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${view === 'barcode' ? 'text-gold' : 'bg-soft text-mut hover:text-ink'}`}
+                style={view === 'barcode' ? { background: 'rgba(233,193,120,.12)' } : undefined}
               >
                 <ScanBarcode size={15} />
                 Skanna
               </button>
               <button
                 onClick={() => setShowReceipt(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-soft text-mut hover:text-ink text-sm font-medium transition-colors"
               >
                 <FileText size={15} />
                 Kvitto
               </button>
               <button
                 onClick={() => { setEditItem(null); setShowManual(true); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#2a1d08] text-sm font-semibold"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
               >
                 <Plus size={15} />
                 Lägg till
@@ -583,9 +588,9 @@ export default function Pantry() {
 
           {/* Search */}
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
             <input
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50"
+              className="w-full pl-9 pr-4 py-2 border border-line rounded-xl text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold bg-soft"
               placeholder="Sök i skafferiet…"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -600,7 +605,7 @@ export default function Pantry() {
           <video ref={videoRef} className="w-full max-w-sm rounded-xl" />
           <button
             onClick={() => setView('list')}
-            className="mt-6 px-6 py-3 bg-white rounded-full text-sm font-medium text-gray-800"
+            className="mt-6 px-6 py-3 bg-card border border-line rounded-full text-sm font-medium text-ink"
           >
             Avbryt
           </button>
@@ -610,11 +615,11 @@ export default function Pantry() {
       <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
         {/* Expiring soon banner */}
         {expiringSoon.length > 0 && (
-          <div className="flex items-start gap-3 bg-orange-50 border border-orange-200 rounded-xl p-3">
-            <AlertTriangle size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 bg-[rgba(233,193,120,0.08)] border border-gold/30 rounded-xl p-3">
+            <AlertTriangle size={18} className="text-gold flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-orange-700">Går snart ut</p>
-              <p className="text-xs text-orange-600 mt-0.5">
+              <p className="text-sm font-medium text-gold">Går snart ut</p>
+              <p className="text-xs text-mut mt-0.5">
                 {expiringSoon.map(i => i.name).join(', ')}
               </p>
             </div>
@@ -622,22 +627,22 @@ export default function Pantry() {
         )}
 
         {loading && (
-          <div className="text-center py-16 text-gray-400 text-sm">Laddar skafferi…</div>
+          <div className="text-center py-16 text-faint text-sm">Laddar skafferi…</div>
         )}
 
         {!loading && items.length === 0 && (
           <div className="text-center py-16">
-            <Package size={40} className="mx-auto mb-3 text-gray-300" />
-            <p className="text-gray-500 font-medium">Skafferiet är tomt</p>
-            <p className="text-gray-400 text-sm mt-1">Lägg till varor via kvitto, streckkod eller manuellt</p>
+            <Package size={40} className="mx-auto mb-3 text-faint" />
+            <p className="text-mut font-medium">Skafferiet är tomt</p>
+            <p className="text-faint text-sm mt-1">Lägg till varor via kvitto, streckkod eller manuellt</p>
           </div>
         )}
 
         {/* Grouped list */}
         {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b, 'sv')).map(([cat, catItems]) => (
           <div key={cat}>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{cat}</h3>
-            <div className="bg-white rounded-2xl divide-y divide-gray-50 overflow-hidden shadow-sm">
+            <h3 className="text-xs font-semibold text-faint uppercase tracking-wide mb-2">{cat}</h3>
+            <div className="bg-card border border-line rounded-2xl divide-y divide-line overflow-hidden">
               {catItems.map(item => {
                 const days = daysUntilExpiry(item.expiryDate);
                 const expColor = expiryColor(days);
@@ -645,14 +650,14 @@ export default function Pantry() {
                   <div key={item.id} className="flex items-center gap-3 px-4 py-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
+                        <p className="text-sm font-medium text-ink truncate">{item.name}</p>
                         {days !== null && (
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${expColor}`}>
+                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 tnum ${expColor}`}>
                             {days <= 0 ? 'Utgånget' : `${days}d`}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-faint mt-0.5 tnum">
                         {item.pricePerKg ? `${item.pricePerKg.toFixed(0)} kr/kg` : item.pricePerUnit ? `${item.pricePerUnit.toFixed(2)} kr/st` : ''}
                         {item.articleNumber ? ` · ${item.articleNumber}` : ''}
                       </p>
@@ -662,26 +667,26 @@ export default function Pantry() {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => handleAdjust(item, item.unit === 'g' ? -100 : -1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-lg leading-none"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-soft text-mut hover:bg-white/10 text-lg leading-none"
                       >−</button>
-                      <span className="w-16 text-center text-sm font-medium text-gray-800">
+                      <span className="w-16 text-center text-sm font-medium text-ink tnum">
                         {item.amount}{item.unit}
                       </span>
                       <button
                         onClick={() => handleAdjust(item, item.unit === 'g' ? 100 : 1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-lg leading-none"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-soft text-mut hover:bg-white/10 text-lg leading-none"
                       >+</button>
                     </div>
 
                     <button
                       onClick={() => { setEditItem(item); setShowManual(true); }}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 flex-shrink-0"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/5 text-faint flex-shrink-0"
                     >
                       <Edit2 size={13} />
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 flex-shrink-0"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[rgba(255,143,122,0.08)] text-faint hover:text-coral flex-shrink-0"
                     >
                       <Trash2 size={13} />
                     </button>

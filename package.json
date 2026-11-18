@@ -12,22 +12,25 @@
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
     "dexie": "^4.0.10",
+    "firebase": "^11.0.0",
+    "firebase-admin": "^14.5.1",
     "framer-motion": "^12.0.0",
     "lucide-react": "^0.511.0",
+    "nanoid": "^5.0.9",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.9.155",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "recharts": "^2.15.3",
     "xlsx": "^0.18.5",
-    "zustand": "^5.0.5",
-    "firebase": "^11.0.0",
-    "pdf-parse": "^1.1.1",
-    "pdfjs-dist": "^4.9.155",
-    "nanoid": "^5.0.9"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/web-push": "^3.6.3",
     "@upstash/redis": "^1.34.3",
     "@vercel/node": "^5.0.0",
     "@vitejs/plugin-react": "^6.0.1",
@@ -35,8 +38,6 @@
     "typescript": "~6.0.2",
     "vite": "^8.0.12",
     "vite-plugin-pwa": "^0.21.1",
-    "web-push": "^3.6.7",
-    "@types/web-push": "^3.6.3",
-    "@types/pdf-parse": "^1.1.5"
+    "web-push": "^3.6.7"
   }
 }

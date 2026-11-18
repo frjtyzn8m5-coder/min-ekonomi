@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 
 import { auth } from '../lib/firebase';
-import { loadTransactions, loadImports, loadBudgets, loadAssets, loadDebts, getUserProfile } from '../lib/db';
+import { loadTransactions, loadImports, loadBudgets, loadAssets, loadDebts, getUserProfile, loadOwnAccounts } from '../lib/db';
 import { useStore } from './useStore';
 
 interface AuthState {
@@ -22,21 +22,23 @@ interface AuthState {
 }
 
 async function loadUserData(uid: string) {
-  const [txs, imports, budgets, assets, debts, profile] = await Promise.all([
+  const [txs, imports, budgets, assets, debts, profile, ownAccounts] = await Promise.all([
     loadTransactions(uid),
     loadImports(uid),
     loadBudgets(uid),
     loadAssets(uid),
     loadDebts(uid),
     getUserProfile(uid),
+    loadOwnAccounts(uid),
   ]);
   const store = useStore.getState();
-  if (txs.length)     store.setFirebaseTransactions(txs);
-  if (imports.length) store.setImportBatches(imports);
-  if (budgets.length) store.setFirebaseBudgets(budgets);
-  if (assets.length)  store.setFirebaseAssets(assets);
-  if (debts.length)   store.setFirebaseDebts(debts);
-  if (profile)        store.setUserProfile(profile);
+  if (txs.length)         store.setFirebaseTransactions(txs);
+  if (imports.length)     store.setImportBatches(imports);
+  if (budgets.length)     store.setFirebaseBudgets(budgets);
+  if (assets.length)      store.setFirebaseAssets(assets);
+  if (debts.length)       store.setFirebaseDebts(debts);
+  if (profile)            store.setUserProfile(profile);
+  if (ownAccounts.length) store.setOwnAccounts(ownAccounts);
 }
 
 const handleSignInError = (e: any, set: (s: Partial<AuthState>) => void) => {

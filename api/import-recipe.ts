@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { assertPublicHttpUrl } from './_lib/safeFetch';
 
 interface SchemaRecipe {
   name?: string;
@@ -81,9 +82,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing url in request body' });
   }
 
+  let safeUrl: URL;
+  try {
+    safeUrl = await assertPublicHttpUrl(url);
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message ?? 'URL not allowed' });
+  }
+
   let html: string;
   try {
-    const response = await fetch(url, {
+    const response = await fetch(safeUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; VardagshubBot/1.0)',
         'Accept': 'text/html,application/xhtml+xml',

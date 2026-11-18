@@ -412,15 +412,32 @@ export interface PriceEntry {
   lastUpdated: string; // YYYY-MM-DD
 }
 
-// ── Workout types (Fas 5) – Exercise interface moved to Sprint 2 block above ──
+// ── Workout types (Sprint 3) – Exercise interface in Sprint 2 block above ──
+
+export type SetType =
+  | 'warmup' | 'working' | 'top_set' | 'back_off'
+  | 'dropset' | 'superset_a' | 'superset_b' | 'giant_set'
+  | 'myo_reps' | 'rest_pause' | 'cluster'
+  | 'long_partials' | 'integrated_partials' | 'mechanical_dropset'
+  | 'failure' | 'amrap'
+
+export type CyclePhase = 'menstrual' | 'follicular' | 'ovulation' | 'luteal'
 
 export interface WorkoutSet {
-  id: string;
-  weight?: number;   // kg (undefined for bodyweight)
-  reps?: number;
-  rpe?: number;      // 1–10
-  time?: number;     // seconds (for timed sets)
-  completed: boolean;
+  id: string
+  exerciseId: string
+  exerciseName: string
+  setNumber: number
+  setType: SetType
+  weight: number
+  reps: number
+  rpe?: number
+  rir?: number
+  estimated1RM?: number
+  duration?: number
+  supersetGroupId?: string
+  isPersonalRecord?: boolean
+  completedAt: number
 }
 
 export interface LoggedExercise {
@@ -431,15 +448,27 @@ export interface LoggedExercise {
 }
 
 export interface WorkoutSession {
-  id: string;
-  date: string;              // YYYY-MM-DD
-  startTime: number;         // ms timestamp
-  endTime?: number;
-  duration?: number;         // seconds
-  exercises: LoggedExercise[];
-  notes?: string;
-  programDayName?: string;   // e.g. "Push A" if started from program
-  totalVolume?: number;      // sum of weight × reps across all sets
+  id: string
+  date: string
+  name: string
+  programId?: string
+  programWeek?: number
+  programDayIndex?: number
+  startTime: number
+  endTime?: number
+  totalVolumeKg?: number
+  sets: WorkoutSet[]
+  notes?: string
+  sessionRPE?: number
+  mood?: 1 | 2 | 3 | 4 | 5
+  cyclePhase?: CyclePhase
+}
+
+export interface StagnationAlert {
+  exerciseId: string
+  exerciseName: string
+  suggestion: 'deload' | 'change_rep_range' | 'change_exercise'
+  message: string
 }
 
 // ── Calendar types (Fas 7) ───────────────────────────────────────────────────

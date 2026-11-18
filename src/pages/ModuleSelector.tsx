@@ -4,39 +4,23 @@ import { Check } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import type { ActiveModule, UserProfile } from '../types';
+import { IWallet, IDumbbell, IUtensils, ICalendar } from '../components/ui/Icons';
+
+type IconC = (p: { size?: number; className?: string }) => React.ReactElement;
 
 interface ModuleCard {
   id: ActiveModule;
-  emoji: string;
+  Icon: IconC;
+  tile: string;
   label: string;
   description: string;
 }
 
 const MODULES: ModuleCard[] = [
-  {
-    id: 'economy',
-    emoji: '💰',
-    label: 'Ekonomi',
-    description: 'Budget, portfölj, transaktioner',
-  },
-  {
-    id: 'fitness',
-    emoji: '🏋️',
-    label: 'Träning',
-    description: 'Program, logg, styrkeprogresson',
-  },
-  {
-    id: 'nutrition',
-    emoji: '🥗',
-    label: 'Kost',
-    description: 'Kalorier, recept, måltidsplan',
-  },
-  {
-    id: 'calendar',
-    emoji: '📅',
-    label: 'Kalender',
-    description: 'Events, schema, Google / Outlook',
-  },
+  { id: 'economy',   Icon: IWallet,   tile: 'gold',   label: 'Ekonomi', description: 'Budget, portfölj, transaktioner' },
+  { id: 'fitness',   Icon: IDumbbell, tile: 'violet', label: 'Träning', description: 'Program, logg, styrkeprogression' },
+  { id: 'nutrition', Icon: IUtensils, tile: 'lime',   label: 'Kost',    description: 'Kalorier, recept, måltidsplan' },
+  { id: 'calendar',  Icon: ICalendar, tile: 'cyan',   label: 'Kalender', description: 'Events, schema, Google / Outlook' },
 ];
 
 export default function ModuleSelector() {
@@ -87,7 +71,6 @@ export default function ModuleSelector() {
 
     const updated = { ...base, activeModules: modules, updatedAt: now };
     setUserProfile(updated);
-    // Persist to Firestore via updateUserProfile
     await updateUserProfile({ activeModules: modules });
   }
 
@@ -97,7 +80,6 @@ export default function ModuleSelector() {
     const modules = [...selected];
     await buildAndSaveProfile(modules);
     setSaving(false);
-    // Routing: om fitness är vald → gå till fitnessOnboarding via module=fitness, page=onboarding
     if (modules.includes('fitness')) {
       useStore.getState().setModule('fitness');
       useStore.getState().setFitnessPage('onboarding');
@@ -117,7 +99,7 @@ export default function ModuleSelector() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-bg text-ink flex flex-col items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,62 +108,55 @@ export default function ModuleSelector() {
       >
         {/* Rubrik */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Välkommen till Vardagshub! 👋</h1>
-          <p className="text-sm text-gray-500">Vad vill du använda appen till?<br />Du kan alltid lägga till mer senare.</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-gold mb-3">Välkommen</p>
+          <h1 className="font-display text-3xl mb-2 leading-tight">Vad vill du <span className="italic text-gold">bygga?</span></h1>
+          <p className="text-sm text-mut">Välj det du vill använda appen till.<br />Du kan alltid lägga till mer senare.</p>
         </div>
 
         {/* Modul-kort */}
         <div className="grid grid-cols-2 gap-3 mb-5">
-          {MODULES.map(({ id, emoji, label, description }) => {
+          {MODULES.map(({ id, Icon, tile, label, description }) => {
             const on = selected.has(id);
             return (
               <motion.button
                 key={id}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => toggle(id)}
-                className={`relative rounded-2xl border-2 p-5 text-left transition-all ${
-                  on
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
+                className="vh-card relative p-5 text-left"
+                style={on ? { borderColor: 'rgba(233,193,120,.5)', boxShadow: '0 0 0 1px rgba(233,193,120,.35), var(--shadow-s)' } : undefined}
               >
-                <span className="text-2xl block mb-2">{emoji}</span>
-                <p className={`font-semibold text-sm mb-1 ${on ? 'text-blue-700' : 'text-gray-900'}`}>{label}</p>
-                <p className="text-xs text-gray-400 leading-snug">{description}</p>
+                <span className={`vh-tile vh-tile--${tile} w-11 h-11 mb-3`}><Icon size={22} /></span>
+                <p className={`font-semibold text-sm mb-1 ${on ? 'text-gold' : 'text-ink'}`}>{label}</p>
+                <p className="text-xs text-faint leading-snug">{description}</p>
 
-                {/* Checkbox */}
-                <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                  on ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
-                }`}>
-                  {on && <Check size={11} className="text-white" strokeWidth={3} />}
+                <div
+                  className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                  style={on ? { background: 'var(--gold)' } : { border: '2px solid rgba(244,241,234,.2)' }}
+                >
+                  {on && <Check size={11} className="text-[#2a1d08]" strokeWidth={3} />}
                 </div>
               </motion.button>
             );
           })}
         </div>
 
-        {/* Välj alla */}
-        <button
-          onClick={selectAll}
-          className="text-sm text-blue-600 font-medium hover:underline mb-5 block"
-        >
+        <button onClick={selectAll} className="text-sm text-gold font-medium hover:underline mb-5 block">
           Välj alla
         </button>
 
-        {/* Fortsätt */}
         <button
           onClick={handleContinue}
           disabled={selected.size === 0 || saving}
-          className="w-full py-3.5 bg-blue-600 text-white rounded-2xl font-semibold text-sm hover:bg-blue-700 disabled:opacity-40 transition-colors mb-3"
+          className="w-full py-3.5 rounded-2xl font-semibold text-sm text-[#2a1d08] disabled:opacity-40 transition-transform active:scale-[0.99] mb-3"
+          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)', boxShadow: '0 14px 30px -14px rgba(233,193,120,.6)' }}
         >
-          {saving ? 'Sparar...' : 'Fortsätt →'}
+          {saving ? 'Sparar…' : 'Fortsätt →'}
         </button>
 
-        {/* Hoppa över */}
         <button
           onClick={handleSkip}
           disabled={saving}
-          className="w-full text-sm text-gray-400 hover:text-gray-600 py-2 transition-colors"
+          className="w-full text-sm text-faint hover:text-mut py-2 transition-colors"
         >
           Hoppa över – börja direkt
         </button>

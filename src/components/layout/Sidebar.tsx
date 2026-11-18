@@ -55,7 +55,7 @@ export default function Sidebar({ isOpen, onClose, desktop = false }: SidebarPro
     onClose();
   };
 
-  const baseClasses = 'w-56 h-screen bg-white border-r border-gray-100 flex flex-col';
+  const baseClasses = 'w-56 h-screen bg-panel border-r border-line flex flex-col';
 
   // Desktop variant: static, in the normal flex flow
   const positionClasses = desktop
@@ -69,20 +69,21 @@ export default function Sidebar({ isOpen, onClose, desktop = false }: SidebarPro
   return (
     <aside className={`${baseClasses} ${positionClasses}`}>
       {/* Logo + close (mobile only) */}
-      <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 rounded-lg bg-blue-500 flex-shrink-0 flex items-center justify-center">
-            <Wallet size={14} className="text-white" />
+      <div className="px-5 py-5 border-b border-line flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center font-display font-bold text-[#2a1d08]"
+            style={{ background: 'linear-gradient(145deg,#f4d79a,#cf9a3f)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,.5)' }}>
+            V
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-gray-900 text-sm leading-tight">Min Ekonomi</p>
+            <p className="font-display text-ink text-[15px] leading-tight">Min Ekonomi</p>
             {txCount > 0 && (
-              <p className="text-[11px] text-gray-400 leading-tight">{txCount.toLocaleString('sv-SE')} tr.</p>
+              <p className="text-[11px] text-faint leading-tight tnum">{txCount.toLocaleString('sv-SE')} tr.</p>
             )}
           </div>
         </div>
         {!desktop && (
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+          <button onClick={onClose} className="p-1.5 rounded-lg text-mut hover:bg-white/5">
             <X size={18} />
           </button>
         )}
@@ -91,38 +92,40 @@ export default function Sidebar({ isOpen, onClose, desktop = false }: SidebarPro
       {/* Nav groups */}
       <nav className="flex-1 px-3 py-3 overflow-y-auto">
         {NAV_GROUPS.map((group, gi) => (
-          <div key={group.label} className={gi > 0 ? 'mt-4' : ''}>
-            <p className="px-3 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+          <div key={group.label} className={gi > 0 ? 'mt-5' : ''}>
+            <p className="px-3 mb-1.5 text-[10px] font-semibold text-faint uppercase tracking-[0.14em]">
               {group.label}
             </p>
             <div className="space-y-0.5">
-              {group.items.map(({ page: p, label, icon }) => (
-                <button
-                  key={p}
-                  onClick={() => navigate(p)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                    page === p
-                      ? 'bg-blue-50 text-blue-600 font-medium border-l-2 border-blue-500'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <span className={page === p ? 'text-blue-500' : 'text-gray-400'}>{icon}</span>
-                  {label}
-                </button>
-              ))}
+              {group.items.map(({ page: p, label, icon }) => {
+                const active = page === p;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => navigate(p)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all ${
+                      active ? 'text-gold font-medium' : 'text-mut hover:bg-white/5 hover:text-ink'
+                    }`}
+                    style={active ? { background: 'rgba(233,193,120,.12)' } : undefined}
+                  >
+                    <span className={active ? 'text-gold' : 'text-faint'}>{icon}</span>
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-gray-100 space-y-1">
+      <div className="px-4 py-4 border-t border-line space-y-1">
         {user && (
-          <p className="text-[11px] text-gray-400 px-3 truncate">{user.email}</p>
+          <p className="text-[11px] text-faint px-3 truncate">{user.email}</p>
         )}
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-mut hover:bg-white/5 hover:text-ink transition-all"
         >
           <LogOut size={16} />
           Logga ut

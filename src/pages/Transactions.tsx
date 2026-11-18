@@ -4,11 +4,12 @@ import { useAuthStore } from '../store/useAuthStore';
 import { updateTransactionDoc, deleteTransaction as dbDeleteTx, saveTxBatch } from '../lib/db';
 import { filterTxs, formatSEK, formatMonth, allMonths } from '../utils/calculations';
 import { ALL_CATEGORIES, CATEGORY_COLORS } from '../utils/categorize';
-import { Card } from '../components/ui/Card';
 import FilterBar from '../components/ui/FilterBar';
 import { Plus, ChevronDown, ChevronUp, Trash2, Tag, Check, X } from 'lucide-react';
 import type { Transaction, Category } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const GOLD_BTN = { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' };
 
 // ─── Manual Transaction Modal ──────────────────────────────────────────────────
 
@@ -18,6 +19,7 @@ interface ManualTxModalProps {
 
 function ManualTxModal({ onClose }: ManualTxModalProps) {
   const { transactions, addManualTransaction } = useStore();
+  const { user } = useAuthStore();
   const accounts = [...new Set(transactions.map(t => t.account))].sort();
 
   const [form, setForm] = useState({
@@ -46,7 +48,7 @@ function ManualTxModal({ onClose }: ManualTxModalProps) {
     const amt = parseFloat(form.amount);
     if (isNaN(amt)) return;
     const finalAmt = form.isExpense ? -Math.abs(amt) : Math.abs(amt);
-    addManualTransaction({
+    const tx: Transaction = {
       id: `manual_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       date: form.date,
       description: form.description.trim(),
@@ -57,7 +59,9 @@ function ManualTxModal({ onClose }: ManualTxModalProps) {
       type: finalAmt >= 0 ? 'income' : 'expense',
       isTransfer: false,
       source: 'manual',
-    });
+    };
+    addManualTransaction(tx);
+    if (user) saveTxBatch(user.uid, [tx], tx.id).catch(() => {});
     onClose();
   };
 
@@ -67,59 +71,63 @@ function ManualTxModal({ onClose }: ManualTxModalProps) {
   const incomeCats = ['Lön','CSN Bidrag','CSN Lån','Investeringsvinst','Övrigt Inkomst'];
   const cats = form.isExpense ? expenseCats : incomeCats;
 
+  const inputCls = "w-full border border-line bg-soft text-ink rounded-lg px-3 py-1.5 text-sm outline-none focus:border-gold";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 space-y-4">
+        className="vh-card bg-card text-ink w-full max-w-md p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Ny transaktion</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+          <h2 className="font-display text-ink text-[17px]">Ny transaktion</h2>
+          <button onClick={onClose} className="text-faint hover:text-ink"><X size={18} /></button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Datum</label>
+            <label className="text-xs text-mut mb-1 block">Datum</label>
             <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400" />
+              className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Konto</label>
+            <label className="text-xs text-mut mb-1 block">Konto</label>
             {accounts.length > 0 ? (
               <select value={form.account} onChange={e => set('account', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400">
+                className={inputCls}>
                 {accounts.map(a => <option key={a}>{a}</option>)}
               </select>
             ) : (
               <input value={form.account} onChange={e => set('account', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400" />
+                className={inputCls} />
             )}
           </div>
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Beskrivning</label>
+          <label className="text-xs text-mut mb-1 block">Beskrivning</label>
           <input value={form.description} onChange={e => set('description', e.target.value)}
             placeholder="T.ex. ICA Maxi"
-            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400" />
+            className={inputCls} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Belopp (kr)</label>
+            <label className="text-xs text-mut mb-1 block">Belopp (kr)</label>
             <input type="number" value={form.amount} onChange={e => set('amount', e.target.value)}
               placeholder="0"
-              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400" />
+              className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Typ</label>
-            <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium h-[34px]">
+            <label className="text-xs text-mut mb-1 block">Typ</label>
+            <div className="flex rounded-lg border border-line overflow-hidden text-xs font-medium h-[34px]">
               <button onClick={() => { set('isExpense', true); set('category', 'Övrigt Utgift'); }}
-                className={`flex-1 ${form.isExpense ? 'bg-red-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
+                className={`flex-1 ${form.isExpense ? 'text-[#2a1208] font-semibold' : 'bg-card text-mut hover:bg-white/5'}`}
+                style={form.isExpense ? { background: 'var(--coral)' } : undefined}>
                 Utgift
               </button>
               <button onClick={() => { set('isExpense', false); set('category', 'Övrigt Inkomst'); }}
-                className={`flex-1 ${!form.isExpense ? 'bg-green-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
+                className={`flex-1 ${!form.isExpense ? 'text-[#06231f] font-semibold' : 'bg-card text-mut hover:bg-white/5'}`}
+                style={!form.isExpense ? { background: 'var(--cyan)' } : undefined}>
                 Inkomst
               </button>
             </div>
@@ -127,18 +135,18 @@ function ManualTxModal({ onClose }: ManualTxModalProps) {
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Kategori</label>
+          <label className="text-xs text-mut mb-1 block">Kategori</label>
           <select value={form.category} onChange={e => set('category', e.target.value as Category)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400">
+            className={inputCls}>
             {cats.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Taggar</label>
+          <label className="text-xs text-mut mb-1 block">Taggar</label>
           <div className="flex gap-1.5 flex-wrap mb-1.5">
             {form.tags.map(t => (
-              <span key={t} className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
+              <span key={t} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-gold" style={{ background: 'rgba(233,193,120,.12)' }}>
                 {t}
                 <button onClick={() => removeTag(t)}><X size={10} /></button>
               </span>
@@ -148,9 +156,9 @@ function ManualTxModal({ onClose }: ManualTxModalProps) {
             <input value={form.tagInput} onChange={e => set('tagInput', e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addTag()}
               placeholder="Lägg till tagg..."
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400" />
+              className="flex-1 border border-line bg-soft text-ink rounded-lg px-3 py-1.5 text-sm outline-none focus:border-gold" />
             <button onClick={addTag}
-              className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
+              className="px-3 py-1.5 bg-soft text-mut rounded-lg text-sm hover:bg-white/5">
               +
             </button>
           </div>
@@ -158,11 +166,11 @@ function ManualTxModal({ onClose }: ManualTxModalProps) {
 
         <div className="flex gap-2 pt-1">
           <button onClick={onClose}
-            className="flex-1 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">
+            className="flex-1 py-2 rounded-xl border border-line text-sm text-mut hover:bg-white/5">
             Avbryt
           </button>
           <button onClick={submit}
-            className="flex-1 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600">
+            className="flex-1 py-2 rounded-xl text-sm font-medium text-[#2a1d08]" style={GOLD_BTN}>
             Lägg till
           </button>
         </div>
@@ -203,11 +211,11 @@ function TxRow({ tx }: TxRowProps) {
 
   const removeTag = (t: string) => setEdit(e => ({ ...e, tags: e.tags.filter(x => x !== t) }));
 
-  const color = CATEGORY_COLORS[tx.category] || '#e5e7eb';
+  const color = CATEGORY_COLORS[tx.category] || '#625d52';
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 lg:px-5 py-3 hover:bg-gray-50/50 cursor-pointer"
+      <div className="flex items-center justify-between px-4 lg:px-5 py-3 hover:bg-white/5 cursor-pointer"
         onClick={() => setExpanded(v => !v)}>
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold"
@@ -215,16 +223,16 @@ function TxRow({ tx }: TxRowProps) {
             {tx.description.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate max-w-[160px] lg:max-w-xs">{tx.description}</p>
+            <p className="text-sm font-medium text-ink truncate max-w-[160px] lg:max-w-xs">{tx.description}</p>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="text-xs text-gray-400">{tx.date}</p>
+              <p className="text-xs text-faint">{tx.date}</p>
               <span className="text-xs px-1.5 py-0.5 rounded-full"
                 style={{ background: color + '20', color }}>
                 {tx.category}
               </span>
-              {tx.account && <span className="text-xs text-gray-400 hidden sm:inline">{tx.account}</span>}
+              {tx.account && <span className="text-xs text-faint hidden sm:inline">{tx.account}</span>}
               {(tx.tags ?? []).map(t => (
-                <span key={t} className="hidden sm:inline text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-500">
+                <span key={t} className="hidden sm:inline text-xs px-1.5 py-0.5 rounded-full text-gold" style={{ background: 'rgba(233,193,120,.12)' }}>
                   <Tag size={8} className="inline mr-0.5" />{t}
                 </span>
               ))}
@@ -232,10 +240,10 @@ function TxRow({ tx }: TxRowProps) {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-          <span className={`text-sm font-semibold ${tx.amount >= 0 ? 'text-green-600' : 'text-gray-800'}`}>
+          <span className={`text-sm font-semibold tabular-nums ${tx.amount >= 0 ? 'text-cyan' : 'text-ink'}`}>
             {tx.amount >= 0 ? '+' : ''}{formatSEK(tx.amount)}
           </span>
-          {expanded ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+          {expanded ? <ChevronUp size={14} className="text-faint" /> : <ChevronDown size={14} className="text-faint" />}
         </div>
       </div>
 
@@ -243,33 +251,34 @@ function TxRow({ tx }: TxRowProps) {
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }}
-            className="overflow-hidden bg-blue-50/30 border-t border-b border-blue-100">
+            className="overflow-hidden border-t border-b border-line"
+            style={{ background: 'rgba(233,193,120,.05)' }}>
             <div className="px-4 lg:px-5 py-3 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[11px] text-gray-400 mb-1 block">Beskrivning</label>
+                  <label className="text-[11px] text-faint mb-1 block">Beskrivning</label>
                   <input value={edit.description} onChange={e => setEdit(x => ({ ...x, description: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-2.5 py-1 text-sm outline-none focus:border-blue-400 bg-white" />
+                    className="w-full border border-line rounded-lg px-2.5 py-1 text-sm outline-none focus:border-gold bg-soft text-ink" />
                 </div>
                 <div>
-                  <label className="text-[11px] text-gray-400 mb-1 block">Datum</label>
+                  <label className="text-[11px] text-faint mb-1 block">Datum</label>
                   <input type="date" value={edit.date} onChange={e => setEdit(x => ({ ...x, date: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-2.5 py-1 text-sm outline-none focus:border-blue-400 bg-white" />
+                    className="w-full border border-line rounded-lg px-2.5 py-1 text-sm outline-none focus:border-gold bg-soft text-ink" />
                 </div>
                 <div>
-                  <label className="text-[11px] text-gray-400 mb-1 block">Kategori</label>
+                  <label className="text-[11px] text-faint mb-1 block">Kategori</label>
                   <select value={edit.category} onChange={e => setEdit(x => ({ ...x, category: e.target.value as Category }))}
-                    className="w-full border border-gray-200 rounded-lg px-2.5 py-1 text-sm outline-none focus:border-blue-400 bg-white">
+                    className="w-full border border-line rounded-lg px-2.5 py-1 text-sm outline-none focus:border-gold bg-soft text-ink">
                     {ALL_CATEGORIES.filter(c => c !== 'Överföring').map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] text-gray-400 mb-1 block">Taggar</label>
+                <label className="text-[11px] text-faint mb-1 block">Taggar</label>
                 <div className="flex gap-1.5 flex-wrap mb-1.5">
                   {edit.tags.map(t => (
-                    <span key={t} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full text-xs">
+                    <span key={t} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-gold" style={{ background: 'rgba(233,193,120,.16)' }}>
                       {t}
                       <button onClick={() => removeTag(t)}><X size={9} /></button>
                     </span>
@@ -279,22 +288,22 @@ function TxRow({ tx }: TxRowProps) {
                   <input value={edit.tagInput} onChange={e => setEdit(x => ({ ...x, tagInput: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && addTag()}
                     placeholder="Ny tagg..."
-                    className="w-32 border border-gray-200 rounded-lg px-2.5 py-1 text-xs outline-none focus:border-blue-400 bg-white" />
-                  <button onClick={addTag} className="text-xs px-2 py-1 bg-gray-100 rounded-lg hover:bg-gray-200">+</button>
+                    className="w-32 border border-line rounded-lg px-2.5 py-1 text-xs outline-none focus:border-gold bg-soft text-ink" />
+                  <button onClick={addTag} className="text-xs px-2 py-1 bg-soft text-mut rounded-lg hover:bg-white/5">+</button>
                 </div>
               </div>
 
               <div className="flex gap-2">
                 <button onClick={saveEdit}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600">
+                  className="flex items-center gap-1 px-3 py-1.5 text-[#2a1d08] text-xs rounded-lg" style={GOLD_BTN}>
                   <Check size={12} /> Spara
                 </button>
                 <button onClick={() => setExpanded(false)}
-                  className="px-3 py-1.5 border border-gray-200 text-gray-500 text-xs rounded-lg hover:bg-gray-50">
+                  className="px-3 py-1.5 border border-line text-mut text-xs rounded-lg hover:bg-white/5">
                   Avbryt
                 </button>
                 <button onClick={() => { deleteTransaction(tx.id); if (user) dbDeleteTx(user.uid, tx.id); }}
-                  className="ml-auto flex items-center gap-1 px-3 py-1.5 text-red-400 hover:text-red-600 text-xs">
+                  className="ml-auto flex items-center gap-1 px-3 py-1.5 text-coral hover:brightness-110 text-xs">
                   <Trash2 size={12} /> Ta bort
                 </button>
               </div>
@@ -323,22 +332,22 @@ export default function Transactions() {
   const totalExpense = filtered.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-bg text-ink">
       {showModal && <ManualTxModal onClose={() => setShowModal(false)} />}
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 lg:px-6 py-3 flex items-center justify-between flex-shrink-0">
+      <div className="bg-panel border-b border-line px-4 lg:px-6 py-3 flex items-center justify-between flex-shrink-0">
         <div>
-          <h1 className="text-base font-semibold text-gray-900">Transaktioner</h1>
-          <p className="text-xs text-gray-400">{filtered.length} transaktioner</p>
+          <h1 className="font-display text-ink text-[17px]">Transaktioner</h1>
+          <p className="text-xs text-faint">{filtered.length} transaktioner</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-4 text-xs">
-            <span className="text-green-600 font-medium">+{formatSEK(totalIncome)}</span>
-            <span className="text-gray-500">−{formatSEK(totalExpense)}</span>
+            <span className="text-cyan font-medium tabular-nums">+{formatSEK(totalIncome)}</span>
+            <span className="text-mut tabular-nums">−{formatSEK(totalExpense)}</span>
           </div>
           <button onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-blue-600">
+            className="flex items-center gap-1.5 text-[#2a1d08] text-xs font-medium px-3 py-1.5 rounded-lg" style={GOLD_BTN}>
             <Plus size={13} /> Ny
           </button>
         </div>
@@ -349,29 +358,29 @@ export default function Transactions() {
       {/* List */}
       <div className="flex-1 overflow-auto">
         {filtered.length === 0 ? (
-          <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
+          <div className="flex items-center justify-center h-40 text-faint text-sm">
             Inga transaktioner matchar filtret
           </div>
         ) : (
-          <Card padding={false} className="m-4 lg:m-6">
-            <div className="divide-y divide-gray-50">
+          <div className="vh-card m-4 lg:m-6">
+            <div className="divide-y divide-line">
               {paginated.map(tx => <TxRow key={tx.id} tx={tx} />)}
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-5 py-3 border-t border-gray-50">
+              <div className="flex items-center justify-between px-5 py-3 border-t border-line">
                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-                  className="text-xs text-gray-500 hover:text-gray-800 disabled:opacity-30">
+                  className="text-xs text-mut hover:text-ink disabled:opacity-30">
                   ← Föregående
                 </button>
-                <span className="text-xs text-gray-400">{page} / {totalPages}</span>
+                <span className="text-xs text-faint tabular-nums">{page} / {totalPages}</span>
                 <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}
-                  className="text-xs text-gray-500 hover:text-gray-800 disabled:opacity-30">
+                  className="text-xs text-mut hover:text-ink disabled:opacity-30">
                   Nästa →
                 </button>
               </div>
             )}
-          </Card>
+          </div>
         )}
       </div>
     </div>

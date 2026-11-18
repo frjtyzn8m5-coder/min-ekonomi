@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronRight, ChevronLeft, UtensilsCrossed, Check } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { IUtensils } from '../../components/ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -123,32 +124,32 @@ export default function NutritionOnboarding() {
   }
 
   return (
-    <div className="min-h-full bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-full bg-bg text-ink flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-lg">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center">
-              <UtensilsCrossed size={18} className="text-orange-500" />
+            <div className="vh-tile vh-tile--gold w-9 h-9">
+              <IUtensils size={18} />
             </div>
             <div>
-              <h1 className="text-base font-bold text-gray-900">Kostprofil</h1>
-              <p className="text-xs text-gray-400">Steg {step} av {TOTAL_STEPS}</p>
+              <h1 className="font-display text-base text-ink">Kostprofil</h1>
+              <p className="text-xs text-faint tnum">Steg {step} av {TOTAL_STEPS}</p>
             </div>
           </div>
           {step < TOTAL_STEPS && (
-            <button onClick={() => setStep(s => Math.min(s + 1, TOTAL_STEPS))} className="text-xs text-gray-400 hover:text-gray-600">
+            <button onClick={() => setStep(s => Math.min(s + 1, TOTAL_STEPS))} className="text-xs text-faint hover:text-mut">
               Hoppa över →
             </button>
           )}
         </div>
 
         {/* Progress */}
-        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-5">
+        <div className="w-full bg-soft rounded-full h-1.5 mb-5">
           <div
-            className="bg-orange-400 h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
+            className="h-1.5 rounded-full transition-all duration-300"
+            style={{ width: `${progressPercent}%`, background: 'linear-gradient(90deg,#cf9a3f,#f4d79a)' }}
           />
         </div>
 
@@ -159,13 +160,13 @@ export default function NutritionOnboarding() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -16 }}
             transition={{ duration: 0.18 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4"
+            className="bg-card rounded-2xl border border-line p-6 mb-4"
           >
 
             {/* Steg 1 – Mål */}
             {step === 1 && (
               <div className="space-y-3">
-                <h2 className="font-semibold text-gray-900 text-lg">Vad är ditt primära mål?</h2>
+                <h2 className="font-display text-ink text-lg">Vad är ditt primära mål?</h2>
                 {([
                   { id: 'lose_fat',       emoji: '🔥', label: 'Gå ner i kroppsfett',    desc: 'Kalorirestriktion + bevara muskler' },
                   { id: 'gain_muscle',    emoji: '💪', label: 'Bygga muskelmassa',        desc: 'Kaloriöverskott + högt protein' },
@@ -177,11 +178,12 @@ export default function NutritionOnboarding() {
                     key={id}
                     onClick={() => setPrimaryGoal(id)}
                     className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
-                      primaryGoal === id ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-gray-300'
+                      primaryGoal === id ? 'border-gold' : 'border-line hover:border-mut'
                     }`}
+                    style={primaryGoal === id ? { background: 'rgba(233,193,120,.12)' } : undefined}
                   >
-                    <p className={`text-sm font-medium ${primaryGoal === id ? 'text-orange-700' : 'text-gray-800'}`}>{emoji} {label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                    <p className={`text-sm font-medium ${primaryGoal === id ? 'text-gold' : 'text-ink'}`}>{emoji} {label}</p>
+                    <p className="text-xs text-faint mt-0.5">{desc}</p>
                   </button>
                 ))}
               </div>
@@ -190,19 +192,20 @@ export default function NutritionOnboarding() {
             {/* Steg 2 – Grundmått */}
             {step === 2 && (
               <div className="space-y-4">
-                <h2 className="font-semibold text-gray-900 text-lg">Dina grundmått</h2>
-                <p className="text-sm text-gray-400">Används för att beräkna ditt dagliga kaloribehov.</p>
+                <h2 className="font-display text-ink text-lg">Dina grundmått</h2>
+                <p className="text-sm text-faint">Används för att beräkna ditt dagliga kaloribehov.</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Kön</label>
+                    <label className="text-xs text-mut mb-1 block">Kön</label>
                     <div className="flex gap-2">
                       {([{ id: 'male', label: 'Man' }, { id: 'female', label: 'Kvinna' }] as const).map(({ id, label }) => (
                         <button
                           key={id}
                           onClick={() => setGender(id)}
                           className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
-                            gender === id ? 'bg-orange-400 text-white' : 'border border-gray-200 text-gray-600'
+                            gender === id ? 'text-[#2a1d08]' : 'border border-line text-mut'
                           }`}
+                          style={gender === id ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
                         >
                           {label}
                         </button>
@@ -210,31 +213,31 @@ export default function NutritionOnboarding() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Födelseår</label>
+                    <label className="text-xs text-mut mb-1 block">Födelseår</label>
                     <input
                       type="number"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm tnum focus:outline-none focus:ring-2 focus:ring-gold"
                       placeholder="1995"
                       value={birthYear}
                       onChange={e => setBirthYear(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Längd (cm)</label>
+                    <label className="text-xs text-mut mb-1 block">Längd (cm)</label>
                     <input
                       type="number"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm tnum focus:outline-none focus:ring-2 focus:ring-gold"
                       placeholder="175"
                       value={height}
                       onChange={e => setHeight(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Vikt (kg)</label>
+                    <label className="text-xs text-mut mb-1 block">Vikt (kg)</label>
                     <input
                       type="number"
                       step="0.1"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm tnum focus:outline-none focus:ring-2 focus:ring-gold"
                       placeholder="70.0"
                       value={weight}
                       onChange={e => setWeight(e.target.value)}
@@ -242,8 +245,8 @@ export default function NutritionOnboarding() {
                   </div>
                 </div>
                 {birthYear && height && weight && gender !== 'prefer_not_to_say' && (
-                  <div className="bg-orange-50 rounded-xl px-4 py-3">
-                    <p className="text-xs text-orange-700 font-medium">
+                  <div className="rounded-xl px-4 py-3" style={{ background: 'rgba(233,193,120,.1)' }}>
+                    <p className="text-xs text-gold font-medium tnum">
                       Beräknat kaloribehov: ~{calculateTDEE(
                         calculateBMR(parseFloat(weight), parseFloat(height), new Date().getFullYear() - parseInt(birthYear), gender as Gender),
                         'moderately_active'
@@ -257,7 +260,7 @@ export default function NutritionOnboarding() {
             {/* Steg 3 – Kostpreferenser */}
             {step === 3 && (
               <div className="space-y-3">
-                <h2 className="font-semibold text-gray-900 text-lg">Har du några kostpreferenser?</h2>
+                <h2 className="font-display text-ink text-lg">Har du några kostpreferenser?</h2>
                 {([
                   { id: 'vegetarian',   label: 'Vegetarisk' },
                   { id: 'vegan',        label: 'Vegansk' },
@@ -272,26 +275,27 @@ export default function NutritionOnboarding() {
                       key={id}
                       onClick={() => toggleDietPref(id)}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
-                        on ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-gray-300'
+                        on ? 'border-gold' : 'border-line hover:border-mut'
                       }`}
+                      style={on ? { background: 'rgba(233,193,120,.12)' } : undefined}
                     >
-                      <span className={`text-sm font-medium ${on ? 'text-orange-700' : 'text-gray-800'}`}>{label}</span>
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${on ? 'bg-orange-400 border-orange-400' : 'border-gray-300'}`}>
-                        {on && <Check size={11} className="text-white" />}
+                      <span className={`text-sm font-medium ${on ? 'text-gold' : 'text-ink'}`}>{label}</span>
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${on ? 'bg-gold border-gold' : 'border-faint'}`}>
+                        {on && <Check size={11} className="text-[#2a1d08]" />}
                       </div>
                     </button>
                   );
                 })}
-                <p className="text-xs text-gray-400">Lämna tomt om du inte har några begränsningar.</p>
+                <p className="text-xs text-faint">Lämna tomt om du inte har några begränsningar.</p>
               </div>
             )}
 
             {/* Steg 4 – Tid och variation */}
             {step === 4 && (
               <div className="space-y-5">
-                <h2 className="font-semibold text-gray-900 text-lg">Hur lagar du helst mat?</h2>
+                <h2 className="font-display text-ink text-lg">Hur lagar du helst mat?</h2>
                 <div>
-                  <p className="text-sm text-gray-700 font-medium mb-2">Tid per dag</p>
+                  <p className="text-sm text-mut font-medium mb-2">Tid per dag</p>
                   <div className="space-y-2">
                     {([
                       { id: 'minimal',  emoji: '⚡', label: 'Snabbt (< 15 min)',      desc: 'Enkla recept, batch-cooking' },
@@ -302,17 +306,18 @@ export default function NutritionOnboarding() {
                         key={id}
                         onClick={() => setCookingTime(id)}
                         className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
-                          cookingTime === id ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-gray-300'
+                          cookingTime === id ? 'border-gold' : 'border-line hover:border-mut'
                         }`}
+                        style={cookingTime === id ? { background: 'rgba(233,193,120,.12)' } : undefined}
                       >
-                        <p className={`text-sm font-medium ${cookingTime === id ? 'text-orange-700' : 'text-gray-800'}`}>{emoji} {label}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                        <p className={`text-sm font-medium ${cookingTime === id ? 'text-gold' : 'text-ink'}`}>{emoji} {label}</p>
+                        <p className="text-xs text-faint mt-0.5">{desc}</p>
                       </button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-700 font-medium mb-2">Variation i maten</p>
+                  <p className="text-sm text-mut font-medium mb-2">Variation i maten</p>
                   <div className="space-y-2">
                     {([
                       { id: 'high',   label: 'Hög',   desc: 'Aldrig samma rätt två gånger i rad' },
@@ -323,11 +328,12 @@ export default function NutritionOnboarding() {
                         key={id}
                         onClick={() => setVariation(id)}
                         className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
-                          variation === id ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-gray-300'
+                          variation === id ? 'border-gold' : 'border-line hover:border-mut'
                         }`}
+                        style={variation === id ? { background: 'rgba(233,193,120,.12)' } : undefined}
                       >
-                        <p className={`text-sm font-medium ${variation === id ? 'text-orange-700' : 'text-gray-800'}`}>{label}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                        <p className={`text-sm font-medium ${variation === id ? 'text-gold' : 'text-ink'}`}>{label}</p>
+                        <p className="text-xs text-faint mt-0.5">{desc}</p>
                       </button>
                     ))}
                   </div>
@@ -343,7 +349,7 @@ export default function NutritionOnboarding() {
           {step > 1 && (
             <button
               onClick={() => setStep(s => s - 1)}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-line text-sm font-medium text-mut hover:bg-white/5"
             >
               <ChevronLeft size={16} />
               Tillbaka
@@ -352,7 +358,8 @@ export default function NutritionOnboarding() {
           <button
             onClick={step < TOTAL_STEPS ? () => setStep(s => s + 1) : handleFinish}
             disabled={saving}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 disabled:opacity-40 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-[#2a1d08] disabled:opacity-40 transition-colors"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             {saving ? 'Sparar...' : step < TOTAL_STEPS ? (
               <><span>Nästa</span><ChevronRight size={16} /></>

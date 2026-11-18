@@ -3,7 +3,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
 import { loadRecipes, loadPantry, loadPriceDB } from '../../lib/pantryDb';
 import { buildPriceLookup } from '../../utils/recipeCost';
-import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp, Plus, X, ShoppingCart, Settings, Check, Shuffle, Package } from 'lucide-react';
+import { ArrowLeft, RefreshCw, X, ShoppingCart, Settings, Check, Shuffle, Package } from 'lucide-react';
+import { IFlame, IUtensils, IMoon } from '../../components/ui/Icons';
 import type { Recipe, PantryItem, PriceEntry } from '../../types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -14,7 +15,11 @@ const MEAL_LABELS: Record<MealType, string> = {
   lunch: 'Lunch',
   dinner: 'Middag',
 };
-const MEAL_ICONS: Record<MealType, string> = { breakfast: '🌅', lunch: '☀️', dinner: '🌙' };
+const MEAL_TILES: Record<MealType, { tile: string; Icon: typeof IFlame }> = {
+  breakfast: { tile: 'gold', Icon: IFlame },
+  lunch: { tile: 'cyan', Icon: IUtensils },
+  dinner: { tile: 'violet', Icon: IMoon },
+};
 const DAYS = ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
 
 interface PlannedMeal {
@@ -194,7 +199,7 @@ function ShoppingList({
 
   if (!neededMap.size) {
     return (
-      <div className="text-center py-12 text-gray-400 text-sm">
+      <div className="text-center py-12 text-faint text-sm">
         Generera en veckoplan för att se inköpslistan.
       </div>
     );
@@ -270,46 +275,46 @@ function ShoppingList({
   return (
     <div className="space-y-3">
       {/* Summary bar */}
-      <div className="bg-green-50 border border-green-100 rounded-xl p-3 flex items-center justify-between">
+      <div className="bg-[rgba(233,193,120,0.08)] border border-gold/20 rounded-xl p-3 flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-green-800">{toBuyCount} varor att köpa</p>
-          <p className="text-xs text-green-600 mt-0.5">
+          <p className="text-sm font-semibold text-gold tnum">{toBuyCount} varor att köpa</p>
+          <p className="text-xs text-mut mt-0.5 tnum">
             {items.filter(i => i.inPantry).length} täcks av skafferiet
           </p>
         </div>
         {totalCost > 0 && (
           <div className="text-right">
-            <p className="text-xs text-green-600">Uppskattat</p>
-            <p className="text-sm font-bold text-green-800">{totalCost.toFixed(0)} kr</p>
+            <p className="text-xs text-mut">Uppskattat</p>
+            <p className="font-display text-sm text-gold tnum">{totalCost.toFixed(0)} kr</p>
           </div>
         )}
       </div>
 
       {/* Items to buy */}
-      <div className="bg-white rounded-2xl divide-y divide-gray-50 overflow-hidden border border-gray-100">
+      <div className="bg-card rounded-2xl divide-y divide-line overflow-hidden border border-line">
         {items.filter(i => !i.inPantry).map(item => {
           const done = checked.has(item.name);
           return (
             <div
               key={item.name}
               onClick={() => toggleCheck(item.name)}
-              className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${done ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
+              className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${done ? 'bg-white/5' : 'hover:bg-white/5'}`}
             >
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${done ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
-                {done && <Check size={11} className="text-white" />}
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${done ? 'bg-gold border-gold' : 'border-faint'}`}>
+                {done && <Check size={11} className="text-[#2a1d08]" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm capitalize font-medium ${done ? 'line-through text-gray-400' : 'text-gray-800'}`}>{item.name}</p>
-                <p className="text-xs text-gray-400">{item.toBuyGrams} g behövs</p>
+                <p className={`text-sm capitalize font-medium ${done ? 'line-through text-faint' : 'text-ink'}`}>{item.name}</p>
+                <p className="text-xs text-faint tnum">{item.toBuyGrams} g behövs</p>
               </div>
               <div className="text-right flex-shrink-0">
                 {item.estimatedCost !== null ? (
-                  <p className="text-sm font-semibold text-gray-700">{item.estimatedCost.toFixed(1)} kr</p>
+                  <p className="text-sm font-semibold text-mut tnum">{item.estimatedCost.toFixed(1)} kr</p>
                 ) : (
-                  <p className="text-xs text-gray-300">Pris okänt</p>
+                  <p className="text-xs text-faint">Pris okänt</p>
                 )}
                 {item.pricePerKg && (
-                  <p className="text-[10px] text-gray-400">{item.pricePerKg.toFixed(0)} kr/kg</p>
+                  <p className="text-[10px] text-faint tnum">{item.pricePerKg.toFixed(0)} kr/kg</p>
                 )}
               </div>
             </div>
@@ -320,15 +325,15 @@ function ShoppingList({
       {/* Already in pantry */}
       {items.filter(i => i.inPantry).length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <p className="text-xs font-semibold text-faint uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <Package size={12} /> Finns i skafferiet
           </p>
-          <div className="bg-white rounded-2xl divide-y divide-gray-50 overflow-hidden border border-gray-100 opacity-60">
+          <div className="bg-card rounded-2xl divide-y divide-line overflow-hidden border border-line opacity-60">
             {items.filter(i => i.inPantry).map(item => (
               <div key={item.name} className="flex items-center gap-3 px-4 py-2.5">
-                <Check size={14} className="text-green-500 flex-shrink-0" />
-                <p className="flex-1 text-sm text-gray-600 capitalize">{item.name}</p>
-                <p className="text-xs text-gray-400">{item.neededGrams} g</p>
+                <Check size={14} className="text-cyan flex-shrink-0" />
+                <p className="flex-1 text-sm text-mut capitalize">{item.name}</p>
+                <p className="text-xs text-faint tnum">{item.neededGrams} g</p>
               </div>
             ))}
           </div>
@@ -359,16 +364,16 @@ function PlanSettings({ goal, onGoal, favBreakfast, onFavBreakfast, recipes, tar
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md space-y-5 p-5 mb-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4">
+      <div className="bg-card border border-line rounded-2xl shadow-2xl w-full max-w-md space-y-5 p-5 mb-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Planinställningar</h2>
-          <button onClick={onClose}><X size={16} className="text-gray-400" /></button>
+          <h2 className="font-display text-ink">Planinställningar</h2>
+          <button onClick={onClose}><X size={16} className="text-faint" /></button>
         </div>
 
         {/* Goal */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 mb-2">Mål</p>
+          <p className="text-xs font-semibold text-mut mb-2">Mål</p>
           <div className="grid grid-cols-3 gap-2">
             {goals.map(g => (
               <button
@@ -376,9 +381,10 @@ function PlanSettings({ goal, onGoal, favBreakfast, onFavBreakfast, recipes, tar
                 onClick={() => onGoal(g.value)}
                 className={`py-2.5 rounded-xl text-sm font-medium border transition-colors ${
                   goal === g.value
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                    ? 'text-[#2a1d08] border-transparent'
+                    : 'bg-soft text-mut border-line hover:bg-white/5'
                 }`}
+                style={goal === g.value ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
               >
                 {g.emoji} {g.label}
               </button>
@@ -388,10 +394,10 @@ function PlanSettings({ goal, onGoal, favBreakfast, onFavBreakfast, recipes, tar
 
         {/* Target calories */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 mb-2">Mål-kalorier per dag (kcal)</p>
+          <p className="text-xs font-semibold text-mut mb-2">Mål-kalorier per dag (kcal)</p>
           <input
             type="number"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2 text-sm tnum focus:outline-none focus:ring-2 focus:ring-gold"
             value={targetKcal}
             onChange={e => onTargetKcal(Number(e.target.value))}
             step="50"
@@ -400,9 +406,9 @@ function PlanSettings({ goal, onGoal, favBreakfast, onFavBreakfast, recipes, tar
 
         {/* Favorite breakfast */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 mb-2">Favoritfrukost (samma varje dag)</p>
+          <p className="text-xs font-semibold text-mut mb-2">Favoritfrukost (samma varje dag)</p>
           <select
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
             value={favBreakfast ?? ''}
             onChange={e => onFavBreakfast(e.target.value || null)}
           >
@@ -415,7 +421,8 @@ function PlanSettings({ goal, onGoal, favBreakfast, onFavBreakfast, recipes, tar
 
         <button
           onClick={onClose}
-          className="w-full py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
+          className="w-full py-2.5 rounded-xl text-sm font-semibold text-[#2a1d08]"
+          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
         >
           Spara
         </button>
@@ -462,47 +469,49 @@ function MealCell({ meal, mealType, recipes, onUpdate }: MealCellProps) {
 
   const empty = !meal.recipeId;
   const kcalForCell = meal.kcal * meal.servings;
+  const { tile, Icon } = MEAL_TILES[mealType];
 
   return (
     <div className={`rounded-xl border text-left text-xs transition-all ${
-      meal.locked ? 'border-green-300 bg-green-50' :
-      empty ? 'border-dashed border-gray-200 bg-white' :
-      'border-gray-100 bg-white'
-    }`}>
+      meal.locked ? 'border-gold' :
+      empty ? 'border-dashed border-line bg-card' :
+      'border-line bg-card'
+    }`}
+      style={meal.locked ? { background: 'rgba(233,193,120,.1)' } : undefined}>
       <button
         className="w-full p-2.5 text-left"
         onClick={() => setOpen(v => !v)}
       >
         <div className="flex items-start gap-1.5">
-          <span className="text-base leading-none flex-shrink-0">{MEAL_ICONS[mealType]}</span>
+          <span className={`vh-tile vh-tile--${tile} w-6 h-6 flex-shrink-0`}><Icon size={13} /></span>
           <div className="flex-1 min-w-0">
             {empty ? (
-              <p className="text-gray-300 text-[11px]">+ Lägg till</p>
+              <p className="text-faint text-[11px]">+ Lägg till</p>
             ) : (
               <>
-                <p className="font-medium text-gray-800 leading-tight truncate">{meal.recipeName}</p>
+                <p className="font-medium text-ink leading-tight truncate">{meal.recipeName}</p>
                 {kcalForCell > 0 && (
-                  <p className="text-gray-400 text-[10px] mt-0.5">{kcalForCell} kcal</p>
+                  <p className="text-faint text-[10px] mt-0.5 tnum">{kcalForCell} kcal</p>
                 )}
               </>
             )}
           </div>
-          {meal.locked && <span className="text-green-500 text-[10px] flex-shrink-0">🔒</span>}
+          {meal.locked && <span className="text-gold text-[10px] flex-shrink-0">🔒</span>}
         </div>
       </button>
 
       {open && (
-        <div className="border-t border-gray-50 p-2 space-y-2">
+        <div className="border-t border-line p-2 space-y-2">
           {/* Servings */}
           {!empty && (
             <div className="flex items-center justify-between">
-              <span className="text-gray-500 text-[11px]">Portioner</span>
+              <span className="text-mut text-[11px]">Portioner</span>
               <div className="flex items-center gap-1.5">
                 <button onClick={() => onUpdate({ ...meal, servings: Math.max(1, meal.servings - 1) })}
-                  className="w-5 h-5 rounded-md bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200">−</button>
-                <span className="w-5 text-center text-xs font-semibold">{meal.servings}</span>
+                  className="w-5 h-5 rounded-md bg-soft flex items-center justify-center text-mut hover:bg-white/10">−</button>
+                <span className="w-5 text-center text-xs font-semibold text-ink tnum">{meal.servings}</span>
                 <button onClick={() => onUpdate({ ...meal, servings: meal.servings + 1 })}
-                  className="w-5 h-5 rounded-md bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200">+</button>
+                  className="w-5 h-5 rounded-md bg-soft flex items-center justify-center text-mut hover:bg-white/10">+</button>
               </div>
             </div>
           )}
@@ -510,19 +519,20 @@ function MealCell({ meal, mealType, recipes, onUpdate }: MealCellProps) {
           {/* Actions */}
           <div className="flex gap-1.5">
             {!empty && (
-              <button onClick={shuffle} className="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-[11px] font-medium hover:bg-gray-200 flex items-center justify-center gap-1">
+              <button onClick={shuffle} className="flex-1 py-1.5 rounded-lg bg-soft text-mut text-[11px] font-medium hover:bg-white/10 flex items-center justify-center gap-1">
                 <Shuffle size={11} /> Byt
               </button>
             )}
             {!empty && (
               <button onClick={toggleLock} className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1 ${
-                meal.locked ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}>
+                meal.locked ? 'text-gold' : 'bg-soft text-mut hover:bg-white/10'
+              }`}
+                style={meal.locked ? { background: 'rgba(233,193,120,.14)' } : undefined}>
                 {meal.locked ? '🔒 Lås' : '🔓 Lås'}
               </button>
             )}
             {!empty && (
-              <button onClick={clear} className="flex-1 py-1.5 rounded-lg bg-red-50 text-red-400 text-[11px] font-medium hover:bg-red-100">
+              <button onClick={clear} className="flex-1 py-1.5 rounded-lg text-coral text-[11px] font-medium hover:bg-[rgba(255,143,122,0.12)]" style={{ background: 'rgba(255,143,122,.08)' }}>
                 Ta bort
               </button>
             )}
@@ -535,17 +545,18 @@ function MealCell({ meal, mealType, recipes, onUpdate }: MealCellProps) {
                 key={r.id}
                 onClick={() => setRecipe(r)}
                 className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] transition-colors ${
-                  meal.recipeId === r.id ? 'bg-green-50 text-green-700' : 'hover:bg-gray-50 text-gray-700'
+                  meal.recipeId === r.id ? 'text-gold' : 'hover:bg-white/5 text-mut'
                 }`}
+                style={meal.recipeId === r.id ? { background: 'rgba(233,193,120,.12)' } : undefined}
               >
                 {r.name}
                 {r.nutritionPerServing.kcal > 0 && (
-                  <span className="ml-1 text-gray-400">· {r.nutritionPerServing.kcal} kcal</span>
+                  <span className="ml-1 text-faint tnum">· {r.nutritionPerServing.kcal} kcal</span>
                 )}
               </button>
             ))}
             {recipes.length === 0 && (
-              <p className="text-gray-400 text-center py-2">Inga recept sparade</p>
+              <p className="text-faint text-center py-2">Inga recept sparade</p>
             )}
           </div>
         </div>
@@ -603,26 +614,27 @@ export default function MealPlan() {
   const kcalPct = targetKcal > 0 ? Math.min(100, (todayTotals.kcal / targetKcal) * 100) : 0;
 
   return (
-    <div className="min-h-full bg-gray-50 pb-20">
+    <div className="min-h-full bg-bg text-ink pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-panel border-b border-line px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => setFitnessPage('home')}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
         >
-          <ArrowLeft size={18} className="text-gray-600" />
+          <ArrowLeft size={18} className="text-mut" />
         </button>
-        <h1 className="text-base font-semibold text-gray-900 flex-1">Veckoplanering 🗓️</h1>
+        <h1 className="font-display text-base text-ink flex-1">Veckoplanering 🗓️</h1>
         <button
           onClick={() => setShowSettings(true)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
         >
-          <Settings size={16} className="text-gray-500" />
+          <Settings size={16} className="text-faint" />
         </button>
         <button
           onClick={regenerate}
           disabled={!recipes.length}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-40"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#2a1d08] disabled:opacity-40"
+          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
         >
           <RefreshCw size={14} />
           Generera
@@ -630,13 +642,13 @@ export default function MealPlan() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-100 bg-white px-4">
+      <div className="flex border-b border-line bg-panel px-4">
         {(['plan', 'shopping'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'
+              activeTab === tab ? 'border-gold text-gold' : 'border-transparent text-mut hover:text-ink'
             }`}
           >
             {tab === 'plan' ? '📅 Plan' : <><ShoppingCart size={14} />Inköpslista</>}
@@ -660,13 +672,14 @@ export default function MealPlan() {
                   onClick={() => setSelectedDay(d)}
                   className={`flex flex-col items-center flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
                     selectedDay === d
-                      ? 'bg-green-600 text-white'
-                      : 'bg-white border border-gray-100 text-gray-600 hover:bg-gray-50'
+                      ? 'text-[#2a1d08]'
+                      : 'bg-card border border-line text-mut hover:bg-white/5'
                   }`}
+                  style={selectedDay === d ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
                 >
                   <span>{day}</span>
                   {tots.kcal > 0 && (
-                    <span className={`text-[10px] mt-0.5 ${selectedDay === d ? 'text-green-100' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] mt-0.5 tnum ${selectedDay === d ? 'text-[#2a1d08]/70' : 'text-faint'}`}>
                       {tots.kcal} kcal
                     </span>
                   )}
@@ -677,32 +690,32 @@ export default function MealPlan() {
 
           {/* Day totals bar */}
           {todayTotals.kcal > 0 && (
-            <div className="bg-white border border-gray-100 rounded-xl p-4">
+            <div className="bg-card border border-line rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-700">{DAYS[selectedDay]}ens totaler</p>
-                <p className={`text-xs font-semibold ${
-                  todayTotals.kcal > targetKcal ? 'text-red-500' : 'text-green-600'
+                <p className="text-xs font-semibold text-mut">{DAYS[selectedDay]}ens totaler</p>
+                <p className={`text-xs font-semibold tnum ${
+                  todayTotals.kcal > targetKcal ? 'text-coral' : 'text-cyan'
                 }`}>
                   {todayTotals.kcal} / {targetKcal} kcal
                 </p>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
+              <div className="h-2 bg-soft rounded-full overflow-hidden mb-3">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    kcalPct >= 100 ? 'bg-red-400' : kcalPct >= 80 ? 'bg-green-500' : 'bg-yellow-400'
+                    kcalPct >= 100 ? 'bg-coral' : kcalPct >= 80 ? 'bg-cyan' : 'bg-gold'
                   }`}
                   style={{ width: `${kcalPct}%` }}
                 />
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 {[
-                  { label: 'Protein', val: `${Math.round(todayTotals.protein)}g`, color: 'text-blue-600' },
-                  { label: 'Fett', val: `${Math.round(todayTotals.fat)}g`, color: 'text-yellow-600' },
-                  { label: 'Kolh', val: `${Math.round(todayTotals.carbs)}g`, color: 'text-orange-500' },
+                  { label: 'Protein', val: `${Math.round(todayTotals.protein)}g`, color: 'text-cyan' },
+                  { label: 'Fett', val: `${Math.round(todayTotals.fat)}g`, color: 'text-violet' },
+                  { label: 'Kolh', val: `${Math.round(todayTotals.carbs)}g`, color: 'text-gold' },
                 ].map(m => (
                   <div key={m.label}>
-                    <p className="text-[10px] text-gray-400">{m.label}</p>
-                    <p className={`text-sm font-bold ${m.color}`}>{m.val}</p>
+                    <p className="text-[10px] text-faint">{m.label}</p>
+                    <p className={`font-display text-sm tnum ${m.color}`}>{m.val}</p>
                   </div>
                 ))}
               </div>
@@ -713,7 +726,7 @@ export default function MealPlan() {
           <div className="space-y-2">
             {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(mt => (
               <div key={mt}>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+                <p className="text-xs font-semibold text-faint uppercase tracking-wide mb-1.5">
                   {MEAL_LABELS[mt]}
                 </p>
                 <MealCell
@@ -728,12 +741,13 @@ export default function MealPlan() {
 
           {/* No recipes prompt */}
           {!loading && recipes.length === 0 && (
-            <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200">
-              <p className="text-gray-400 text-sm">Inga recept ännu</p>
-              <p className="text-gray-300 text-xs mt-1">Importera recept för att generera en veckoplan</p>
+            <div className="text-center py-8 bg-card rounded-2xl border border-dashed border-line">
+              <p className="text-faint text-sm">Inga recept ännu</p>
+              <p className="text-faint text-xs mt-1">Importera recept för att generera en veckoplan</p>
               <button
                 onClick={() => setFitnessPage('recipes')}
-                className="mt-3 px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700"
+                className="mt-3 px-4 py-2 rounded-xl text-sm font-semibold text-[#2a1d08]"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
               >
                 Gå till Recept
               </button>
@@ -742,18 +756,19 @@ export default function MealPlan() {
 
           {/* Whole-week overview (compact) */}
           {recipes.length > 0 && (
-            <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
-              <p className="px-4 pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Hela veckan</p>
+            <div className="bg-card border border-line rounded-xl overflow-hidden">
+              <p className="px-4 pt-4 pb-2 text-xs font-semibold text-faint uppercase tracking-wide">Hela veckan</p>
               {DAYS.map((day, d) => {
                 const tots = dayTotals(plan[d]);
                 return (
                   <button
                     key={d}
                     onClick={() => setSelectedDay(d)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-gray-50 transition-colors ${selectedDay === d ? 'bg-green-50' : ''}`}
+                    className="w-full flex items-center gap-3 px-4 py-3 border-t border-line hover:bg-white/5 transition-colors"
+                    style={selectedDay === d ? { background: 'rgba(233,193,120,.1)' } : undefined}
                   >
-                    <span className={`text-sm font-medium w-8 ${selectedDay === d ? 'text-green-700' : 'text-gray-700'}`}>{day}</span>
-                    <div className="flex-1 grid grid-cols-3 gap-1 text-[11px] text-gray-500">
+                    <span className={`text-sm font-medium w-8 ${selectedDay === d ? 'text-gold' : 'text-mut'}`}>{day}</span>
+                    <div className="flex-1 grid grid-cols-3 gap-1 text-[11px] text-mut">
                       {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(mt => (
                         <span key={mt} className="truncate">
                           {plan[d][mt].recipeName || '–'}
@@ -761,7 +776,7 @@ export default function MealPlan() {
                       ))}
                     </div>
                     {tots.kcal > 0 && (
-                      <span className="text-[11px] text-gray-400 flex-shrink-0">{tots.kcal} kcal</span>
+                      <span className="text-[11px] text-faint flex-shrink-0 tnum">{tots.kcal} kcal</span>
                     )}
                   </button>
                 );

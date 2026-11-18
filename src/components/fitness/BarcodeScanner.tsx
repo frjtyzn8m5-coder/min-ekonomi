@@ -111,34 +111,34 @@ function AddProductForm({ barcode, onSave, onCancel }: AddProductFormProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-white p-4 space-y-4">
+    <div className="flex-1 overflow-y-auto bg-bg text-ink p-4 space-y-4">
       <div>
-        <p className="text-xs text-gray-400 mb-1">Streckkod</p>
-        <p className="text-sm font-mono font-semibold text-gray-700">{barcode}</p>
+        <p className="text-xs text-faint mb-1">Streckkod</p>
+        <p className="text-sm font-mono font-semibold text-ink">{barcode}</p>
       </div>
 
       {/* Search LV DB */}
       <div>
-        <p className="text-xs font-semibold text-gray-500 mb-1">Sök i Livsmedelsverkets databas</p>
+        <p className="text-xs font-semibold text-mut mb-1">Sök i Livsmedelsverkets databas</p>
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
           <input
-            className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full pl-8 pr-3 py-2 bg-soft border border-line rounded-xl text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
             placeholder="T.ex. filmjölk, havregryn..."
             value={lvQuery}
             onChange={e => { setLvQuery(e.target.value); searchLv(e.target.value); }}
           />
         </div>
         {lvResults.length > 0 && (
-          <div className="mt-1 border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+          <div className="mt-1 border border-line rounded-xl overflow-hidden">
             {lvResults.map(item => (
               <button
                 key={item.id}
                 onClick={() => fillFromLv(item)}
-                className="w-full text-left px-3 py-2.5 border-b border-gray-50 hover:bg-orange-50 transition-colors"
+                className="w-full text-left px-3 py-2.5 border-b border-line bg-card hover:bg-white/5 transition-colors"
               >
-                <p className="text-sm text-gray-800">{item.name}</p>
-                <p className="text-xs text-gray-400">{item.energy_kcal} kcal · P {item.protein}g · F {item.fat}g · K {item.carbs}g</p>
+                <p className="text-sm text-ink">{item.name}</p>
+                <p className="text-xs text-faint">{item.energy_kcal} kcal · P {item.protein}g · F {item.fat}g · K {item.carbs}g</p>
               </button>
             ))}
           </div>
@@ -148,16 +148,16 @@ function AddProductForm({ barcode, onSave, onCancel }: AddProductFormProps) {
       {/* Manual fields */}
       <div className="space-y-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Produktnamn *</label>
+          <label className="block text-xs text-mut mb-1">Produktnamn *</label>
           <input
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full bg-soft border border-line rounded-xl px-3 py-2 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
             placeholder="T.ex. Oatly havre dryck"
             value={name}
             onChange={e => setName(e.target.value)}
           />
         </div>
 
-        <p className="text-xs font-semibold text-gray-500">Näringsvärde per 100g</p>
+        <p className="text-xs font-semibold text-mut">Näringsvärde per 100g</p>
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: 'Kalorier (kcal) *', val: kcal, set: setKcal },
@@ -167,10 +167,10 @@ function AddProductForm({ barcode, onSave, onCancel }: AddProductFormProps) {
             { label: 'Fiber (g)', val: fiber, set: setFiber },
           ].map(({ label, val, set }) => (
             <div key={label}>
-              <label className="block text-xs text-gray-400 mb-1">{label}</label>
+              <label className="block text-xs text-faint mb-1">{label}</label>
               <input
                 type="number"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full bg-soft border border-line rounded-xl px-3 py-2 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-gold/40"
                 value={val}
                 onChange={e => set(e.target.value)}
                 placeholder="0"
@@ -181,13 +181,14 @@ function AddProductForm({ barcode, onSave, onCancel }: AddProductFormProps) {
       </div>
 
       <div className="flex gap-3 pt-2">
-        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600">
+        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-line text-sm font-medium text-mut hover:bg-white/5">
           Avbryt
         </button>
         <button
           onClick={handleSave}
           disabled={!name.trim() || !kcal}
-          className="flex-1 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-40 flex items-center justify-center gap-2"
+          className="flex-1 py-2.5 rounded-xl text-[#2a1d08] text-sm font-semibold disabled:opacity-40 flex items-center justify-center gap-2"
+          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
         >
           <Plus size={16} />
           Spara produkt
@@ -364,10 +365,10 @@ export default function BarcodeScanner({
                           pos.includes('t') ? 'top-0' : 'bottom-0'
                         } ${pos.includes('l') ? 'left-0' : 'right-0'}`}
                         style={{
-                          borderTop:    pos.includes('t') ? `3px solid ${isSharp ? '#34c759' : '#ff9f0a'}` : 'none',
-                          borderBottom: pos.includes('b') ? `3px solid ${isSharp ? '#34c759' : '#ff9f0a'}` : 'none',
-                          borderLeft:   pos.includes('l') ? `3px solid ${isSharp ? '#34c759' : '#ff9f0a'}` : 'none',
-                          borderRight:  pos.includes('r') ? `3px solid ${isSharp ? '#34c759' : '#ff9f0a'}` : 'none',
+                          borderTop:    pos.includes('t') ? `3px solid ${isSharp ? 'var(--lime)' : 'var(--gold)'}` : 'none',
+                          borderBottom: pos.includes('b') ? `3px solid ${isSharp ? 'var(--lime)' : 'var(--gold)'}` : 'none',
+                          borderLeft:   pos.includes('l') ? `3px solid ${isSharp ? 'var(--lime)' : 'var(--gold)'}` : 'none',
+                          borderRight:  pos.includes('r') ? `3px solid ${isSharp ? 'var(--lime)' : 'var(--gold)'}` : 'none',
                           borderRadius: pos === 'tl' ? '6px 0 0 0' : pos === 'tr' ? '0 6px 0 0' : pos === 'bl' ? '0 0 0 6px' : '0 0 6px 0',
                         }}
                       />
@@ -376,7 +377,7 @@ export default function BarcodeScanner({
                     <div
                       className="absolute left-2 right-2 h-0.5 opacity-80"
                       style={{
-                        backgroundColor: isSharp ? '#34c759' : '#ff9f0a',
+                        backgroundColor: isSharp ? 'var(--lime)' : 'var(--gold)',
                         top: '50%',
                         animation: 'pulse 1.5s ease-in-out infinite',
                       }}
@@ -387,19 +388,20 @@ export default function BarcodeScanner({
 
               {/* Success flash */}
               {detected && (
-                <div className="absolute inset-0 flex items-center justify-center bg-green-500/20">
-                  <CheckCircle size={64} className="text-green-400" />
+                <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(174,224,122,.18)' }}>
+                  <CheckCircle size={64} className="text-lime" />
                 </div>
               )}
 
               {/* Error state */}
               {error && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 p-6 text-center">
-                  <AlertCircle size={40} className="text-red-400 mb-3" />
-                  <p className="text-white text-sm">{error}</p>
+                  <AlertCircle size={40} className="text-coral mb-3" />
+                  <p className="text-ink text-sm">{error}</p>
                   <button
                     onClick={onClose}
-                    className="mt-4 px-4 py-2 bg-white text-gray-800 rounded-full text-sm font-medium"
+                    className="mt-4 px-4 py-2 text-[#2a1d08] rounded-full text-sm font-semibold"
+                    style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
                   >
                     Stäng
                   </button>
@@ -417,7 +419,7 @@ export default function BarcodeScanner({
                       className="h-full rounded-full transition-all duration-300"
                       style={{
                         width: `${Math.min(100, (sharpness / (SHARP_THRESHOLD * 2)) * 100)}%`,
-                        backgroundColor: isSharp ? '#34c759' : '#ff9f0a',
+                        backgroundColor: isSharp ? 'var(--lime)' : 'var(--gold)',
                       }}
                     />
                   </div>
@@ -426,8 +428,8 @@ export default function BarcodeScanner({
 
               <div className="flex items-center justify-between">
                 <p className={`text-sm font-medium ${
-                  detected ? 'text-green-400' :
-                  isSharp ? 'text-green-400' : 'text-amber-400'
+                  detected ? 'text-lime' :
+                  isSharp ? 'text-lime' : 'text-gold'
                 }`}>
                   {sharpLabel || (error ? '' : 'Startar kamera…')}
                 </p>

@@ -5,23 +5,26 @@ import {
   getSpendingCalendar, getCategoryTotals
 } from '../utils/calculations';
 import { CATEGORY_COLORS, EXPENSE_CATEGORIES } from '../utils/categorize';
-import { Card, CardHeader, EmptyState } from '../components/ui/Card';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Treemap, ComposedChart,
   ReferenceLine, Cell, RadarChart, PolarGrid,
   PolarAngleAxis, PolarRadiusAxis, Radar, Legend
 } from 'recharts';
-import { Upload } from 'lucide-react';
+import { ITrend, IArrowRight } from '../components/ui/Icons';
 import { motion } from 'framer-motion';
 
 const FADE = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 
+const AXIS_FILL = '#9b9688';
+const GRID_STROKE = 'rgba(244,241,234,.08)';
+const TOOLTIP_STYLE = { background: '#15151b', border: '1px solid rgba(244,241,234,.09)', borderRadius: 12, fontSize: 11, color: '#f4f1ea' };
+
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 text-xs">
-      <p className="font-semibold text-gray-700 mb-2">{label}</p>
+    <div className="rounded-xl p-3 text-xs" style={{ background: '#15151b', border: '1px solid rgba(244,241,234,.09)' }}>
+      <p className="font-semibold text-ink mb-2">{label}</p>
       {payload.map((p: any) => (
         <p key={p.dataKey} style={{ color: p.color }}>{p.name}: {formatSEK(p.value)}</p>
       ))}
@@ -67,12 +70,12 @@ function SpendingHeatmap({ year }: { year: number }) {
             {week.map((day, di) => (
               <div key={di} title={day ? `${day.date}: ${formatSEK(day.val)}` : ''}
                 className="w-3 h-3 rounded-sm"
-                style={{ background: day ? `rgba(255, 59, 48, ${opacity(day.val)})` : 'transparent', cursor: day ? 'pointer' : 'default' }} />
+                style={{ background: day ? `rgba(255, 143, 122, ${opacity(day.val)})` : 'transparent', cursor: day ? 'pointer' : 'default' }} />
             ))}
           </div>
         ))}
       </div>
-      <div className="flex justify-between mt-2 text-[10px] text-gray-400">
+      <div className="flex justify-between mt-2 text-[10px] text-faint">
         {months.map(m => <span key={m}>{m}</span>)}
       </div>
     </div>
@@ -83,11 +86,11 @@ function TreemapCell({ x, y, width, height, name, value }: any) {
   if (width < 30 || height < 20) return null;
   return (
     <g>
-      <rect x={x+1} y={y+1} width={width-2} height={height-2} fill={CATEGORY_COLORS[name] || '#e5e7eb'} opacity={0.85} rx={4} />
+      <rect x={x+1} y={y+1} width={width-2} height={height-2} fill={CATEGORY_COLORS[name] || 'rgba(244,241,234,.14)'} opacity={0.85} rx={4} />
       {width > 50 && height > 30 && (
         <>
-          <text x={x+8} y={y+18} fill="white" fontSize={10} fontWeight={600}>{name}</text>
-          {height > 42 && <text x={x+8} y={y+30} fill="white" fontSize={9} opacity={0.8}>{formatSEK(value)}</text>}
+          <text x={x+8} y={y+18} fill="#15151b" fontSize={10} fontWeight={600}>{name}</text>
+          {height > 42 && <text x={x+8} y={y+30} fill="#15151b" fontSize={9} opacity={0.75}>{formatSEK(value)}</text>}
         </>
       )}
     </g>
@@ -100,10 +103,19 @@ export default function Analytics() {
 
   if (!transactions.length) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6">
-        <EmptyState icon={<Upload size={48} />} title="Inga transaktioner"
-          description="Importera kontoutdrag för att se analyser"
-          action={<button onClick={() => setPage('import')} className="bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-lg">Importera</button>} />
+      <div className="flex-1 flex items-center justify-center p-6 bg-bg text-ink">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <span className="vh-tile vh-tile--violet w-12 h-12 mb-4"><ITrend size={26} /></span>
+          <p className="text-sm font-medium text-mut">Inga transaktioner</p>
+          <p className="text-xs text-faint mt-1 max-w-xs">Importera kontoutdrag för att se analyser</p>
+          <div className="mt-4">
+            <button onClick={() => setPage('import')}
+              className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg text-[#2a1d08]"
+              style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
+              Importera <IArrowRight size={14} />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -140,16 +152,17 @@ export default function Analytics() {
   }));
 
   return (
-    <div className="flex flex-col h-full overflow-auto">
-      <div className="px-4 lg:px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between">
+    <div className="flex flex-col h-full overflow-auto bg-bg text-ink">
+      <div className="px-4 lg:px-6 py-4 bg-panel border-b border-line flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Analys</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Visualisera dina utgiftsmönster</p>
+          <h1 className="font-display text-2xl text-ink">Analys</h1>
+          <p className="text-sm text-faint mt-0.5">Visualisera dina utgiftsmönster</p>
         </div>
-        <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
+        <div className="flex rounded-lg border border-line overflow-hidden text-xs">
           {years.map(y => (
             <button key={y} onClick={() => setSelectedYear(y)}
-              className={`px-3 py-2 font-medium ${selectedYear === y ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>
+              className={`px-3 py-2 font-medium ${selectedYear === y ? 'text-[#2a1d08]' : 'text-mut hover:bg-white/5'}`}
+              style={selectedYear === y ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
               {y}
             </button>
           ))}
@@ -157,97 +170,112 @@ export default function Analytics() {
       </div>
 
       {monthlyData.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+        <div className="flex-1 flex items-center justify-center text-sm text-faint">
           Ingen data för {selectedYear}
         </div>
       ) : (
         <div className="p-4 lg:p-6 space-y-4">
           <motion.div {...FADE} transition={{ duration: 0.3 }}>
-            <Card>
-              <CardHeader title="Utgiftsheatmap" subtitle={`Daglig konsumtion ${selectedYear}`} />
+            <div className="vh-card p-5">
+              <div className="mb-4">
+                <h3 className="font-display text-ink text-[15px]">Utgiftsheatmap</h3>
+                <p className="text-xs text-faint mt-0.5">Daglig konsumtion {selectedYear}</p>
+              </div>
               <SpendingHeatmap year={selectedYear} />
-              <div className="flex items-center gap-2 mt-3 text-[10px] text-gray-400">
+              <div className="flex items-center gap-2 mt-3 text-[10px] text-faint">
                 <div className="flex gap-1">
                   {[0.05, 0.25, 0.5, 0.75, 1].map(o => (
-                    <div key={o} className="w-3 h-3 rounded-sm" style={{ background: `rgba(255, 59, 48, ${o})` }} />
+                    <div key={o} className="w-3 h-3 rounded-sm" style={{ background: `rgba(255, 143, 122, ${o})` }} />
                   ))}
                 </div>
                 <span>Mer utgifter →</span>
               </div>
-            </Card>
+            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.05 }}>
-              <Card>
-                <CardHeader title="Utgiftsfördelning" subtitle={`Totalt ${selectedYear}`} />
+              <div className="vh-card p-5">
+                <div className="mb-4">
+                  <h3 className="font-display text-ink text-[15px]">Utgiftsfördelning</h3>
+                  <p className="text-xs text-faint mt-0.5">Totalt {selectedYear}</p>
+                </div>
                 <ResponsiveContainer width="100%" height={240}>
                   <Treemap data={treemapData} dataKey="value" aspectRatio={4/3} content={<TreemapCell />}>
-                    <Tooltip formatter={(v: any, n: any) => [formatSEK(v), n]} contentStyle={{ borderRadius: 12, fontSize: 11 }} />
+                    <Tooltip formatter={(v: any, n: any) => [formatSEK(v), n]} contentStyle={TOOLTIP_STYLE} />
                   </Treemap>
                 </ResponsiveContainer>
-              </Card>
+              </div>
             </motion.div>
 
             <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.1 }}>
-              <Card>
-                <CardHeader title="Kategori jämförelse" subtitle="Senaste 2 månader" />
+              <div className="vh-card p-5">
+                <div className="mb-4">
+                  <h3 className="font-display text-ink text-[15px]">Kategori jämförelse</h3>
+                  <p className="text-xs text-faint mt-0.5">Senaste 2 månader</p>
+                </div>
                 {last2.length >= 2 ? (
                   <ResponsiveContainer width="100%" height={240}>
                     <RadarChart data={radarData}>
-                      <PolarGrid stroke="#f0f0f0" />
-                      <PolarAngleAxis dataKey="cat" tick={{ fontSize: 10, fill: '#9ca3af' }} />
-                      <PolarRadiusAxis tick={{ fontSize: 9 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
-                      <Radar name={formatMonth(last2[0].month)} dataKey={formatMonth(last2[0].month)} stroke="#ff3b30" fill="#ff3b30" fillOpacity={0.15} />
-                      <Radar name={formatMonth(last2[1].month)} dataKey={formatMonth(last2[1].month)} stroke="#007aff" fill="#007aff" fillOpacity={0.15} />
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                      <Tooltip formatter={(v: any) => formatSEK(v)} contentStyle={{ borderRadius: 12, fontSize: 11 }} />
+                      <PolarGrid stroke={GRID_STROKE} />
+                      <PolarAngleAxis dataKey="cat" tick={{ fontSize: 10, fill: AXIS_FILL }} />
+                      <PolarRadiusAxis tick={{ fontSize: 9, fill: AXIS_FILL }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                      <Radar name={formatMonth(last2[0].month)} dataKey={formatMonth(last2[0].month)} stroke="#ff8f7a" fill="#ff8f7a" fillOpacity={0.15} />
+                      <Radar name={formatMonth(last2[1].month)} dataKey={formatMonth(last2[1].month)} stroke="#e9c178" fill="#e9c178" fillOpacity={0.15} />
+                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, color: AXIS_FILL }} />
+                      <Tooltip formatter={(v: any) => formatSEK(v)} contentStyle={TOOLTIP_STYLE} />
                     </RadarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-sm text-gray-400">
+                  <div className="flex items-center justify-center h-48 text-sm text-faint">
                     Behöver minst 2 månader av data
                   </div>
                 )}
-              </Card>
+              </div>
             </motion.div>
           </div>
 
           <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.15 }}>
-            <Card>
-              <CardHeader title="Utgifter per kategori" subtitle={`Staplad fördelning ${selectedYear}`} />
+            <div className="vh-card p-5">
+              <div className="mb-4">
+                <h3 className="font-display text-ink text-[15px]">Utgifter per kategori</h3>
+                <p className="text-xs text-faint mt-0.5">Staplad fördelning {selectedYear}</p>
+              </div>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={stackedData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: AXIS_FILL }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: AXIS_FILL }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 10 }} />
+                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 10, color: AXIS_FILL }} />
                   {top6Cats.map((cat, i) => (
-                    <Bar key={cat} dataKey={cat} stackId="a" fill={CATEGORY_COLORS[cat] || '#e5e7eb'}
+                    <Bar key={cat} dataKey={cat} stackId="a" fill={CATEGORY_COLORS[cat] || 'rgba(244,241,234,.14)'}
                       radius={i === top6Cats.length-1 ? [4,4,0,0] : [0,0,0,0]} />
                   ))}
                 </BarChart>
               </ResponsiveContainer>
-            </Card>
+            </div>
           </motion.div>
 
           <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.2 }}>
-            <Card>
-              <CardHeader title="Månadsförändring" subtitle="Utgiftsökning/-minskning vs föregående månad" />
+            <div className="vh-card p-5">
+              <div className="mb-4">
+                <h3 className="font-display text-ink text-[15px]">Månadsförändring</h3>
+                <p className="text-xs text-faint mt-0.5">Utgiftsökning/-minskning vs föregående månad</p>
+              </div>
               <ResponsiveContainer width="100%" height={160}>
                 <ComposedChart data={momData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: AXIS_FILL }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: AXIS_FILL }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
                   <Tooltip content={<CustomTooltip />} />
-                  <ReferenceLine y={0} stroke="#e5e7eb" />
+                  <ReferenceLine y={0} stroke="rgba(244,241,234,.15)" />
                   <Bar dataKey="Förändring" radius={[4,4,4,4]}>
-                    {momData.map((d, i) => <Cell key={i} fill={d.Förändring >= 0 ? '#ff3b30' : '#34c759'} />)}
+                    {momData.map((d, i) => <Cell key={i} fill={d.Förändring >= 0 ? '#ff8f7a' : '#5fe0d0'} />)}
                   </Bar>
                 </ComposedChart>
               </ResponsiveContainer>
-            </Card>
+            </div>
           </motion.div>
         </div>
       )}

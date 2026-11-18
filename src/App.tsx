@@ -20,7 +20,7 @@ const Login          = lazy(() => import('./pages/Login'));
 const ModuleSelector = lazy(() => import('./pages/ModuleSelector'));
 
 // ── Hub module pages (lazy) ───────────────────────────────────────────────────
-const Home         = lazy(() => import('./pages/home/Home'));
+const Dashboard    = lazy(() => import('./pages/home/Dashboard'));
 const FitnessHome  = lazy(() => import('./pages/fitness/FitnessHome'));
 const WeightLog    = lazy(() => import('./pages/fitness/WeightLog'));
 const FoodLog      = lazy(() => import('./pages/fitness/FoodLog'));
@@ -72,7 +72,7 @@ const ECONOMY_PAGES: Record<string, React.ComponentType> = {
 
 const Spinner = () => (
   <div className="flex-1 flex items-center justify-center py-20">
-    <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+    <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
@@ -85,8 +85,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -102,7 +102,7 @@ export default function App() {
   // Ny användare utan profil → modul-väljarskärm
   if (!userProfile || userProfile.activeModules.length === 0) {
     return (
-      <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <Suspense fallback={<div className="min-h-screen bg-bg" />}>
         <ModuleSelector />
       </Suspense>
     );
@@ -111,7 +111,7 @@ export default function App() {
   const EconomyPage = ECONOMY_PAGES[page];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-screen bg-bg text-ink overflow-hidden">
 
       {/* ── Desktop top nav ── */}
       <TopNav />
@@ -137,14 +137,14 @@ export default function App() {
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-              <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 flex-shrink-0">
+              <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-panel border-b border-line flex-shrink-0">
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
                 >
-                  <Menu size={18} className="text-gray-600" />
+                  <Menu size={18} className="text-mut" />
                 </button>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-ink">
                   {PAGE_LABELS[page] || page}
                 </span>
               </div>
@@ -171,7 +171,7 @@ export default function App() {
                   {...PAGE_TRANSITION}
                   className="min-h-full"
                 >
-                  {module === 'home'     && <Home />}
+                  {module === 'home'     && <Dashboard />}
                   {module === 'fitness'  && fitnessPage === 'home'      && <FitnessHome />}
                   {module === 'fitness'  && fitnessPage === 'weightlog' && <WeightLog />}
                   {module === 'fitness'  && fitnessPage === 'foodlog'   && <FoodLog />}

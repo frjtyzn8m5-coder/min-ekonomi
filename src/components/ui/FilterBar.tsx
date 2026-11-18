@@ -79,24 +79,25 @@ export default function FilterBar() {
   };
 
   return (
-    <div className="bg-white border-b border-gray-100 px-4 lg:px-6 py-3 space-y-2.5">
+    <div className="bg-panel border-b border-line px-4 lg:px-6 py-3 space-y-2.5">
       {/* Row 1: Search + Type + quick ranges + more toggle */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-36">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
           <input
             type="text"
             placeholder="Sök..."
             value={filter.search}
             onChange={e => setFilter({ search: e.target.value })}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-blue-400"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-soft text-ink rounded-lg border border-line outline-none focus:border-gold/50"
           />
         </div>
 
-        <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+        <div className="flex rounded-lg border border-line overflow-hidden text-xs font-medium">
           {(['all', 'income', 'expense'] as const).map(t => (
             <button key={t} onClick={() => setFilter({ type: t })}
-              className={`px-2.5 py-1.5 ${filter.type === t ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
+              className={`px-2.5 py-1.5 ${filter.type === t ? 'text-[#2a1d08]' : 'bg-card text-mut hover:bg-soft'}`}
+              style={filter.type === t ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
               {t === 'all' ? 'Alla' : t === 'income' ? 'Inkomst' : 'Utgift'}
             </button>
           ))}
@@ -109,7 +110,7 @@ export default function FilterBar() {
             { label: 'I år',   fn: () => setQuickRange(getCurrentYearMonths()) },
           ].map(({ label, fn }) => (
             <button key={label} onClick={fn}
-              className="px-2.5 py-1.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+              className="px-2.5 py-1.5 text-xs font-medium bg-soft text-mut rounded-lg hover:bg-card">
               {label}
             </button>
           ))}
@@ -117,17 +118,19 @@ export default function FilterBar() {
 
         <div className="flex items-center gap-1 ml-auto">
           <button onClick={() => setShowMore(v => !v)}
-            className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border ${showMore ? 'border-blue-300 bg-blue-50 text-blue-600' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+            className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border ${showMore ? 'text-gold' : 'border-line text-mut hover:bg-soft'}`}
+            style={showMore ? { borderColor: 'rgba(233,193,120,.5)', background: 'rgba(233,193,120,.12)' } : undefined}>
             <SlidersHorizontal size={12} /> Filter
             {(filter.categories.length + filter.accounts.length + (filter.tags?.length ?? 0)) > 0 && (
-              <span className="bg-blue-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center">
+              <span className="text-[#2a1d08] rounded-full w-4 h-4 text-[10px] flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
                 {filter.categories.length + filter.accounts.length + (filter.tags?.length ?? 0)}
               </span>
             )}
           </button>
           {hasFilter && (
             <button onClick={resetFilter}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5">
+              className="flex items-center gap-1 text-xs text-faint hover:text-ink px-2 py-1.5">
               <X size={12} /> Rensa
             </button>
           )}
@@ -137,24 +140,25 @@ export default function FilterBar() {
       {/* Month chips */}
       {availableMonths.length > 0 && (
         <div className="flex gap-1.5 flex-wrap items-center">
-          <span className="text-[11px] text-gray-400 flex-shrink-0">Månad:</span>
+          <span className="text-[11px] text-faint flex-shrink-0">Månad:</span>
           {availableMonths.length > MONTHS_DEFAULT_SHOW && !showAllMonths && (
             <button onClick={() => setShowAllMonths(true)}
-              className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-400 hover:bg-gray-200 flex items-center gap-0.5">
+              className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-soft text-faint hover:bg-card flex items-center gap-0.5">
               +{availableMonths.length - MONTHS_DEFAULT_SHOW} <ChevronDown size={10} />
             </button>
           )}
           {visibleMonths.map(m => (
             <button key={m} onClick={() => toggleMonth(m)}
               className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition-all ${
-                filter.months.includes(m) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}>
+                filter.months.includes(m) ? 'text-[#2a1d08]' : 'bg-soft text-mut hover:bg-card'
+              }`}
+              style={filter.months.includes(m) ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
               {formatMonth(m)}
             </button>
           ))}
           {showAllMonths && availableMonths.length > MONTHS_DEFAULT_SHOW && (
             <button onClick={() => setShowAllMonths(false)}
-              className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-400 hover:bg-gray-200">
+              className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-soft text-faint hover:bg-card">
               Visa färre
             </button>
           )}
@@ -163,16 +167,17 @@ export default function FilterBar() {
 
       {/* Expanded filters */}
       {showMore && (
-        <div className="space-y-2 pt-1 border-t border-gray-50">
+        <div className="space-y-2 pt-1 border-t border-line">
           <div className="flex gap-1.5 flex-wrap items-center">
-            <span className="text-[11px] text-gray-400 flex-shrink-0">Kategori:</span>
+            <span className="text-[11px] text-faint flex-shrink-0">Kategori:</span>
             {ALL_CATEGORIES.filter(c => c !== 'Överföring').map(cat => (
               <button key={cat} onClick={() => toggleCat(cat)}
                 className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition-all ${
                   filter.categories.includes(cat as any)
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}>
+                    ? 'text-[#2a1d08]'
+                    : 'bg-soft text-mut hover:bg-card'
+                }`}
+                style={filter.categories.includes(cat as any) ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
                 {cat}
               </button>
             ))}
@@ -180,12 +185,13 @@ export default function FilterBar() {
 
           {accounts.length > 1 && (
             <div className="flex gap-1.5 flex-wrap items-center">
-              <span className="text-[11px] text-gray-400 flex-shrink-0">Konto:</span>
+              <span className="text-[11px] text-faint flex-shrink-0">Konto:</span>
               {accounts.map(acc => (
                 <button key={acc} onClick={() => toggleAccount(acc)}
                   className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition-all ${
-                    filter.accounts.includes(acc) ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}>
+                    filter.accounts.includes(acc) ? 'text-[#2a1d08]' : 'bg-soft text-mut hover:bg-card'
+                  }`}
+                  style={filter.accounts.includes(acc) ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
                   {acc}
                 </button>
               ))}
@@ -194,12 +200,15 @@ export default function FilterBar() {
 
           {allTags.length > 0 && (
             <div className="flex gap-1.5 flex-wrap items-center">
-              <span className="text-[11px] text-gray-400 flex-shrink-0 flex items-center gap-1"><Tag size={10} /> Taggar:</span>
+              <span className="text-[11px] text-faint flex-shrink-0 flex items-center gap-1"><Tag size={10} /> Taggar:</span>
               {allTags.map(t => (
                 <button key={t} onClick={() => toggleTag(t)}
                   className={`px-2 py-0.5 rounded-full text-[11px] font-medium transition-all ${
-                    (filter.tags ?? []).includes(t) ? 'bg-blue-500 text-white' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                  }`}>
+                    (filter.tags ?? []).includes(t) ? 'text-[#2a1d08]' : 'text-gold hover:bg-card'
+                  }`}
+                  style={(filter.tags ?? []).includes(t)
+                    ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }
+                    : { background: 'rgba(233,193,120,.12)' }}>
                   {t}
                 </button>
               ))}
@@ -207,26 +216,26 @@ export default function FilterBar() {
           )}
 
           <div className="flex gap-2 items-center flex-wrap">
-            <span className="text-[11px] text-gray-400 flex-shrink-0 flex items-center gap-1"><Calendar size={10} /> Datum:</span>
+            <span className="text-[11px] text-faint flex-shrink-0 flex items-center gap-1"><Calendar size={10} /> Datum:</span>
             <input type="date" value={filter.dateFrom ?? ''}
               onChange={e => setFilter({ dateFrom: e.target.value || null, months: [] })}
-              className="border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-blue-400" />
-            <span className="text-[11px] text-gray-400">–</span>
+              className="bg-soft text-ink border border-line rounded-lg px-2 py-1 text-xs outline-none focus:border-gold/50" />
+            <span className="text-[11px] text-faint">–</span>
             <input type="date" value={filter.dateTo ?? ''}
               onChange={e => setFilter({ dateTo: e.target.value || null, months: [] })}
-              className="border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-blue-400" />
+              className="bg-soft text-ink border border-line rounded-lg px-2 py-1 text-xs outline-none focus:border-gold/50" />
           </div>
 
           <div className="flex gap-2 items-center">
-            <span className="text-[11px] text-gray-400 flex-shrink-0">Belopp:</span>
+            <span className="text-[11px] text-faint flex-shrink-0">Belopp:</span>
             <input type="number" placeholder="Min" value={filter.amountMin ?? ''}
               onChange={e => setFilter({ amountMin: e.target.value ? Number(e.target.value) : null })}
-              className="w-20 border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-blue-400" />
-            <span className="text-[11px] text-gray-400">–</span>
+              className="w-20 bg-soft text-ink border border-line rounded-lg px-2 py-1 text-xs outline-none focus:border-gold/50" />
+            <span className="text-[11px] text-faint">–</span>
             <input type="number" placeholder="Max" value={filter.amountMax ?? ''}
               onChange={e => setFilter({ amountMax: e.target.value ? Number(e.target.value) : null })}
-              className="w-20 border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-blue-400" />
-            <span className="text-[11px] text-gray-400">kr</span>
+              className="w-20 bg-soft text-ink border border-line rounded-lg px-2 py-1 text-xs outline-none focus:border-gold/50" />
+            <span className="text-[11px] text-faint">kr</span>
           </div>
         </div>
       )}

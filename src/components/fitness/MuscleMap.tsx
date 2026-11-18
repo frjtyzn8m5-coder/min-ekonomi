@@ -20,30 +20,33 @@ export interface MuscleMapProps {
 }
 
 // ── Colour helpers ────────────────────────────────────────────────────────────
+// Dark-friendly base tone for unworked muscles; palette accents for highlights.
+
+const BASE_MUSCLE = 'rgba(244,241,234,.08)';
 
 function roleColor(role: MuscleRole): string {
   switch (role) {
-    case 'primary':   return '#f97316'; // orange-500
-    case 'secondary': return '#3b82f6'; // blue-500
-    case 'stabilizer':return '#9ca3af'; // gray-400
-    default:          return '#e5e7eb'; // gray-200
+    case 'primary':   return '#e9c178'; // gold
+    case 'secondary': return '#5fe0d0'; // cyan
+    case 'stabilizer':return '#9b8cff'; // violet
+    default:          return BASE_MUSCLE;
   }
 }
 
 function volumeColor(sets: number): string {
-  if (sets === 0)  return '#e5e7eb';
-  if (sets <= 5)   return '#bbf7d0';
-  if (sets <= 10)  return '#4ade80';
-  if (sets <= 20)  return '#16a34a';
-  return '#dc2626';
+  if (sets === 0)  return BASE_MUSCLE;
+  if (sets <= 5)   return '#5fe0d0'; // cyan – light
+  if (sets <= 10)  return '#aee07a'; // lime
+  if (sets <= 20)  return '#e9c178'; // gold
+  return '#ff8f7a';                  // coral – high
 }
 
 function fatigueColor(days: number | undefined): string {
-  if (days === undefined) return '#e5e7eb'; // never trained → grey
-  if (days < 1)   return '#fbbf24'; // yellow – just trained
-  if (days < 2)   return '#fb923c'; // orange – 24–48h
-  if (days <= 7)  return '#4ade80'; // green – ready
-  return '#e5e7eb';                 // grey – 7+ days, high priority
+  if (days === undefined) return BASE_MUSCLE; // never trained
+  if (days < 1)   return '#e9c178'; // gold – just trained (rest)
+  if (days < 2)   return '#ff8f7a'; // coral – 24–48h
+  if (days <= 7)  return '#aee07a'; // lime – ready
+  return BASE_MUSCLE;               // base – 7+ days, high priority
 }
 
 // ── SVG muscle shapes (simplified polygons / paths) ──────────────────────────
@@ -381,18 +384,19 @@ function BodyView({
   return (
     <svg viewBox="30 5 140 185" width={size} height={size * 1.1} className="flex-shrink-0">
       {/* body silhouette */}
-      <path d={front ? BODY_FRONT : BODY_BACK} fill="#f3f4f6" stroke="#d1d5db" strokeWidth="1" />
+      <path d={front ? BODY_FRONT : BODY_BACK} fill="rgba(244,241,234,.04)" stroke="rgba(244,241,234,.14)" strokeWidth="1" />
 
       {/* muscle shapes */}
       {deduped.map((shape, i) => {
-        const color = colorMap.get(shape.id) ?? '#e5e7eb';
+        const color = colorMap.get(shape.id) ?? BASE_MUSCLE;
+        const isBase = color === BASE_MUSCLE;
         return (
           <path
             key={`${shape.id}-${i}`}
             d={shape.d}
             fill={color}
-            fillOpacity={color === '#e5e7eb' ? 0.5 : 0.85}
-            stroke={color === '#e5e7eb' ? '#d1d5db' : color}
+            fillOpacity={isBase ? 1 : 0.9}
+            stroke={isBase ? 'rgba(244,241,234,.14)' : color}
             strokeWidth="0.5"
             style={{ cursor: onMuscleClick ? 'pointer' : 'default' }}
             onClick={() => onMuscleClick?.(shape.id)}
@@ -401,7 +405,7 @@ function BodyView({
       })}
 
       {/* label */}
-      <text x="100" y="195" textAnchor="middle" fontSize="9" fill="#9ca3af">
+      <text x="100" y="195" textAnchor="middle" fontSize="9" fill="#9b9688">
         {front ? 'Framsida' : 'Baksida'}
       </text>
     </svg>
@@ -414,13 +418,13 @@ function ExerciseLegend() {
   return (
     <div className="flex items-center gap-3 flex-wrap">
       {[
-        { color: '#f97316', label: 'Primär' },
-        { color: '#3b82f6', label: 'Sekundär' },
-        { color: '#9ca3af', label: 'Stabilisator' },
+        { color: '#e9c178', label: 'Primär' },
+        { color: '#5fe0d0', label: 'Sekundär' },
+        { color: '#9b8cff', label: 'Stabilisator' },
       ].map(({ color, label }) => (
         <div key={label} className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color }} />
-          <span className="text-[11px] text-gray-500">{label}</span>
+          <span className="text-[11px] text-mut">{label}</span>
         </div>
       ))}
     </div>
@@ -430,17 +434,17 @@ function ExerciseLegend() {
 function VolumeLegend() {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-[11px] text-gray-500">Set/vecka:</span>
+      <span className="text-[11px] text-mut">Set/vecka:</span>
       {[
-        { color: '#e5e7eb', label: '0' },
-        { color: '#bbf7d0', label: '1–5' },
-        { color: '#4ade80', label: '6–10' },
-        { color: '#16a34a', label: '11–20' },
-        { color: '#dc2626', label: '>20' },
+        { color: BASE_MUSCLE, label: '0' },
+        { color: '#5fe0d0', label: '1–5' },
+        { color: '#aee07a', label: '6–10' },
+        { color: '#e9c178', label: '11–20' },
+        { color: '#ff8f7a', label: '>20' },
       ].map(({ color, label }) => (
         <div key={label} className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-sm" style={{ background: color }} />
-          <span className="text-[10px] text-gray-500">{label}</span>
+          <span className="text-[10px] text-mut">{label}</span>
         </div>
       ))}
     </div>
@@ -451,14 +455,14 @@ function FatigueLegend() {
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {[
-        { color: '#fbbf24', label: '<24h (vila)' },
-        { color: '#fb923c', label: '24–48h' },
-        { color: '#4ade80', label: 'Redo' },
-        { color: '#e5e7eb', label: 'Ej tränad' },
+        { color: '#e9c178', label: '<24h (vila)' },
+        { color: '#ff8f7a', label: '24–48h' },
+        { color: '#aee07a', label: 'Redo' },
+        { color: BASE_MUSCLE, label: 'Ej tränad' },
       ].map(({ color, label }) => (
         <div key={label} className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full" style={{ background: color }} />
-          <span className="text-[10px] text-gray-500">{label}</span>
+          <span className="text-[10px] text-mut">{label}</span>
         </div>
       ))}
     </div>

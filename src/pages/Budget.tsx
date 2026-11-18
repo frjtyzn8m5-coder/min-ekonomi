@@ -4,11 +4,15 @@ import { useAuthStore } from '../store/useAuthStore';
 import { saveBudgets } from '../lib/db';
 import { getMonthlyData, formatSEK, formatMonth, allMonths } from '../utils/calculations';
 import { EXPENSE_CATEGORIES, CATEGORY_COLORS } from '../utils/categorize';
-import { Card, EmptyState } from '../components/ui/Card';
-import { Upload, Edit2, Check, TrendingUp, X, Sparkles } from 'lucide-react';
+import { Edit2, Check, TrendingUp, X, Sparkles } from 'lucide-react';
+import { IWallet, IArrowRight } from '../components/ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine, Cell } from 'recharts';
 import type { Category, Transaction } from '../types';
+
+const AXIS_FILL = '#9b9688';
+const TOOLTIP_STYLE = { background: '#15151b', border: '1px solid rgba(244,241,234,.09)', borderRadius: 8, fontSize: 11, color: '#f4f1ea' };
+const GOLD_BTN = { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' };
 
 // ── Income / fixed-cost detection ─────────────────────────────────────────────
 
@@ -133,50 +137,50 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.15 }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="vh-card bg-card text-ink w-full max-w-lg max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line sticky top-0 bg-card z-10">
           <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-blue-500" />
-            <h2 className="text-sm font-semibold text-gray-900">Snabbstart budget</h2>
+            <Sparkles size={16} className="text-gold" />
+            <h2 className="font-display text-ink text-[15px]">Snabbstart budget</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+          <button onClick={onClose} className="text-faint hover:text-ink"><X size={16} /></button>
         </div>
 
         <div className="p-5 space-y-5">
 
           {/* Monthly income */}
           <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-2">
+            <label className="text-xs font-semibold text-mut block mb-2">
               Månadsinkomst efter skatt
             </label>
             {totalDet > 0 ? (
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {detected.lön > 0 && (
-                  <span className="text-[11px] bg-green-50 text-green-700 rounded-full px-2 py-0.5">
+                  <span className="text-[11px] rounded-full px-2 py-0.5 text-cyan" style={{ background: 'rgba(95,224,208,.12)' }}>
                     Lön {formatSEK(detected.lön)}
                   </span>
                 )}
                 {detected.csnBidrag > 0 && (
-                  <span className="text-[11px] bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">
+                  <span className="text-[11px] rounded-full px-2 py-0.5 text-gold" style={{ background: 'rgba(233,193,120,.12)' }}>
                     CSN Bidrag {formatSEK(detected.csnBidrag)}
                   </span>
                 )}
                 {detected.csnLån > 0 && (
-                  <span className="text-[11px] bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">
+                  <span className="text-[11px] rounded-full px-2 py-0.5 text-gold" style={{ background: 'rgba(233,193,120,.12)' }}>
                     CSN Lån {formatSEK(detected.csnLån)}
                   </span>
                 )}
               </div>
             ) : (
-              <p className="text-[11px] text-gray-400 mb-2">Ingen inkomst hittad i transaktioner — fyll i manuellt.</p>
+              <p className="text-[11px] text-faint mb-2">Ingen inkomst hittad i transaktioner — fyll i manuellt.</p>
             )}
             <div className="relative">
               <input
@@ -184,20 +188,20 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
                 value={income || ''}
                 placeholder="t.ex. 25000"
                 onChange={e => setIncome(Math.max(0, Number(e.target.value)))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300 pr-12"
+                className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-gold pr-12"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">kr/mån</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-faint">kr/mån</span>
             </div>
           </div>
 
           {/* Fixed costs */}
           <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-2">
-              Fasta kostnader <span className="font-normal text-gray-400">(dras av före fördelning av resterande)</span>
+            <label className="text-xs font-semibold text-mut block mb-2">
+              Fasta kostnader <span className="font-normal text-faint">(dras av före fördelning av resterande)</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-[11px] text-gray-500 mb-1">
+                <p className="text-[11px] text-mut mb-1">
                   Boende (hyra/avgift){detected.boende > 0 ? ` · medianvärde senaste 6 mån` : ''}
                 </p>
                 <div className="relative">
@@ -206,13 +210,13 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
                     value={boende || ''}
                     placeholder={detected.boende > 0 ? String(detected.boende) : 't.ex. 6000'}
                     onChange={e => setBoende(Math.max(0, Number(e.target.value)))}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-300 pr-8"
+                    className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-gold pr-8"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-gray-400">kr</span>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-faint">kr</span>
                 </div>
               </div>
               <div>
-                <p className="text-[11px] text-gray-500 mb-1">
+                <p className="text-[11px] text-mut mb-1">
                   Telefon & internet{detected.telefon > 0 ? ` · medianvärde senaste 6 mån` : ''}
                 </p>
                 <div className="relative">
@@ -221,9 +225,9 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
                     value={telefon || ''}
                     placeholder={detected.telefon > 0 ? String(detected.telefon) : 't.ex. 300'}
                     onChange={e => setTelefon(Math.max(0, Number(e.target.value)))}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-300 pr-8"
+                    className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-gold pr-8"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-gray-400">kr</span>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-faint">kr</span>
                 </div>
               </div>
             </div>
@@ -231,7 +235,7 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
 
           {/* Style selector */}
           <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-2">Budget-stil</label>
+            <label className="text-xs font-semibold text-mut block mb-2">Budget-stil</label>
             <div className="grid grid-cols-2 gap-2">
               {(Object.entries(STYLE_INFO) as [BudgetStyle, typeof STYLE_INFO[BudgetStyle]][]).map(([s, info]) => (
                 <button
@@ -239,12 +243,13 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
                   onClick={() => setStyle(s)}
                   className={`px-3 py-2.5 rounded-xl text-left transition-colors border ${
                     style === s
-                      ? 'bg-blue-50 border-blue-300 text-blue-800'
-                      : 'bg-gray-50 border-transparent text-gray-700 hover:bg-gray-100'
+                      ? 'text-gold'
+                      : 'bg-soft border-transparent text-mut hover:bg-white/5'
                   }`}
+                  style={style === s ? { background: 'rgba(233,193,120,.12)', borderColor: 'rgba(233,193,120,.4)' } : undefined}
                 >
                   <div className="text-xs font-semibold mb-0.5">{info.emoji} {info.label}</div>
-                  <div className="text-[10px] text-gray-500 leading-tight">{info.desc}</div>
+                  <div className="text-[10px] text-faint leading-tight">{info.desc}</div>
                 </button>
               ))}
             </div>
@@ -253,8 +258,8 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
           {/* Suggested breakdown */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-gray-700">Föreslaget per kategori</span>
-              <span className={`text-xs font-semibold ${savings >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+              <span className="text-xs font-semibold text-mut">Föreslaget per kategori</span>
+              <span className={`text-xs font-semibold tabular-nums ${savings >= 0 ? 'text-cyan' : 'text-coral'}`}>
                 Sparande: {formatSEK(savings)} ({savingsPct.toFixed(0)}%)
               </span>
             </div>
@@ -263,12 +268,12 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
                 const val = (suggested[cat as Category] ?? 0) as number;
                 if (val === 0) return null;
                 return (
-                  <div key={cat} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-2.5 py-1.5">
+                  <div key={cat} className="flex items-center justify-between text-xs bg-soft rounded-lg px-2.5 py-1.5">
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: CATEGORY_COLORS[cat] || '#e5e7eb' }} />
-                      <span className="text-gray-600 truncate">{cat}</span>
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: CATEGORY_COLORS[cat] || 'rgba(244,241,234,.2)' }} />
+                      <span className="text-mut truncate">{cat}</span>
                     </span>
-                    <span className="font-semibold text-gray-800 ml-2 flex-shrink-0">{formatSEK(val)}</span>
+                    <span className="font-semibold text-ink ml-2 flex-shrink-0 tabular-nums">{formatSEK(val)}</span>
                   </div>
                 );
               })}
@@ -281,7 +286,8 @@ function BudgetQuiz({ transactions, budgets, updateBudget, onClose, user }: {
           <button
             onClick={handleApply}
             disabled={applying}
-            className="w-full py-3 bg-blue-500 text-white text-sm font-semibold rounded-xl hover:bg-blue-600 disabled:opacity-60 transition-colors"
+            className="w-full py-3 text-[#2a1d08] text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors"
+            style={GOLD_BTN}
           >
             {applying ? 'Tillämpar…' : 'Tillämpa budget'}
           </button>
@@ -305,7 +311,7 @@ function SparkBar({ data, limit }: { data: number[]; limit: number }) {
             style={{
               height: `${Math.min(pct * 100, 100)}%`,
               minHeight: v > 0 ? 2 : 0,
-              background: over ? '#ff3b30' : pct > 0.8 ? '#ff9f0a' : CATEGORY_COLORS[String(i)] || '#34c759',
+              background: over ? '#ff8f7a' : pct > 0.8 ? '#e9c178' : CATEGORY_COLORS[String(i)] || '#5fe0d0',
               opacity: i === data.length - 1 ? 1 : 0.5,
             }} />
         );
@@ -329,10 +335,18 @@ export default function Budget() {
 
   if (!transactions.length) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6">
-        <EmptyState icon={<Upload size={48} />} title="Inga transaktioner"
-          description="Importera kontoutdrag för att se budget"
-          action={<button onClick={() => setPage('import')} className="bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-lg">Importera</button>} />
+      <div className="flex-1 flex items-center justify-center p-6 bg-bg text-ink">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <span className="vh-tile vh-tile--gold w-12 h-12 mb-4"><IWallet size={26} /></span>
+          <p className="text-sm font-medium text-mut">Inga transaktioner</p>
+          <p className="text-xs text-faint mt-1 max-w-xs">Importera kontoutdrag för att se budget</p>
+          <div className="mt-4">
+            <button onClick={() => setPage('import')}
+              className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg text-[#2a1d08]" style={GOLD_BTN}>
+              Importera <IArrowRight size={14} />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -358,7 +372,16 @@ export default function Budget() {
   const startEdit = (cat: string, current: number) => { setEditCat(cat); setEditVal(String(current)); };
   const saveEdit = (cat: string) => {
     const val = parseInt(editVal);
-    if (!isNaN(val) && val >= 0) updateBudget(cat as Category, val);
+    if (!isNaN(val) && val >= 0) {
+      updateBudget(cat as Category, val);
+      if (user) {
+        const newBudgets = EXPENSE_CATEGORIES.map(c => ({
+          category: c,
+          limit: c === cat ? val : (budgets.find(b => b.category === c)?.limit ?? 0),
+        }));
+        saveBudgets(user.uid, newBudgets).catch(() => {});
+      }
+    }
     setEditCat(null);
   };
 
@@ -384,22 +407,24 @@ export default function Budget() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col h-full overflow-auto">
-        <div className="px-4 lg:px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+      <div className="flex flex-col h-full overflow-auto bg-bg text-ink">
+        <div className="px-4 lg:px-6 py-4 bg-panel border-b border-line flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Budget</h1>
-            <p className="text-sm text-gray-400 mt-0.5">Sätt gränser och spåra dina utgifter</p>
+            <h1 className="font-display text-2xl text-ink">Budget</h1>
+            <p className="text-sm text-faint mt-0.5">Sätt gränser och spåra dina utgifter</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
               onClick={() => setShowQuiz(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[#2a1d08] text-xs font-medium rounded-lg transition-colors"
+              style={GOLD_BTN}
             >
               <Sparkles size={12} /> Snabbstart
             </button>
             {months.slice(-6).map(m => (
               <button key={m} onClick={() => setSelectedMonth(m)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${selectedMonth === m ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${selectedMonth === m ? 'text-[#2a1d08]' : 'bg-soft text-mut'}`}
+                style={selectedMonth === m ? GOLD_BTN : undefined}>
                 {formatMonth(m)}
               </button>
             ))}
@@ -409,45 +434,45 @@ export default function Budget() {
         <div className="p-4 lg:p-6 space-y-4">
           {/* Total */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <div className="vh-card p-5">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <p className="text-xs text-gray-400">Total budget {formatMonth(selectedMonth)}</p>
-                  <p className="text-2xl font-semibold tracking-tight text-gray-900">
+                  <p className="text-xs text-faint">Total budget {formatMonth(selectedMonth)}</p>
+                  <p className="font-display text-2xl tabular-nums tracking-tight text-ink">
                     {formatSEK(totalActual)}
-                    <span className="text-base font-normal text-gray-400"> / {totalBudget > 0 ? formatSEK(totalBudget) : <span className="text-gray-300">ej satt</span>}</span>
+                    <span className="text-base font-normal text-faint"> / {totalBudget > 0 ? formatSEK(totalBudget) : <span className="text-faint">ej satt</span>}</span>
                   </p>
                 </div>
                 {totalBudget > 0 && (
-                  <div className={`text-lg font-bold ${totalPct > 100 ? 'text-red-500' : totalPct > 80 ? 'text-yellow-500' : 'text-green-500'}`}>
+                  <div className={`font-display text-lg tabular-nums ${totalPct > 100 ? 'text-coral' : totalPct > 80 ? 'text-gold' : 'text-cyan'}`}>
                     {totalPct.toFixed(0)}%
                   </div>
                 )}
               </div>
               {totalBudget > 0 && (
-                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${totalPct > 100 ? 'bg-red-500' : totalPct > 80 ? 'bg-yellow-400' : 'bg-green-500'}`}
-                    style={{ width: `${Math.min(totalPct, 100)}%` }} />
+                <div className="w-full h-3 bg-soft rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width: `${Math.min(totalPct, 100)}%`, background: totalPct > 100 ? 'var(--coral)' : totalPct > 80 ? 'var(--gold)' : 'var(--cyan)' }} />
                 </div>
               )}
               {totalBudget === 0 && (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-faint">
                   Ingen budget satt ännu —{' '}
-                  <button onClick={() => setShowQuiz(true)} className="text-blue-500 hover:underline">
+                  <button onClick={() => setShowQuiz(true)} className="text-gold hover:underline">
                     använd Snabbstart
                   </button>{' '}
                   för att sätta upp en budget på sekunder.
                 </p>
               )}
-            </Card>
+            </div>
           </motion.div>
 
           {/* Category rows */}
-          <Card padding={false}>
-            <div className="px-5 py-3 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900">Per kategori</h3>
+          <div className="vh-card">
+            <div className="px-5 py-3 border-b border-line">
+              <h3 className="font-display text-ink text-[15px]">Per kategori</h3>
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-line">
               {rows.map(({ cat, actual, limit, pct, over, trend }, i) => (
                 <motion.div key={cat}
                   initial={{ opacity: 0, x: -8 }}
@@ -457,27 +482,28 @@ export default function Budget() {
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: CATEGORY_COLORS[cat] || '#e5e7eb' }} />
-                      <span className="text-sm font-medium text-gray-800">{cat}</span>
-                      {over && <span className="text-[10px] font-medium text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">Över budget</span>}
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: CATEGORY_COLORS[cat] || 'rgba(244,241,234,.2)' }} />
+                      <span className="text-sm font-medium text-ink">{cat}</span>
+                      {over && <span className="text-[10px] font-medium text-coral px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,143,122,.12)' }}>Över budget</span>}
                     </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => setShowTrend(showTrend === cat ? null : cat)}
-                        className={`p-1 rounded ${showTrend === cat ? 'text-blue-500 bg-blue-50' : 'text-gray-300 hover:text-gray-500'}`}>
+                        className={`p-1 rounded ${showTrend === cat ? 'text-gold' : 'text-faint hover:text-mut'}`}
+                        style={showTrend === cat ? { background: 'rgba(233,193,120,.12)' } : undefined}>
                         <TrendingUp size={13} />
                       </button>
-                      <span className={`text-sm font-semibold ${over ? 'text-red-500' : 'text-gray-700'}`}>{formatSEK(actual)}</span>
-                      <span className="text-xs text-gray-400">/</span>
+                      <span className={`text-sm font-semibold tabular-nums ${over ? 'text-coral' : 'text-ink'}`}>{formatSEK(actual)}</span>
+                      <span className="text-xs text-faint">/</span>
                       {editCat === cat ? (
                         <div className="flex items-center gap-1">
                           <input type="number" value={editVal} onChange={e => setEditVal(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && saveEdit(cat)}
-                            className="w-20 text-xs border border-blue-300 rounded px-2 py-1 outline-none" autoFocus />
-                          <button onClick={() => saveEdit(cat)} className="text-blue-500 hover:text-blue-600"><Check size={14} /></button>
+                            className="w-20 text-xs border border-gold bg-soft text-ink rounded px-2 py-1 outline-none" autoFocus />
+                          <button onClick={() => saveEdit(cat)} className="text-gold hover:brightness-110"><Check size={14} /></button>
                         </div>
                       ) : (
                         <button onClick={() => startEdit(cat, limit)}
-                          className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                          className="text-xs text-faint hover:text-mut flex items-center gap-1 tabular-nums">
                           {limit > 0 ? formatSEK(limit) : 'Sätt budget'}
                           <Edit2 size={10} />
                         </button>
@@ -487,13 +513,13 @@ export default function Budget() {
 
                   {limit > 0 && (
                     <>
-                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all ${over ? 'bg-red-500' : pct > 80 ? 'bg-yellow-400' : 'bg-green-400'}`}
-                          style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: over ? undefined : CATEGORY_COLORS[cat] + 'aa' }} />
+                      <div className="w-full h-1.5 bg-soft rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all"
+                          style={{ width: `${Math.min(pct, 100)}%`, background: over ? 'var(--coral)' : pct > 80 ? 'var(--gold)' : (CATEGORY_COLORS[cat] ? CATEGORY_COLORS[cat] + 'aa' : 'var(--cyan)') }} />
                       </div>
                       <div className="flex justify-between mt-1">
-                        <span className="text-[10px] text-gray-400">{pct.toFixed(0)}% använt</span>
-                        <span className={`text-[10px] font-medium ${over ? 'text-red-500' : 'text-gray-400'}`}>
+                        <span className="text-[10px] text-faint tabular-nums">{pct.toFixed(0)}% använt</span>
+                        <span className={`text-[10px] font-medium tabular-nums ${over ? 'text-coral' : 'text-faint'}`}>
                           {over ? `+${formatSEK(actual - limit)} över` : `${formatSEK(limit - actual)} kvar`}
                         </span>
                       </div>
@@ -502,16 +528,16 @@ export default function Budget() {
 
                   {showTrend === cat && trendData.length > 1 && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-3">
-                      <p className="text-[11px] text-gray-400 mb-2">6-månadershistorik</p>
+                      <p className="text-[11px] text-faint mb-2">6-månadershistorik</p>
                       <ResponsiveContainer width="100%" height={100}>
                         <BarChart data={trendData} barGap={2}>
-                          <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={30} />
-                          <Tooltip formatter={(v: any) => formatSEK(v)} contentStyle={{ borderRadius: 8, fontSize: 11 }} />
-                          {limit > 0 && <ReferenceLine y={limit} stroke="#ef4444" strokeDasharray="3 3" />}
+                          <XAxis dataKey="name" tick={{ fontSize: 10, fill: AXIS_FILL }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fontSize: 10, fill: AXIS_FILL }} axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000).toFixed(0)}k`} width={30} />
+                          <Tooltip formatter={(v: any) => formatSEK(v)} contentStyle={TOOLTIP_STYLE} />
+                          {limit > 0 && <ReferenceLine y={limit} stroke="#ff8f7a" strokeDasharray="3 3" />}
                           <Bar dataKey="Faktisk" radius={[3,3,0,0]}>
                             {trendData.map((d, idx) => (
-                              <Cell key={idx} fill={d.Faktisk > d.Budget && d.Budget > 0 ? '#ff3b30' : CATEGORY_COLORS[cat] || '#34c759'} />
+                              <Cell key={idx} fill={d.Faktisk > d.Budget && d.Budget > 0 ? '#ff8f7a' : CATEGORY_COLORS[cat] || '#5fe0d0'} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -521,7 +547,7 @@ export default function Budget() {
                 </motion.div>
               ))}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </>

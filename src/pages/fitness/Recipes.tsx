@@ -8,8 +8,8 @@ import { calcRecipeCost } from '../../utils/recipeCost';
 import { getLvData, matchToLV, nutritionForGrams, calcRecipeNutrition } from '../../utils/matchNutrition';
 import type { Recipe, RecipeIngredient, PantryItem, PriceEntry, FoodEntry, FoodItem } from '../../types';
 import {
-  ChefHat, Plus, Trash2, Link, Loader2, Search, X, ChevronDown, ChevronUp,
-  Utensils, Check, Package, RefreshCw, AlertCircle, Shuffle, ArrowLeft,
+  ChefHat, Trash2, Link, Loader2, Search, X, ChevronDown, ChevronUp,
+  Utensils, Check, AlertCircle, Shuffle, ArrowLeft,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
@@ -65,34 +65,35 @@ function ImportDialog({ onImport, onClose }: ImportDialogProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-card border border-line rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line">
           <div className="flex items-center gap-2">
-            <Link size={18} className="text-green-600" />
-            <h2 className="font-semibold text-gray-900">Importera recept från URL</h2>
+            <Link size={18} className="text-gold" />
+            <h2 className="font-display text-ink">Importera recept från URL</h2>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
-            <X size={16} className="text-gray-500" />
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">
+            <X size={16} className="text-mut" />
           </button>
         </div>
         <div className="p-5 space-y-4">
-          <p className="text-sm text-gray-500">Klistra in en länk till ett recept från t.ex. ICA, Arla, Tasteline eller Coop.</p>
+          <p className="text-sm text-mut">Klistra in en länk till ett recept från t.ex. ICA, Arla, Tasteline eller Coop.</p>
           <input
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full border border-line bg-soft text-ink rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
             placeholder="https://www.ica.se/recept/..."
             value={url}
             onChange={e => setUrl(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleImport()}
           />
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-sm text-coral">{error}</p>}
         </div>
         <div className="px-5 pb-5 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">Avbryt</button>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-sm font-medium text-mut hover:bg-white/5">Avbryt</button>
           <button
             onClick={handleImport}
             disabled={!url.trim() || loading}
-            className="flex-1 py-2.5 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-[#2a1d08] disabled:opacity-40 flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : null}
             Importera
@@ -133,18 +134,18 @@ function SwapModal({ ingredientName, currentMatch, onSelect, onClose }: SwapModa
   }
 
   return (
-    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <p className="text-sm font-semibold text-gray-900">Välj matvara</p>
-          <button onClick={onClose}><X size={16} className="text-gray-400" /></button>
+    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/60 p-4">
+      <div className="bg-card border border-line rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-line">
+          <p className="text-sm font-semibold text-ink">Välj matvara</p>
+          <button onClick={onClose}><X size={16} className="text-faint" /></button>
         </div>
-        <div className="p-3 border-b border-gray-50">
+        <div className="p-3 border-b border-line">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
             <input
               ref={inputRef}
-              className="w-full pl-8 pr-3 py-2 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full pl-8 pr-3 py-2 bg-soft text-ink rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Sök i Livsmedelsverkets databas…"
@@ -152,18 +153,19 @@ function SwapModal({ ingredientName, currentMatch, onSelect, onClose }: SwapModa
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {loading && <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-gray-400" /></div>}
+          {loading && <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-faint" /></div>}
           {results.map(item => (
             <button
               key={item.id}
               onClick={() => { onSelect(item); onClose(); }}
-              className={`w-full px-4 py-3 text-left border-b border-gray-50 hover:bg-green-50 transition-colors ${currentMatch?.id === item.id ? 'bg-green-50' : ''}`}
+              className="w-full px-4 py-3 text-left border-b border-line hover:bg-white/5 transition-colors"
+              style={currentMatch?.id === item.id ? { background: 'rgba(233,193,120,.12)' } : undefined}
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm text-gray-900">{item.name}</p>
-                {currentMatch?.id === item.id && <Check size={14} className="text-green-600 flex-shrink-0 mt-0.5" />}
+                <p className="text-sm text-ink">{item.name}</p>
+                {currentMatch?.id === item.id && <Check size={14} className="text-gold flex-shrink-0 mt-0.5" />}
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-faint mt-0.5 tnum">
                 {item.energy_kcal} kcal · P {item.protein}g · F {item.fat}g · K {item.carbs}g
               </p>
             </button>
@@ -197,56 +199,56 @@ function IngredientRow({ ing, scale, costDetail, onUpdateGrams, onSwapMatch }: I
 
   return (
     <>
-      <div className={`border border-gray-100 rounded-xl overflow-hidden ${expanded ? 'ring-1 ring-green-200' : ''}`}>
+      <div className={`border border-line rounded-xl overflow-hidden ${expanded ? 'ring-1 ring-gold/40' : ''}`}>
         {/* Main row */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-white">
+        <div className="flex items-center gap-2 px-3 py-2 bg-card">
           <button
             onClick={() => setExpanded(v => !v)}
             className="flex-1 flex items-center gap-2 text-left min-w-0"
           >
-            <span className="text-sm text-gray-700 truncate">{ing.name}</span>
+            <span className="text-sm text-mut truncate">{ing.name}</span>
             {!ing.lvItem && (
-              <span title="Ingen nutritionsmatchning"><AlertCircle size={13} className="text-amber-400 flex-shrink-0" /></span>
+              <span title="Ingen nutritionsmatchning"><AlertCircle size={13} className="text-gold flex-shrink-0" /></span>
             )}
             {hasNutrition && (
-              <span className="text-[10px] text-gray-400 flex-shrink-0">
+              <span className="text-[10px] text-faint flex-shrink-0 tnum">
                 {scaledNutrition!.kcal} kcal
               </span>
             )}
           </button>
           <input
             type="number"
-            className="w-20 border border-gray-200 rounded-lg px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-green-400"
+            className="w-20 border border-line bg-soft text-ink rounded-lg px-2 py-1 text-sm text-right tnum focus:outline-none focus:ring-1 focus:ring-gold"
             value={scaledGrams}
             onChange={e => onUpdateGrams(parseFloat(e.target.value) / Math.max(scale, 0.001))}
           />
-          <span className="text-xs text-gray-400 w-4">g</span>
-          <button onClick={() => setExpanded(v => !v)} className="text-gray-300 hover:text-gray-500">
+          <span className="text-xs text-faint w-4">g</span>
+          <button onClick={() => setExpanded(v => !v)} className="text-faint hover:text-mut">
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         </div>
 
         {/* Expanded detail */}
         {expanded && (
-          <div className="px-3 pb-3 pt-1 bg-gray-50 border-t border-gray-100 space-y-2">
+          <div className="px-3 pb-3 pt-1 bg-soft border-t border-line space-y-2">
             {/* Original text */}
-            <p className="text-[10px] text-gray-400">
+            <p className="text-[10px] text-faint">
               Original: <span className="italic">{ing.originalText}</span>
             </p>
 
             {/* LV match */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-gray-400 mb-0.5">Matchad matvara</p>
+                <p className="text-[10px] text-faint mb-0.5">Matchad matvara</p>
                 {ing.lvItem ? (
-                  <p className="text-xs font-medium text-gray-800 truncate">{ing.lvItem.name}</p>
+                  <p className="text-xs font-medium text-ink truncate">{ing.lvItem.name}</p>
                 ) : (
-                  <p className="text-xs text-amber-500">Ingen matchning — klicka för att välja</p>
+                  <p className="text-xs text-gold">Ingen matchning — klicka för att välja</p>
                 )}
               </div>
               <button
                 onClick={() => setShowSwap(true)}
-                className="flex items-center gap-1 text-[11px] text-green-600 hover:text-green-700 font-medium flex-shrink-0"
+                className="flex items-center gap-1 text-[11px] text-gold hover:text-gold-2 font-medium flex-shrink-0"
               >
                 <Shuffle size={12} />
                 Byt
@@ -255,7 +257,7 @@ function IngredientRow({ ing, scale, costDetail, onUpdateGrams, onSwapMatch }: I
 
             {/* Nutrition for this ingredient */}
             {scaledNutrition && (
-              <div className="grid grid-cols-4 gap-1 bg-white rounded-lg px-2 py-1.5">
+              <div className="grid grid-cols-4 gap-1 bg-card rounded-lg px-2 py-1.5">
                 {[
                   { label: 'Kcal', val: scaledNutrition.kcal },
                   { label: 'Prot', val: `${fmt1(scaledNutrition.protein)}g` },
@@ -263,8 +265,8 @@ function IngredientRow({ ing, scale, costDetail, onUpdateGrams, onSwapMatch }: I
                   { label: 'Kolh', val: `${fmt1(scaledNutrition.carbs)}g` },
                 ].map(m => (
                   <div key={m.label} className="text-center">
-                    <p className="text-[9px] text-gray-400">{m.label}</p>
-                    <p className="text-[11px] font-semibold text-gray-700">{m.val}</p>
+                    <p className="text-[9px] text-faint">{m.label}</p>
+                    <p className="text-[11px] font-semibold text-mut tnum">{m.val}</p>
                   </div>
                 ))}
               </div>
@@ -273,8 +275,8 @@ function IngredientRow({ ing, scale, costDetail, onUpdateGrams, onSwapMatch }: I
             {/* Cost */}
             {costDetail && (
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-gray-400">Kostnad (råkostnad)</span>
-                <span className={costDetail.found ? 'text-gray-700 font-medium' : 'text-gray-300'}>
+                <span className="text-faint">Kostnad (råkostnad)</span>
+                <span className={`tnum ${costDetail.found ? 'text-mut font-medium' : 'text-faint'}`}>
                   {costDetail.found && costDetail.rawCost !== null
                     ? `${costDetail.rawCost.toFixed(1)} kr`
                     : 'Pris okänt'}
@@ -385,12 +387,12 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
   const hasAnyPrice = cost.totalRawSEK > 0;
 
   return (
-    <div className="flex flex-col min-h-full bg-white">
+    <div className="flex flex-col min-h-full bg-bg text-ink">
       {/* Sticky header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0 bg-white sticky top-0 z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-line flex-shrink-0 bg-panel sticky top-0 z-10">
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
+          className="flex items-center gap-1.5 text-sm text-mut hover:text-ink"
         >
           <ArrowLeft size={16} />
           Tillbaka
@@ -398,13 +400,14 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
         <div className="flex gap-2">
           <button
             onClick={() => onDelete(recipe.id)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[rgba(255,143,122,0.08)] text-faint hover:text-coral"
           >
             <Trash2 size={16} />
           </button>
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700"
+            className="px-3 py-1.5 rounded-lg text-sm font-semibold text-[#2a1d08]"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
             Spara
           </button>
@@ -414,7 +417,7 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
       <div className="flex-1 overflow-y-auto">
         {/* Image */}
         {recipe.imageUrl && (
-          <div className="h-48 bg-gray-100 flex-shrink-0">
+          <div className="h-48 bg-soft flex-shrink-0">
             <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
           </div>
         )}
@@ -422,13 +425,13 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
         <div className="p-4 max-w-2xl mx-auto space-y-4 pb-8">
           {/* Name + source */}
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{recipe.name}</h1>
+            <h1 className="font-display text-xl text-ink">{recipe.name}</h1>
             {recipe.source && (
               <a
                 href={recipe.source}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-green-600 hover:underline mt-1 block truncate"
+                className="text-xs text-gold hover:underline mt-1 block truncate"
               >
                 {recipe.source}
               </a>
@@ -436,22 +439,22 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           </div>
 
           {/* Servings */}
-          <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-3">
-            <div className="flex items-center gap-1 text-gray-500">
+          <div className="flex items-center gap-4 bg-soft rounded-xl p-3">
+            <div className="flex items-center gap-1 text-mut">
               <Utensils size={16} />
               <span className="text-sm">Portioner</span>
             </div>
             <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={() => setServings(s => Math.max(1, s - 1))}
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-card border border-line text-mut hover:bg-white/10"
               >
                 −
               </button>
-              <span className="w-8 text-center font-semibold text-gray-800">{servings}</span>
+              <span className="w-8 text-center font-semibold text-ink tnum">{servings}</span>
               <button
                 onClick={() => setServings(s => s + 1)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-card border border-line text-mut hover:bg-white/10"
               >
                 +
               </button>
@@ -461,27 +464,27 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           {/* Cost summary */}
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-green-50 rounded-xl p-3 text-center">
-                <p className="text-xs text-green-600 font-medium">Råkostnad</p>
-                <p className="text-lg font-bold text-green-700 mt-1">
+              <div className="bg-[rgba(233,193,120,0.08)] border border-gold/20 rounded-xl p-3 text-center">
+                <p className="text-xs text-gold font-medium">Råkostnad</p>
+                <p className="font-display text-lg text-gold mt-1 tnum">
                   {hasAnyPrice ? formatCost(cost.totalRawSEK) : '–'}
                 </p>
-                <p className="text-xs text-green-500">
+                <p className="text-xs text-gold/70">
                   {hasAnyPrice ? `${formatCost(cost.perServingRaw)} / portion` : 'Lägg till priser i skafferiet'}
                 </p>
               </div>
-              <div className="bg-blue-50 rounded-xl p-3 text-center">
-                <p className="text-xs text-blue-600 font-medium">Verklig kostnad</p>
-                <p className="text-lg font-bold text-blue-700 mt-1">
+              <div className="bg-[rgba(95,224,208,0.08)] border border-cyan/20 rounded-xl p-3 text-center">
+                <p className="text-xs text-cyan font-medium">Verklig kostnad</p>
+                <p className="font-display text-lg text-cyan mt-1 tnum">
                   {hasAnyPrice ? formatCost(cost.totalRealSEK) : '–'}
                 </p>
-                <p className="text-xs text-blue-500">
+                <p className="text-xs text-cyan/70">
                   {hasAnyPrice ? `${formatCost(cost.perServingReal)} / portion` : 'Skanna kvitto för priser'}
                 </p>
               </div>
             </div>
             {totalPriceable > 0 && (
-              <p className="text-[11px] text-center text-gray-400">
+              <p className="text-[11px] text-center text-faint">
                 {pricedCount === totalPriceable
                   ? `✓ Alla ${totalPriceable} ingredienser prissatta`
                   : `${pricedCount}/${totalPriceable} ingredienser med känt pris — ${totalPriceable - pricedCount} saknas`}
@@ -490,17 +493,17 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           </div>
 
           {/* Nutrition per serving */}
-          <div className="bg-white border border-gray-100 rounded-xl p-3">
+          <div className="bg-card border border-line rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Näring per portion</p>
-              {loading && <Loader2 size={12} className="animate-spin text-gray-400" />}
+              <p className="text-xs font-semibold text-faint uppercase tracking-wide">Näring per portion</p>
+              {loading && <Loader2 size={12} className="animate-spin text-faint" />}
               {!loading && matchedCount < ingredients.length && (
-                <span className="text-[10px] text-amber-500">
+                <span className="text-[10px] text-gold">
                   {matchedCount}/{ingredients.length} ingredienser matchade
                 </span>
               )}
               {!loading && matchedCount === ingredients.length && ingredients.length > 0 && (
-                <span className="text-[10px] text-green-600">Alla matchade ✓</span>
+                <span className="text-[10px] text-cyan">Alla matchade ✓</span>
               )}
             </div>
             <div className="grid grid-cols-4 gap-2 text-center">
@@ -510,9 +513,9 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
                 { label: 'Fett', val: `${fmt1((displayNutrition.fat ?? 0) * scale)}g` },
                 { label: 'Kolhydr', val: `${fmt1((displayNutrition.carbs ?? 0) * scale)}g` },
               ].map(m => (
-                <div key={m.label} className="bg-gray-50 rounded-lg py-2">
-                  <p className="text-[10px] text-gray-400">{m.label}</p>
-                  <p className="text-sm font-bold text-gray-800 mt-0.5">{m.val}</p>
+                <div key={m.label} className="bg-soft rounded-lg py-2">
+                  <p className="text-[10px] text-faint">{m.label}</p>
+                  <p className="font-display text-sm text-ink mt-0.5 tnum">{m.val}</p>
                 </div>
               ))}
             </div>
@@ -524,17 +527,17 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
               onClick={() => setShowIngredients(v => !v)}
               className="flex items-center justify-between w-full py-1 mb-2"
             >
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-faint uppercase tracking-wide">
                 Ingredienser ({ingredients.length})
               </p>
-              {showIngredients ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+              {showIngredients ? <ChevronUp size={14} className="text-faint" /> : <ChevronDown size={14} className="text-faint" />}
             </button>
 
             {showIngredients && (
               <div className="space-y-2">
                 {loading ? (
                   <div className="flex justify-center py-6">
-                    <Loader2 size={20} className="animate-spin text-gray-400" />
+                    <Loader2 size={20} className="animate-spin text-faint" />
                   </div>
                 ) : (
                   ingredients.map((ing, idx) => {
@@ -558,14 +561,14 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           {/* Instructions */}
           {recipe.instructions.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Instruktioner</p>
+              <p className="text-xs font-semibold text-faint uppercase tracking-wide mb-2">Instruktioner</p>
               <ol className="space-y-3">
                 {recipe.instructions.map((step, idx) => (
                   <li key={idx} className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center mt-0.5">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full text-gold text-xs font-bold flex items-center justify-center mt-0.5 tnum" style={{ background: 'rgba(233,193,120,.14)' }}>
                       {idx + 1}
                     </span>
-                    <p className="text-sm text-gray-700 leading-relaxed">{step}</p>
+                    <p className="text-sm text-mut leading-relaxed">{step}</p>
                   </li>
                 ))}
               </ol>
@@ -576,7 +579,7 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           {recipe.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {recipe.tags.map(tag => (
-                <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                <span key={tag} className="px-2.5 py-1 bg-soft text-mut text-xs rounded-full">
                   {tag}
                 </span>
               ))}
@@ -584,32 +587,33 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           )}
 
           {/* Log section */}
-          <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Logga måltid</p>
+          <div className="bg-soft rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-faint uppercase tracking-wide">Logga måltid</p>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">Portioner:</span>
+              <span className="text-sm text-mut">Portioner:</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setLogServings(s => Math.max(1, s - 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-card border border-line text-mut hover:bg-white/10"
                 >
                   −
                 </button>
-                <span className="w-8 text-center font-semibold text-gray-800">{logServings}</span>
+                <span className="w-8 text-center font-semibold text-ink tnum">{logServings}</span>
                 <button
                   onClick={() => setLogServings(s => s + 1)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-card border border-line text-mut hover:bg-white/10"
                 >
                   +
                 </button>
               </div>
-              <span className="text-sm text-gray-400 ml-auto">
+              <span className="text-sm text-faint ml-auto tnum">
                 ≈ {Math.round(displayNutrition.kcal * (logServings / Math.max(recipe.servings, 1)))} kcal
               </span>
             </div>
             <button
               onClick={() => onLog(recipe, logServings)}
-              className="w-full py-2.5 rounded-xl bg-green-600 text-white text-sm font-medium hover:bg-green-700 flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl text-sm font-semibold text-[#2a1d08] flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
             >
               <Utensils size={15} />
               Logga {logServings} portion{logServings !== 1 ? 'er' : ''}
@@ -783,9 +787,9 @@ export default function Recipes() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 size={28} className="animate-spin text-green-500" />
-        <p className="text-sm text-gray-400">Laddar recept…</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 bg-bg">
+        <Loader2 size={28} className="animate-spin text-gold" />
+        <p className="text-sm text-faint">Laddar recept…</p>
       </div>
     );
   }
@@ -806,23 +810,24 @@ export default function Recipes() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+    <div className="max-w-2xl mx-auto px-4 py-4 space-y-4 min-h-full bg-bg text-ink">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setFitnessPage('home')}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 -ml-1 mr-1"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 -ml-1 mr-1"
           >
-            <ArrowLeft size={18} className="text-gray-500" />
+            <ArrowLeft size={18} className="text-mut" />
           </button>
-          <ChefHat size={22} className="text-green-600" />
-          <h1 className="text-lg font-bold text-gray-900">Recept</h1>
-          <span className="text-sm text-gray-400">({recipes.length})</span>
+          <ChefHat size={22} className="text-gold" />
+          <h1 className="font-display text-lg text-ink">Recept</h1>
+          <span className="text-sm text-faint tnum">({recipes.length})</span>
         </div>
         <button
           onClick={() => setShowImport(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700"
+          className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-xl text-[#2a1d08]"
+          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
         >
           <Link size={14} />
           Importera
@@ -831,17 +836,17 @@ export default function Recipes() {
 
       {/* Log success toast */}
       {logSuccess && (
-        <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
-          <Check size={16} className="text-green-600" />
+        <div className="flex items-center gap-2 px-4 py-3 bg-[rgba(95,224,208,0.1)] border border-cyan/30 rounded-xl text-sm text-cyan">
+          <Check size={16} className="text-cyan" />
           {logSuccess}
         </div>
       )}
 
       {/* Search */}
       <div className="relative">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
         <input
-          className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+          className="w-full pl-9 pr-3 py-2.5 bg-soft border border-line rounded-xl text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
           placeholder="Sök recept eller tagg…"
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -851,7 +856,7 @@ export default function Recipes() {
             onClick={() => setSearch('')}
             className="absolute right-3 top-1/2 -translate-y-1/2"
           >
-            <X size={14} className="text-gray-400" />
+            <X size={14} className="text-faint" />
           </button>
         )}
       </div>
@@ -859,8 +864,8 @@ export default function Recipes() {
       {/* Recipe grid */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-          <ChefHat size={40} className="text-gray-200" />
-          <p className="text-gray-400 text-sm">
+          <ChefHat size={40} className="text-faint" />
+          <p className="text-faint text-sm">
             {search ? 'Inga recept matchar sökningen.' : 'Du har inga recept ännu. Importera ett för att börja!'}
           </p>
         </div>
@@ -874,10 +879,10 @@ export default function Recipes() {
               <button
                 key={recipe.id}
                 onClick={() => setSelected(recipe)}
-                className="text-left bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md hover:border-green-200 transition-all"
+                className="text-left vh-card overflow-hidden"
               >
                 {recipe.imageUrl && (
-                  <div className="h-28 bg-gray-100">
+                  <div className="h-28 bg-soft">
                     <img
                       src={recipe.imageUrl}
                       alt={recipe.name}
@@ -886,23 +891,23 @@ export default function Recipes() {
                   </div>
                 )}
                 {!recipe.imageUrl && (
-                  <div className="h-20 bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
-                    <ChefHat size={28} className="text-green-300" />
+                  <div className="h-20 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,rgba(233,193,120,.12),rgba(207,154,63,.18))' }}>
+                    <ChefHat size={28} className="text-gold/60" />
                   </div>
                 )}
                 <div className="p-3">
-                  <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">{recipe.name}</p>
-                  <p className="text-[11px] text-gray-400 mt-1">{recipe.servings} port.</p>
+                  <p className="text-sm font-semibold text-ink line-clamp-2 leading-snug">{recipe.name}</p>
+                  <p className="text-[11px] text-faint mt-1 tnum">{recipe.servings} port.</p>
                   <div className="flex items-center justify-between mt-2">
                     {recipe.nutritionPerServing.kcal > 0 ? (
-                      <span className="text-[11px] font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                      <span className="text-[11px] font-medium text-gold px-2 py-0.5 rounded-full tnum" style={{ background: 'rgba(233,193,120,.12)' }}>
                         {recipe.nutritionPerServing.kcal} kcal/port
                       </span>
                     ) : (
                       <span />
                     )}
                     {hasPrice ? (
-                      <span className="text-[11px] text-gray-500">
+                      <span className="text-[11px] text-mut tnum">
                         {formatCost(cost.perServingRaw)}/port
                       </span>
                     ) : null}
@@ -910,7 +915,7 @@ export default function Recipes() {
                   {recipe.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {recipe.tags.slice(0, 2).map(tag => (
-                        <span key={tag} className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+                        <span key={tag} className="text-[10px] bg-soft text-mut px-1.5 py-0.5 rounded-full">
                           {tag}
                         </span>
                       ))}
