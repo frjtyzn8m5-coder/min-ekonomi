@@ -1,7 +1,9 @@
 import type { Exercise, ExerciseCategory, ExerciseEquipment, AnatomicalMuscle } from '../types';
 import exercisesData from '../data/exercises.json';
 
-export const EXERCISES: Exercise[] = exercisesData as Exercise[];
+// Double-cast: JSON infers defaultRepRange as number[] rather than the [number,number]
+// tuple; the data is validated by the import transform.
+export const EXERCISES: Exercise[] = exercisesData as unknown as Exercise[];
 
 // ── Search ────────────────────────────────────────────────────────────────────
 

@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { saveAsset, saveDebt } from '../lib/db';
 import { formatSEK, formatMonth } from '../utils/calculations';
+import { latestPortfolioValueSEK } from '../utils/portfolio';
 import { Card, CardHeader, EmptyState } from '../components/ui/Card';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -30,11 +31,13 @@ interface SnapshotFormProps {
   month: string;
   type: 'asset' | 'debt';
   existing?: AssetSnapshot | DebtSnapshot;
+  /** Live portfolio value in SEK — prefilled into the Avanza/investment field for new asset snapshots. */
+  portfolioValue?: number;
   onSave: (data: any) => void;
   onCancel: () => void;
 }
 
-function SnapshotForm({ month, type, existing, onSave, onCancel }: SnapshotFormProps) {
+function SnapshotForm({ month, type, existing, portfolioValue, onSave, onCancel }: SnapshotFormProps) {
   const isAsset = type === 'asset';
   const fields = isAsset
     ? [
@@ -50,9 +53,16 @@ function SnapshotForm({ month, type, existing, onSave, onCancel }: SnapshotFormP
         { key: 'other',  label: 'Övrigt' },
       ];
 
+  const hasPortfolioValue = portfolioValue != null && portfolioValue > 0;
   const init: any = existing || { month };
   const [vals, setVals] = useState<Record<string, string>>(
-    Object.fromEntries(fields.map(f => [f.key, String((init as any)[f.key] || 0)]))
+    Object.fromEntries(fields.map(f => {
+      // Prefill the investment field from the live portfolio for a NEW asset snapshot.
+      if (isAsset && f.key === 'avanza' && !existing && hasPortfolioValue) {
+        return [f.key, String(Math.round(portfolioValue as number))];
+      }
+      return [f.key, String((init as any)[f.key] || 0)];
+    }))
   );
   const [mon, setMon] = useState(existing?.month || month);
 
@@ -63,15 +73,33 @@ function SnapshotForm({ month, type, existing, onSave, onCancel }: SnapshotFormP
         <input type="month" value={mon} onChange={e => setMon(e.target.value)}
           className="w-full text-sm bg-card text-ink border border-line rounded-lg px-3 py-2 outline-none focus:border-gold/50" />
       </div>
-      {fields.map(f => (
-        <div key={f.key}>
-          <label className="text-xs text-mut block mb-1">{f.label}</label>
-          <input type="number" value={vals[f.key]}
-            onChange={e => setVals(v => ({ ...v, [f.key]: e.target.value }))}
-            className="w-full text-sm bg-card text-ink border border-line rounded-lg px-3 py-2 outline-none focus:border-gold/50"
-            placeholder="0" />
-        </div>
-      ))}
+      {fields.map(f => {
+        const isAvanza = isAsset && f.key === 'avanza';
+        return (
+          <div key={f.key}>
+            <label className="text-xs text-mut flex items-center gap-1.5 mb-1">
+              {f.label}
+              {isAvanza && hasPortfolioValue && (
+                <span className="text-gold">· från portföljen ({formatSEK(portfolioValue as number)})</span>
+              )}
+            </label>
+            <div className="flex items-center gap-2">
+              <input type="number" value={vals[f.key]}
+                onChange={e => setVals(v => ({ ...v, [f.key]: e.target.value }))}
+                className="w-full text-sm bg-card text-ink border border-line rounded-lg px-3 py-2 outline-none focus:border-gold/50"
+                placeholder="0" />
+              {isAvanza && hasPortfolioValue && (
+                <button type="button"
+                  onClick={() => setVals(v => ({ ...v, avanza: String(Math.round(portfolioValue as number)) }))}
+                  title="Fyll i värdet från portföljen"
+                  className="flex-shrink-0 text-xs text-gold hover:text-gold-2 px-2 py-2 whitespace-nowrap">
+                  Synka
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
       <div className="flex gap-2 pt-1">
         <button
           onClick={() => onSave({ month: mon, ...Object.fromEntries(fields.map(f => [f.key, parseFloat(vals[f.key]) || 0])) })}
@@ -89,8 +117,15 @@ function SnapshotForm({ month, type, existing, onSave, onCancel }: SnapshotFormP
 }
 
 export default function NetWorth() {
-  const { assets, debts, addAssetSnapshot, addDebtSnapshot } = useStore();
+  const {
+    assets, debts, addAssetSnapshot, addDebtSnapshot,
+    holdings, priceCache, tickerMappings, portfolioSnapshots,
+  } = useStore();
   const { user } = useAuthStore();
+
+  // Live investment value in SEK, auto-derived from the real portfolio
+  // (prefers the FX-correct persisted snapshot, falls back to holdings × prices).
+  const livePortfolioSEK = latestPortfolioValueSEK(portfolioSnapshots, holdings, priceCache, tickerMappings);
   const [showAssetForm, setShowAssetForm] = useState(false);
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [csnMonthlyRate, setCsnMonthlyRate] = useState(8500);
@@ -239,8 +274,15 @@ export default function NetWorth() {
                     <Plus size={12} /> Ny snapshot
                   </button>
                 } />
+              {livePortfolioSEK > 0 && (
+                <div className="flex items-center justify-between bg-soft rounded-xl px-3 py-2 mb-2">
+                  <span className="text-xs text-mut">Live portföljvärde (Avanza/aktier)</span>
+                  <span className="text-xs font-semibold text-gold tabular-nums">{formatSEK(livePortfolioSEK)}</span>
+                </div>
+              )}
               {showAssetForm && (
                 <SnapshotForm month={new Date().toISOString().slice(0, 7)} type="asset"
+                  portfolioValue={livePortfolioSEK}
                   onSave={async (d) => { addAssetSnapshot(d); if (user) await saveAsset(user.uid, d); setShowAssetForm(false); }}
                   onCancel={() => setShowAssetForm(false)} />
               )}

@@ -12,6 +12,7 @@ interface AvanzaRow {
   name: string;
   antal: string;
   kurs: string;
+  belopp: string;
   instrumentCurrency: string;
   isin: string;
 }
@@ -35,6 +36,7 @@ function parseAvanzaRows(content: string): AvanzaRow[] {
       name: cols[3],
       antal: cols[4],
       kurs: cols[5],
+      belopp: cols[6],
       instrumentCurrency: cols[10] || 'SEK',
       isin: cols[11],
     });
@@ -67,18 +69,40 @@ export function computeHoldings(content: string): Holding[] {
       avgBuyPrice: 0,
       currency: row.instrumentCurrency || 'SEK',
       account: row.account,
+      totalCostSEK: 0,
+      realizedGainSEK: 0,
     };
+
+    // SEK amount of this trade at trade time. Prefer the export's 'Belopp'
+    // (already in SEK, fx applied at trade time); fall back to kurs*antal.
+    const kurs = parseNum(row.kurs);
+    const belopp = parseNum(row.belopp);
+    const amountSEK = belopp !== 0 ? Math.abs(belopp) : Math.abs(kurs * antal);
 
     // Update weighted average only on purchases
     if (antal > 0 && row.type === 'Köp') {
-      const kurs = parseNum(row.kurs);
       const prevCost = existing.avgBuyPrice * existing.shares;
       existing.shares += antal;
       existing.avgBuyPrice = existing.shares > 0
         ? (prevCost + kurs * antal) / existing.shares
         : 0;
+      // Accurate SEK cost basis using the trade's actual SEK amount.
+      existing.totalCostSEK = (existing.totalCostSEK ?? 0) + amountSEK;
+      if (!existing.firstBuyDate) existing.firstBuyDate = row.date;
+    } else if (antal < 0 && row.type === 'Sälj') {
+      // Sale: reduce shares, remove cost proportionally, book realized gain.
+      const sharesSold = Math.min(-antal, existing.shares);
+      const costPerShare = existing.shares > 0
+        ? (existing.totalCostSEK ?? 0) / existing.shares
+        : 0;
+      const costRemoved = costPerShare * sharesSold;
+      existing.shares += antal; // antal is negative
+      existing.totalCostSEK = Math.max(0, (existing.totalCostSEK ?? 0) - costRemoved);
+      // Proceeds come from the Sälj row's SEK amount; prorate if partial fill.
+      const proceeds = -antal > 0 ? amountSEK * (sharesSold / -antal) : amountSEK;
+      existing.realizedGainSEK = (existing.realizedGainSEK ?? 0) + (proceeds - costRemoved);
     } else {
-      // Sälj, Byte, Inlösen, Avskiljning, Värdepappersuttag – just adjust count
+      // Byte, Inlösen, Avskiljning, Värdepappersuttag – just adjust count.
       existing.shares += antal;
     }
 
@@ -122,6 +146,7 @@ export function computeHoldingsFromXLSX(rows: string[][]): Holding[] {
       name: cols[3],
       antal: cols[4],
       kurs: cols[5],
+      belopp: cols[6],
       instrumentCurrency: cols[10] || 'SEK',
       isin: cols[11],
     });
@@ -130,7 +155,7 @@ export function computeHoldingsFromXLSX(rows: string[][]): Holding[] {
   return computeHoldings(
     ['Datum;Konto;Typ av transaktion;Värdepapper/beskrivning;Antal;Kurs;Belopp;Transaktionsvaluta;Courtage;Valutakurs;Instrumentvaluta;ISIN;Resultat',
       ...csvRows.map(r =>
-        `${r.date};${r.account};${r.type};${r.name};${r.antal};${r.kurs};;;;;;;${r.isin};`
+        `${r.date};${r.account};${r.type};${r.name};${r.antal};${r.kurs};${r.belopp};;;;${r.instrumentCurrency};${r.isin};`
       )
     ].join('\n')
   );

@@ -103,8 +103,9 @@ export default function Analytics() {
 
   if (!transactions.length) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 bg-bg text-ink">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="relative flex-1 flex items-center justify-center p-6 bg-bg text-ink overflow-hidden">
+        <div className="vh-aurora" />
+        <div className="relative z-10 flex flex-col items-center justify-center py-12 text-center">
           <span className="vh-tile vh-tile--violet w-12 h-12 mb-4"><ITrend size={26} /></span>
           <p className="text-sm font-medium text-mut">Inga transaktioner</p>
           <p className="text-xs text-faint mt-1 max-w-xs">Importera kontoutdrag för att se analyser</p>
@@ -152,11 +153,14 @@ export default function Analytics() {
   }));
 
   return (
-    <div className="flex flex-col h-full overflow-auto bg-bg text-ink">
-      <div className="px-4 lg:px-6 py-4 bg-panel border-b border-line flex items-center justify-between">
+    <div className="relative min-h-full bg-bg text-ink overflow-hidden">
+      <div className="vh-aurora" />
+      <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6">
+      <header className="mb-5 flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-display text-2xl text-ink">Analys</h1>
-          <p className="text-sm text-faint mt-0.5">Visualisera dina utgiftsmönster</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-faint">Ekonomi</p>
+          <h1 className="font-display text-3xl sm:text-4xl text-ink mt-2 leading-none">Analys</h1>
+          <p className="text-sm text-faint mt-2">Visualisera dina utgiftsmönster</p>
         </div>
         <div className="flex rounded-lg border border-line overflow-hidden text-xs">
           {years.map(y => (
@@ -167,14 +171,14 @@ export default function Analytics() {
             </button>
           ))}
         </div>
-      </div>
+      </header>
 
       {monthlyData.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-sm text-faint">
+        <div className="flex items-center justify-center py-32 text-sm text-faint">
           Ingen data för {selectedYear}
         </div>
       ) : (
-        <div className="p-4 lg:p-6 space-y-4">
+        <div className="space-y-4 lg:space-y-5">
           <motion.div {...FADE} transition={{ duration: 0.3 }}>
             <div className="vh-card p-5">
               <div className="mb-4">
@@ -193,14 +197,14 @@ export default function Analytics() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
             <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.05 }}>
               <div className="vh-card p-5">
                 <div className="mb-4">
                   <h3 className="font-display text-ink text-[15px]">Utgiftsfördelning</h3>
                   <p className="text-xs text-faint mt-0.5">Totalt {selectedYear}</p>
                 </div>
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={300}>
                   <Treemap data={treemapData} dataKey="value" aspectRatio={4/3} content={<TreemapCell />}>
                     <Tooltip formatter={(v: any, n: any) => [formatSEK(v), n]} contentStyle={TOOLTIP_STYLE} />
                   </Treemap>
@@ -215,7 +219,7 @@ export default function Analytics() {
                   <p className="text-xs text-faint mt-0.5">Senaste 2 månader</p>
                 </div>
                 {last2.length >= 2 ? (
-                  <ResponsiveContainer width="100%" height={240}>
+                  <ResponsiveContainer width="100%" height={300}>
                     <RadarChart data={radarData}>
                       <PolarGrid stroke={GRID_STROKE} />
                       <PolarAngleAxis dataKey="cat" tick={{ fontSize: 10, fill: AXIS_FILL }} />
@@ -227,7 +231,7 @@ export default function Analytics() {
                     </RadarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-sm text-faint">
+                  <div className="flex items-center justify-center h-[300px] text-sm text-faint">
                     Behöver minst 2 månader av data
                   </div>
                 )}
@@ -235,13 +239,15 @@ export default function Analytics() {
             </motion.div>
           </div>
 
-          <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.15 }}>
-            <div className="vh-card p-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
+          <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.15 }} className="lg:col-span-7 flex">
+            <div className="vh-card p-5 flex flex-col w-full">
               <div className="mb-4">
                 <h3 className="font-display text-ink text-[15px]">Utgifter per kategori</h3>
                 <p className="text-xs text-faint mt-0.5">Staplad fördelning {selectedYear}</p>
               </div>
-              <ResponsiveContainer width="100%" height={220}>
+              <div className="flex-1 flex items-center min-h-0">
+              <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={stackedData}>
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: AXIS_FILL }} axisLine={false} tickLine={false} />
@@ -254,16 +260,18 @@ export default function Analytics() {
                   ))}
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             </div>
           </motion.div>
 
-          <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.2 }}>
-            <div className="vh-card p-5">
+          <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.2 }} className="lg:col-span-5 flex">
+            <div className="vh-card p-5 flex flex-col w-full">
               <div className="mb-4">
                 <h3 className="font-display text-ink text-[15px]">Månadsförändring</h3>
                 <p className="text-xs text-faint mt-0.5">Utgiftsökning/-minskning vs föregående månad</p>
               </div>
-              <ResponsiveContainer width="100%" height={160}>
+              <div className="flex-1 flex items-center min-h-0">
+              <ResponsiveContainer width="100%" height={280}>
                 <ComposedChart data={momData}>
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: AXIS_FILL }} axisLine={false} tickLine={false} />
@@ -275,10 +283,13 @@ export default function Analytics() {
                   </Bar>
                 </ComposedChart>
               </ResponsiveContainer>
+              </div>
             </div>
           </motion.div>
+          </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -335,8 +335,9 @@ export default function Budget() {
 
   if (!transactions.length) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 bg-bg text-ink">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="relative flex-1 flex items-center justify-center p-6 bg-bg text-ink overflow-hidden">
+        <div className="vh-aurora" />
+        <div className="relative z-10 flex flex-col items-center justify-center py-12 text-center">
           <span className="vh-tile vh-tile--gold w-12 h-12 mb-4"><IWallet size={26} /></span>
           <p className="text-sm font-medium text-mut">Inga transaktioner</p>
           <p className="text-xs text-faint mt-1 max-w-xs">Importera kontoutdrag för att se budget</p>
@@ -407,11 +408,14 @@ export default function Budget() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col h-full overflow-auto bg-bg text-ink">
-        <div className="px-4 lg:px-6 py-4 bg-panel border-b border-line flex items-center justify-between flex-wrap gap-2">
+      <div className="relative min-h-full bg-bg text-ink overflow-hidden">
+        <div className="vh-aurora" />
+        <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6">
+        <header className="mb-5 flex items-end justify-between flex-wrap gap-4">
           <div>
-            <h1 className="font-display text-2xl text-ink">Budget</h1>
-            <p className="text-sm text-faint mt-0.5">Sätt gränser och spåra dina utgifter</p>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-faint">Ekonomi</p>
+            <h1 className="font-display text-3xl sm:text-4xl text-ink mt-2 leading-none">Budget</h1>
+            <p className="text-sm text-faint mt-2">Sätt gränser och spåra dina utgifter</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
@@ -429,11 +433,11 @@ export default function Budget() {
               </button>
             ))}
           </div>
-        </div>
+        </header>
 
-        <div className="p-4 lg:p-6 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 lg:items-start">
           {/* Total */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-4 lg:sticky lg:top-6">
             <div className="vh-card p-5">
               <div className="flex items-center justify-between mb-3">
                 <div>
@@ -468,7 +472,7 @@ export default function Budget() {
           </motion.div>
 
           {/* Category rows */}
-          <div className="vh-card">
+          <div className="vh-card lg:col-span-8">
             <div className="px-5 py-3 border-b border-line">
               <h3 className="font-display text-ink text-[15px]">Per kategori</h3>
             </div>
@@ -548,6 +552,7 @@ export default function Budget() {
               ))}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </>

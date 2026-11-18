@@ -50,8 +50,9 @@ export default function Overview() {
 
   if (!transactions.length) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 bg-bg text-ink">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="relative flex-1 flex items-center justify-center p-6 bg-bg text-ink overflow-hidden">
+        <div className="vh-aurora" />
+        <div className="relative z-10 flex flex-col items-center justify-center py-12 text-center">
           <span className="vh-tile vh-tile--gold w-12 h-12 mb-4"><IWallet size={26} /></span>
           <p className="text-sm font-medium text-mut">Inga transaktioner ännu</p>
           <p className="text-xs text-faint mt-1 max-w-xs">Importera dina kontoutdrag för att se din ekonomiska översikt</p>
@@ -103,11 +104,14 @@ export default function Overview() {
     : null;
 
   return (
-    <div className="p-4 lg:p-6 space-y-4 lg:space-y-6 bg-bg text-ink min-h-full">
+    <div className="relative min-h-full bg-bg text-ink overflow-hidden">
+      <div className="vh-aurora" />
+      <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 space-y-4 lg:space-y-5">
       <motion.div {...FADE} transition={{ duration: 0.3 }} className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl text-ink">Översikt</h1>
-          <p className="text-sm text-faint mt-0.5">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-faint">Ekonomi</p>
+          <h1 className="font-display text-3xl sm:text-4xl text-ink mt-2 leading-none">Översikt</h1>
+          <p className="text-sm text-faint mt-2">
             {monthlyData.length} månader · {transactions.filter(t => !t.isTransfer).length} transaktioner
           </p>
         </div>
@@ -197,14 +201,14 @@ export default function Overview() {
       )}
 
       {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.1 }} className="lg:col-span-2">
-          <div className="vh-card p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+        <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.1 }} className="lg:col-span-2 flex">
+          <div className="vh-card p-5 flex flex-col w-full">
             <div className="mb-4">
               <h3 className="font-display text-ink text-[15px]">Inkomster vs Utgifter</h3>
               <p className="text-xs text-faint mt-0.5">Per månad</p>
             </div>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={monthlyData.map(d => ({
                 name: formatMonth(d.month), Inkomst: d.income, Utgifter: d.expenses, Sparande: d.savings,
               }))} barGap={2}>
@@ -221,15 +225,15 @@ export default function Overview() {
           </div>
         </motion.div>
 
-        <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.15 }}>
-          <div className="vh-card p-5">
+        <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.15 }} className="flex">
+          <div className="vh-card p-5 flex flex-col w-full">
             <div className="mb-4">
               <h3 className="font-display text-ink text-[15px]">Utgifter per kategori</h3>
               <p className="text-xs text-faint mt-0.5">Senaste 3 månader</p>
             </div>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="value">
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={66} outerRadius={100} paddingAngle={3} dataKey="value">
                   {pieData.map(({ name }) => <Cell key={name} fill={CATEGORY_COLORS[name] || 'rgba(244,241,234,.14)'} />)}
                 </Pie>
                 <Tooltip formatter={(v: any) => formatSEK(v)} contentStyle={TOOLTIP_STYLE} />
@@ -240,14 +244,16 @@ export default function Overview() {
         </motion.div>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 lg:items-stretch">
       {/* Cashflow area chart */}
-      <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.2 }}>
-        <div className="vh-card p-5">
+      <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.2 }} className="lg:col-span-7 flex">
+        <div className="vh-card p-5 flex flex-col w-full">
           <div className="mb-4">
             <h3 className="font-display text-ink text-[15px]">Kassaflöde över tid</h3>
             <p className="text-xs text-faint mt-0.5">Inkomst minus utgifter per månad</p>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <div className="flex-1 flex items-center min-h-0">
+          <ResponsiveContainer width="100%" height={240}>
             <AreaChart data={monthlyData.map(d => ({ name: formatMonth(d.month), Kassaflöde: d.cashflow }))}>
               <defs>
                 <linearGradient id="cfGrad" x1="0" y1="0" x2="0" y2="1">
@@ -263,12 +269,13 @@ export default function Overview() {
                 fill="url(#cfGrad)" dot={{ fill: '#e9c178', r: 3 }} activeDot={{ r: 5 }} />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         </div>
       </motion.div>
 
       {/* Recent transactions */}
-      <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.25 }}>
-        <div className="vh-card">
+      <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.25 }} className="lg:col-span-5 flex">
+        <div className="vh-card w-full flex flex-col">
           <div className="px-5 py-4 border-b border-line flex items-center justify-between">
             <h3 className="font-display text-ink text-[15px]">Senaste transaktioner</h3>
             <button onClick={() => setPage('transactions')}
@@ -276,7 +283,7 @@ export default function Overview() {
               Visa alla <IArrowRight size={12} />
             </button>
           </div>
-          <div className="divide-y divide-line">
+          <div className="divide-y divide-line flex-1">
             {recentTxs.map(tx => (
               <div key={tx.id} className="flex items-center justify-between px-5 py-3">
                 <div className="flex items-center gap-3 min-w-0">
@@ -297,6 +304,8 @@ export default function Overview() {
           </div>
         </div>
       </motion.div>
+      </div>
+      </div>
     </div>
   );
 }

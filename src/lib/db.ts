@@ -10,15 +10,25 @@ const userDoc = (uid: string, col: string, id: string) => doc(db, 'users', uid, 
 // ── Transactions ────────────────────────────────────────────────────────────
 
 export async function saveTxBatch(uid: string, txs: Transaction[], importId: string) {
+  // Find which existing transactions the user manually edited, so a re-import of an
+  // overlapping period doesn't clobber their category / transfer / tags.
+  const existing = await getDocs(userCol(uid, 'transactions'));
+  const editedIds = new Set<string>();
+  existing.docs.forEach(d => { if ((d.data() as { edited?: boolean }).edited) editedIds.add(d.id); });
+
   const batch = writeBatch(db);
   for (const tx of txs) {
-    // merge + arrayUnion so a transaction that appears in several imports accumulates
-    // its batch memberships (importIds) instead of being reassigned to the newest one.
-    batch.set(
-      userDoc(uid, 'transactions', tx.id),
-      { ...tx, importId, importIds: arrayUnion(importId) },
-      { merge: true },
-    );
+    const ref = userDoc(uid, 'transactions', tx.id);
+    if (editedIds.has(tx.id)) {
+      // Preserve user edits: only refresh bookkeeping fields + record this import.
+      batch.set(ref, {
+        importId, importIds: arrayUnion(importId),
+        date: tx.date, amount: tx.amount, account: tx.account, source: tx.source,
+      }, { merge: true });
+    } else {
+      // merge + arrayUnion so a tx in several imports accumulates its memberships.
+      batch.set(ref, { ...tx, importId, importIds: arrayUnion(importId) }, { merge: true });
+    }
   }
   await batch.commit();
 }
@@ -49,7 +59,8 @@ export async function deleteImportTxs(uid: string, importId: string) {
 }
 
 export async function updateTransactionDoc(uid: string, txId: string, changes: Partial<Transaction>) {
-  await setDoc(userDoc(uid, 'transactions', txId), changes, { merge: true });
+  // Mark as user-edited so a future re-import won't overwrite these fields.
+  await setDoc(userDoc(uid, 'transactions', txId), { ...changes, edited: true }, { merge: true });
 }
 
 // ── Import batches ───────────────────────────────────────────────────────────

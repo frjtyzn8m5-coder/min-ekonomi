@@ -160,6 +160,7 @@ export interface Transaction {
   source: 'seb_csv' | 'seb_xlsx' | 'avanza' | 'klarna' | 'csn' | 'manual';
   importId?: string;        // legacy: last batch this tx was written by
   importIds?: string[];     // all import batches this tx belongs to (delete-safety)
+  edited?: boolean;         // user manually edited category/transfer/etc → protect on re-import
 }
 
 export interface Account {
@@ -282,6 +283,10 @@ export interface Holding {
   avgBuyPrice: number;
   currency: string;
   account: string;
+  // Back-compat optional fields for accurate SEK cost-basis tracking.
+  totalCostSEK?: number;     // accumulated SEK cost of the currently held shares
+  realizedGainSEK?: number;  // realized gain/loss in SEK from sales
+  firstBuyDate?: string;     // date of the first Köp
 }
 
 export interface TickerMapping {

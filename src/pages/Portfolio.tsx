@@ -517,9 +517,14 @@ export default function Portfolio() {
       const rate = fxRates[h.currency] ?? fxRates[pd?.currency ?? ''] ?? 1;
       const currentPrice = pd?.price ?? 0;
       const valueSEK = h.shares * currentPrice * rate;
-      const costSEK = h.shares * h.avgBuyPrice * rate;
+      // Prefer the accurate accumulated SEK cost basis (fx applied at trade
+      // time). Fall back to the legacy avgBuyPrice*rate only when it's absent.
+      const costSEK = h.totalCostSEK != null
+        ? h.totalCostSEK
+        : h.shares * h.avgBuyPrice * rate;
       const gainSEK = valueSEK - costSEK;
       const gainPct = costSEK > 0 ? (gainSEK / costSEK) * 100 : 0;
+      const realizedGainSEK = h.realizedGainSEK ?? 0;
       return {
         ...h,
         ticker: tm?.ticker ?? '–',
@@ -531,6 +536,7 @@ export default function Portfolio() {
         costSEK,
         gainSEK,
         gainPct,
+        realizedGainSEK,
         changePercent: pd?.changePercent ?? 0,
         priceStale: pd ? Date.now() - pd.fetchedAt > PRICE_TTL_MS : true,
         hasTicker: !!tm?.ticker,
@@ -548,6 +554,7 @@ export default function Portfolio() {
         e.valueSEK += h.valueSEK;
         e.costSEK += h.costSEK;
         e.gainSEK += h.gainSEK;
+        e.realizedGainSEK = (e.realizedGainSEK ?? 0) + (h.realizedGainSEK ?? 0);
       } else {
         map.set(h.isin, { ...h });
       }
@@ -916,7 +923,8 @@ export default function Portfolio() {
                     <td className="px-3 py-2.5 text-right font-medium text-ink tabular-nums">
                       {h.valueSEK > 0 ? formatSEK(h.valueSEK) : '–'}
                     </td>
-                    <td className={`px-3 py-2.5 text-right font-medium tabular-nums ${h.valueSEK === 0 && h.costSEK > 0 ? 'text-faint' : h.gainSEK >= 0 ? 'text-cyan' : 'text-coral'}`}>
+                    <td title={h.realizedGainSEK ? `Realiserad vinst/förlust: ${formatSEK(h.realizedGainSEK)}` : undefined}
+                      className={`px-3 py-2.5 text-right font-medium tabular-nums ${h.valueSEK === 0 && h.costSEK > 0 ? 'text-faint' : h.gainSEK >= 0 ? 'text-cyan' : 'text-coral'}`}>
                       {h.costSEK > 0 && h.valueSEK > 0
                         ? <>{formatSEK(h.gainSEK)}<span className="text-[10px] ml-1 opacity-70">({formatPct(h.gainPct)})</span></>
                         : h.costSEK > 0
