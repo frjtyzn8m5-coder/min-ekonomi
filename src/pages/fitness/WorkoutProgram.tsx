@@ -28,6 +28,10 @@ const SPLIT_LABELS: Record<string, string> = {
 
 const WEEK_DAYS = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'];
 
+// Image-rich backgrounds for program day cards (cycled per training day)
+const DAY_IMAGES = ['f-gym1', 'f-lift2', 'f-run3', 'f-hero'];
+const DAY_IMG = (i: number) => `/img/${DAY_IMAGES[i % DAY_IMAGES.length]}.jpg`;
+
 function formatRest(sec: number): string {
   if (sec >= 60) return `${Math.floor(sec / 60)} min ${sec % 60 > 0 ? `${sec % 60}s` : ''}`.trim();
   return `${sec}s`;
@@ -245,8 +249,8 @@ export default function WorkoutProgramPage() {
   return (
     <div className="min-h-full bg-bg text-ink">
       {/* Header */}
-      <div className="bg-panel border-b border-line px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto">
+      <div className="bg-panel border-b border-line px-4 sm:px-6 lg:px-10 py-4 sticky top-0 z-10">
+        <div className="max-w-[1600px] mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button onClick={() => setFitnessPage('home')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 -ml-1">
@@ -277,49 +281,66 @@ export default function WorkoutProgramPage() {
       </div>
 
       {/* Week grid */}
-      <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
         {saving && (
-          <div className="text-xs text-faint text-center py-1">Sparar…</div>
+          <div className="text-xs text-faint text-center py-1 mb-2">Sparar…</div>
         )}
 
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start">
         {weekGrid.map((day, dayIdx) => {
           const schedIdx = program.schedule.findIndex(d => d.dayName === WEEK_DAYS[dayIdx]);
           if (!day) {
             // Rest day
             return (
-              <div key={dayIdx} className="flex items-center gap-3 px-4 py-3 bg-card rounded-2xl border border-line opacity-60">
-                <div className="w-10 text-xs font-semibold text-faint uppercase">{WEEK_DAYS[dayIdx].slice(0, 3)}</div>
-                <span className="text-sm text-faint">Vilodag</span>
+              <div key={dayIdx} className="bg-card rounded-2xl border border-line overflow-hidden flex flex-col opacity-70">
+                <div className="relative h-24 flex items-center justify-center bg-soft">
+                  <span className="absolute top-3 left-4 text-[11px] tracking-[0.18em] uppercase text-faint font-medium">{WEEK_DAYS[dayIdx]}</span>
+                  <span className="text-sm text-faint">Vilodag</span>
+                </div>
               </div>
             );
           }
 
           return (
-            <div key={dayIdx} className="bg-card rounded-2xl border border-line overflow-hidden">
-              {/* Day header */}
+            <div key={dayIdx} className="bg-card rounded-2xl border border-line overflow-hidden flex flex-col transition-colors hover:border-[rgba(233,193,120,.3)]">
+              {/* Image-rich day header — click to start the session */}
               <button
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left"
+                className="relative w-full text-left group"
                 onClick={() => !editMode && setSelectedDay(day)}
               >
-                <div className="w-10 text-xs font-semibold text-gold uppercase">{WEEK_DAYS[dayIdx].slice(0, 3)}</div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-ink">{day.splitLabel}</p>
-                  <p className="text-xs text-faint tnum">{day.exercises.length} övningar</p>
-                </div>
-                {!editMode && (
-                  <div className="flex items-center gap-1 text-gold">
-                    <Play size={14} />
-                    <ChevronRight size={14} className="text-faint" />
+                <div className="relative h-28 overflow-hidden">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                    style={{ backgroundImage: `url(${DAY_IMG(dayIdx)})`, filter: 'grayscale(1) contrast(1.05) brightness(0.58)' }}
+                  />
+                  <div className="absolute inset-0" style={{
+                    background:
+                      'linear-gradient(0deg,rgba(9,9,11,.94),rgba(9,9,11,.2) 72%),' +
+                      'radial-gradient(90% 90% at 88% 0%,rgba(233,193,120,.32),transparent 60%)',
+                  }} />
+                  <div className="relative z-10 h-full flex flex-col justify-between p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] tracking-[0.18em] uppercase text-gold-2 font-medium">{WEEK_DAYS[dayIdx]}</span>
+                      {!editMode && (
+                        <span className="inline-flex items-center gap-1 text-[12px] text-white/90 bg-white/10 backdrop-blur border border-white/15 rounded-lg px-2 py-1">
+                          <Play size={12} /> Starta
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-display text-white leading-tight" style={{ fontSize: 'clamp(19px,1.6vw,25px)', letterSpacing: '-0.01em' }}>{day.splitLabel}</h3>
+                      <p className="text-xs text-white/70 tnum mt-0.5">{day.exercises.length} övningar</p>
+                    </div>
                   </div>
-                )}
+                </div>
               </button>
 
               {/* Exercise list */}
-              <div className="divide-y divide-line">
+              <div className="divide-y divide-line flex-1">
                 {day.exercises.map((ex, exIdx) => {
                   const resolved = !editMode && ex.name ? getExerciseByName(ex.name) : undefined;
                   return (
-                  <div key={exIdx} className="flex items-center gap-3 px-4 py-2.5 pl-14">
+                  <div key={exIdx} className="flex items-center gap-3 px-4 py-2.5">
                     <div
                       className={`flex-1 min-w-0 ${resolved ? 'cursor-pointer group/ex' : ''}`}
                       onClick={resolved ? () => openExerciseDetail(ex.name) : undefined}
@@ -347,7 +368,7 @@ export default function WorkoutProgramPage() {
                 })}
                 {editMode && (
                   <button onClick={() => handleAddExercise(schedIdx)}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 pl-14 text-gold hover:bg-[rgba(233,193,120,.1)] text-sm">
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-gold hover:bg-[rgba(233,193,120,.1)] text-sm">
                     <Plus size={14} />
                     Lägg till övning
                   </button>
@@ -356,9 +377,10 @@ export default function WorkoutProgramPage() {
             </div>
           );
         })}
+        </div>
 
         {/* Progression note */}
-        <div className="vh-card p-4" style={{ background: 'linear-gradient(150deg,#1b160c,#241a0b)', border: '1px solid rgba(233,193,120,.25)' }}>
+        <div className="vh-card p-4 mt-4" style={{ background: 'linear-gradient(150deg,#1b160c,#241a0b)', border: '1px solid rgba(233,193,120,.25)' }}>
           <div className="flex items-center gap-2 mb-1">
             <span className="vh-tile vh-tile--gold w-7 h-7"><ITrend size={14} /></span>
             <p className="text-sm font-semibold text-[#f6ead2]">Progressiv överbelastning</p>

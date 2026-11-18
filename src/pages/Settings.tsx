@@ -134,7 +134,7 @@ export default function Settings() {
         subtitle="Egna konton och automatisk kategorisering"
       />
 
-      <div className="p-4 lg:p-6 space-y-5">
+      <div className="max-w-[1600px] mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
       {/* Own accounts */}
       <Card className="p-5 space-y-4">
         <div>

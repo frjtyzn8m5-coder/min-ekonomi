@@ -173,9 +173,9 @@ export default function Overview() {
     .slice(0, 8);
 
   return (
-    <div className="relative min-h-full bg-bg text-ink overflow-hidden">
+    <div className="relative min-h-full w-full bg-bg text-ink overflow-hidden">
       <div className="vh-aurora" />
-      <div className="relative z-10 px-4 sm:px-6 lg:px-10 py-6 space-y-4 lg:space-y-5">
+      <div className="relative z-10 max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-10 py-6 space-y-4 lg:space-y-5">
 
         {/* Header */}
         <motion.div {...FADE} transition={{ duration: 0.3 }} className="flex items-center justify-between">

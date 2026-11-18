@@ -3,6 +3,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { BodyEntry, WorkoutSession, WorkoutProgram } from '../types';
+import { isDemoMode } from './demoData';
 
 const bodyLogCol = (uid: string) => collection(db, 'users', uid, 'bodyLog');
 const bodyLogDoc = (uid: string, date: string) => doc(db, 'users', uid, 'bodyLog', date);
@@ -14,6 +15,7 @@ export async function saveBodyEntry(uid: string, entry: BodyEntry): Promise<void
 }
 
 export async function loadBodyLog(uid: string, limitDays = 365): Promise<BodyEntry[]> {
+  if (isDemoMode()) return [];
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - limitDays);
   const cutoffStr = cutoff.toISOString().split('T')[0];
@@ -29,6 +31,7 @@ export async function loadBodyLog(uid: string, limitDays = 365): Promise<BodyEnt
 }
 
 export async function loadAllBodyLog(uid: string): Promise<BodyEntry[]> {
+  if (isDemoMode()) return [];
   const q = query(bodyLogCol(uid), orderBy('date', 'asc'));
   const snap = await getDocs(q);
   return snap.docs.map(d => d.data() as BodyEntry);
@@ -62,6 +65,7 @@ export async function saveWorkoutSession(uid: string, session: WorkoutSession): 
 }
 
 export async function loadWorkoutSessions(uid: string, limitCount = 100): Promise<WorkoutSession[]> {
+  if (isDemoMode()) return [];
   const q = query(workoutCol(uid), orderBy('startTime', 'desc'), limit(limitCount));
   const snap = await getDocs(q);
   return snap.docs.map(d => d.data() as WorkoutSession);

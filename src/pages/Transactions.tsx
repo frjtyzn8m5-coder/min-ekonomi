@@ -367,7 +367,7 @@ export default function Transactions() {
             Inga transaktioner matchar filtret
           </div>
         ) : (
-          <div className="vh-card m-4 lg:m-6">
+          <div className="vh-card max-w-[1600px] mx-auto m-4 lg:m-6">
             <div className="divide-y divide-line">
               {paginated.map(tx => <TxRow key={tx.id} tx={tx} />)}
             </div>

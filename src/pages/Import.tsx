@@ -339,53 +339,64 @@ export default function Import() {
         action={<ExportButton />}
       />
 
-      <div className="p-4 lg:p-6 space-y-6 max-w-2xl mx-auto w-full">
-      {/* Drop zone */}
-      <DropZone onFiles={handleFiles} />
+      <div className="max-w-[1600px] mx-auto w-full p-4 lg:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 items-start">
 
-      {error && (
-        <p className="text-sm text-coral rounded-xl px-4 py-3" style={{ background: 'rgba(255,143,122,.12)' }}>{error}</p>
-      )}
+          {/* Left column: drop zone + pending */}
+          <div className="space-y-5">
+            {/* Drop zone */}
+            <DropZone onFiles={handleFiles} />
 
-      {/* Pending uploads */}
-      <AnimatePresence>
-        {pending.length > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-sm text-ink">
-                Väntar på sparande
-                <span className="ml-2 text-xs font-normal text-gold">{newTxCount} nya transaktioner</span>
-              </h2>
-              <button onClick={() => setPending([])}
-                className="text-xs text-faint hover:text-ink">
-                Rensa alla
-              </button>
-            </div>
-            {pending.map(upload => (
-              <PendingCard
-                key={upload.id}
-                upload={upload}
-                onSave={() => handleSave(upload)}
-                onDiscard={() => setPending(prev => prev.filter(p => p.id !== upload.id))}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {error && (
+              <p className="text-sm text-coral rounded-xl px-4 py-3" style={{ background: 'rgba(255,143,122,.12)' }}>{error}</p>
+            )}
 
-      {/* Saved imports */}
-      {importBatches.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="font-display text-sm text-ink">Sparade uppladdningar</h2>
-          {importBatches.map(imp => (
-            <SavedCard
-              key={imp.id}
-              imp={imp}
-              onDelete={() => handleDelete(imp.id)}
-            />
-          ))}
+            {/* Pending uploads */}
+            <AnimatePresence>
+              {pending.length > 0 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-display text-sm text-ink">
+                      Väntar på sparande
+                      <span className="ml-2 text-xs font-normal text-gold">{newTxCount} nya transaktioner</span>
+                    </h2>
+                    <button onClick={() => setPending([])}
+                      className="text-xs text-faint hover:text-ink">
+                      Rensa alla
+                    </button>
+                  </div>
+                  {pending.map(upload => (
+                    <PendingCard
+                      key={upload.id}
+                      upload={upload}
+                      onSave={() => handleSave(upload)}
+                      onDiscard={() => setPending(prev => prev.filter(p => p.id !== upload.id))}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Right column: saved imports */}
+          <div className="space-y-2">
+            <h2 className="font-display text-sm text-ink">Sparade uppladdningar</h2>
+            {importBatches.length > 0 ? (
+              importBatches.map(imp => (
+                <SavedCard
+                  key={imp.id}
+                  imp={imp}
+                  onDelete={() => handleDelete(imp.id)}
+                />
+              ))
+            ) : (
+              <div className="vh-card p-8 text-center text-sm text-faint">
+                Inga sparade uppladdningar ännu. Dra in en fil till vänster för att komma igång.
+              </div>
+            )}
+          </div>
+
         </div>
-      )}
       </div>
     </div>
   );

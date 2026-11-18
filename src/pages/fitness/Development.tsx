@@ -15,12 +15,12 @@ export default function Development() {
         onBack={() => setFitnessPage('home')}
       />
 
-      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 pt-7">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-7">
         <p className="text-sm text-faint mb-6">
           Grafer och statistik – grafer byggs i Sprint 3.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
           {/* Muscle volume heatmap preview */}
           <div className="vh-card p-5">
             <p className="text-sm font-semibold text-mut mb-1">Träningsvolym – senaste 7 dagarna</p>

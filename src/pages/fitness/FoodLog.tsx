@@ -417,7 +417,7 @@ export default function FoodLog() {
         eyebrow="Kost"
         title="Matdagbok"
         subtitle="Logga måltider, följ makron och håll koll på veckan."
-        onBack={() => setFitnessPage('home')}
+        onBack={() => setFitnessPage('kosthome')}
         action={
           <button
             onClick={() => setShowSettings(true)}
@@ -429,7 +429,7 @@ export default function FoodLog() {
         }
       />
 
-      <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-10 py-6 pb-24">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 pb-24">
 
         {/* Date navigator */}
         <div className="vh-card flex items-center justify-between px-3 py-2 mb-6">
@@ -451,9 +451,9 @@ export default function FoodLog() {
           </button>
         </div>
 
-        <div className="grid lg:grid-cols-[360px_1fr] gap-6 items-start">
+        <div className="grid lg:grid-cols-[380px_1fr] gap-6 items-start">
         {/* Left column: summary + chart */}
-        <div className="space-y-4 lg:sticky lg:top-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 lg:sticky lg:top-6">
 
         {/* Calorie summary card */}
         <div className="vh-card p-4">
@@ -550,9 +550,9 @@ export default function FoodLog() {
         </div>
 
         {/* Right column: meal sections */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 content-start">
         {loading ? (
-          <div className="flex justify-center py-8">
+          <div className="flex justify-center py-8 xl:col-span-2">
             <Loader2 size={24} className="text-gold animate-spin" />
           </div>
         ) : (

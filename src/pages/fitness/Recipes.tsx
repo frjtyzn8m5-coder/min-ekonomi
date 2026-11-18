@@ -423,7 +423,10 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           </div>
         )}
 
-        <div className="p-4 max-w-2xl mx-auto space-y-4 pb-8">
+        <div className="p-4 max-w-[1600px] mx-auto pb-8">
+         <div className="grid lg:grid-cols-2 gap-6 items-start">
+          {/* Left column: name, servings, cost, nutrition, ingredients */}
+          <div className="space-y-4">
           {/* Name + source */}
           <div>
             <h1 className="font-display text-xl text-ink">{recipe.name}</h1>
@@ -558,7 +561,10 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
               </div>
             )}
           </div>
+          </div>
 
+          {/* Right column: instructions, tags, log */}
+          <div className="space-y-4">
           {/* Instructions */}
           {recipe.instructions.length > 0 && (
             <div>
@@ -620,6 +626,8 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
               Logga {logServings} portion{logServings !== 1 ? 'er' : ''}
             </button>
           </div>
+          </div>
+         </div>
         </div>
       </div>
     </div>
@@ -817,7 +825,7 @@ export default function Recipes() {
         eyebrow="Kost"
         title="Recept"
         subtitle={`${recipes.length} recept · kostnad & näring via Livsmedelsverket.`}
-        onBack={() => setFitnessPage('home')}
+        onBack={() => setFitnessPage('kosthome')}
         action={
           <button
             onClick={() => setShowImport(true)}
@@ -830,7 +838,7 @@ export default function Recipes() {
         }
       />
 
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-10 py-6 pb-24 space-y-4">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 pb-24 space-y-4">
       {/* Log success toast */}
       {logSuccess && (
         <div className="flex items-center gap-2 px-4 py-3 bg-[rgba(95,224,208,0.1)] border border-cyan/30 rounded-xl text-sm text-cyan">
@@ -867,7 +875,7 @@ export default function Recipes() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           {filtered.map(recipe => {
             const cost = calcRecipeCost(recipe.ingredients, recipe.servings, pantry, priceDB);
             const hasPrice = cost.totalRawSEK > 0;

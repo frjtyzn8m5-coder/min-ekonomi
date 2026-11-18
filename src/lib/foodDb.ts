@@ -1,6 +1,7 @@
 import { doc, setDoc, getDocs, collection, query, where, orderBy, limit, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import type { FoodEntry } from '../types';
+import { isDemoMode } from './demoData';
 
 // ─── Food Log ────────────────────────────────────────────────────────────────
 
@@ -17,6 +18,7 @@ export async function deleteFoodEntry(uid: string, entryId: string): Promise<voi
 }
 
 export async function loadFoodLog(uid: string, date: string): Promise<FoodEntry[]> {
+  if (isDemoMode()) return [];
   const q = query(
     collection(db, 'users', uid, 'foodLog'),
     where('date', '==', date),
@@ -31,6 +33,7 @@ export async function loadFoodLogRange(
   dateFrom: string,
   dateTo: string
 ): Promise<FoodEntry[]> {
+  if (isDemoMode()) return [];
   const q = query(
     collection(db, 'users', uid, 'foodLog'),
     where('date', '>=', dateFrom),

@@ -152,7 +152,7 @@ export default function App() {
               </div>
 
               <main className="flex-1 overflow-auto pb-16 lg:pb-0">
-                <div className="min-h-full flex flex-col max-w-screen-2xl mx-auto w-full">
+                <div className="min-h-full flex flex-col w-full">
                   <Suspense fallback={<Spinner />}>
                     <AnimatePresence mode="wait">
                       <motion.div key={page} {...PAGE_TRANSITION} className="flex-1 flex flex-col min-h-0">

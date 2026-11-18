@@ -135,10 +135,19 @@ export default function NetWorth() {
 
   const months = [...new Set([...assets.map(a => a.month), ...debts.map(d => d.month)])].sort();
 
+  // The latest asset snapshot's `avanza` field is a recorded value that can be stale.
+  // Mirror Overview: when a live portfolio value exists it REPLACES (not adds to) the
+  // recorded avanza for the most recent snapshot — so net worth stays current without
+  // double-counting the portfolio. Older months keep their recorded values.
+  const assetMonths = assets.map(a => a.month).sort();
+  const latestAssetMonth = assetMonths[assetMonths.length - 1];
+  const effectiveAvanza = (a: AssetSnapshot) =>
+    (a.month === latestAssetMonth && livePortfolioSEK > 0) ? livePortfolioSEK : a.avanza;
+
   const timeline = months.map(m => {
     const a = assets.find(x => x.month === m);
     const d = debts.find(x => x.month === m);
-    const totalAssets = a ? (a.cash + a.avanza + a.crypto + a.sparkonto + a.other) : 0;
+    const totalAssets = a ? (a.cash + effectiveAvanza(a) + a.crypto + a.sparkonto + a.other) : 0;
     const totalDebts  = d ? (d.csn + d.klarna + d.other) : 0;
     return {
       name: formatMonth(m),
@@ -148,11 +157,11 @@ export default function NetWorth() {
     };
   });
 
-  // Asset breakdown over time
+  // Asset breakdown over time (latest month uses the live portfolio value too)
   const assetBreakdown = assets.map(a => ({
     name: formatMonth(a.month),
     Kontanter:  a.cash,
-    Avanza:     a.avanza,
+    Avanza:     effectiveAvanza(a),
     Krypto:     a.crypto,
     Sparkonto:  a.sparkonto,
     Övrigt:     a.other,
@@ -179,7 +188,7 @@ export default function NetWorth() {
   const currentNetWorth    = currentTotalAssets - currentTotalDebts;
 
   return (
-    <div className="flex flex-col h-full overflow-auto bg-bg text-ink">
+    <div className="flex flex-col h-full w-full overflow-auto bg-bg text-ink">
       <PageBanner
         img="/img/f-save.jpg"
         eyebrow="Ekonomi"
@@ -187,7 +196,7 @@ export default function NetWorth() {
         subtitle="Totalt nettovärde och skuldöversikt"
       />
 
-      <div className="px-4 sm:px-6 lg:px-10 py-6 space-y-4">
+      <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-10 py-6 space-y-4 lg:space-y-5">
         {/* KPIs */}
         <motion.div {...FADE} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card>
@@ -212,12 +221,16 @@ export default function NetWorth() {
           </Card>
         </motion.div>
 
+        {/* Net worth + asset breakdown (full-width multi-column) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
         {/* Net worth area chart */}
         {timeline.length > 0 && (
-          <motion.div {...FADE} transition={{ delay: 0.05 }}>
-            <Card>
-              <CardHeader title="Nettovärde över tid" subtitle="Tillgångar minus skulder" />
-              <ResponsiveContainer width="100%" height={200}>
+          <motion.div {...FADE} transition={{ delay: 0.05 }}
+            className={assetBreakdown.length > 1 ? 'lg:col-span-7 flex' : 'lg:col-span-12 flex'}>
+            <Card className="w-full flex flex-col">
+              <CardHeader title="Nettovärde över tid"
+                subtitle={livePortfolioSEK > 0 ? 'Tillgångar minus skulder · senaste punkten inkl. live portfölj' : 'Tillgångar minus skulder'} />
+              <ResponsiveContainer width="100%" height={300}>
                 <ComposedChart data={timeline}>
                   <defs>
                     <linearGradient id="assetsGrad" x1="0" y1="0" x2="0" y2="1">
@@ -245,10 +258,10 @@ export default function NetWorth() {
 
         {/* Asset breakdown stacked area */}
         {assetBreakdown.length > 1 && (
-          <motion.div {...FADE} transition={{ delay: 0.08 }}>
-            <Card>
+          <motion.div {...FADE} transition={{ delay: 0.08 }} className="lg:col-span-5 flex">
+            <Card className="w-full flex flex-col">
               <CardHeader title="Tillgångsfördelning" subtitle="Fördelning per typ över tid" />
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={assetBreakdown}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,241,234,.08)" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9b9688' }} axisLine={false} tickLine={false} />
@@ -265,8 +278,9 @@ export default function NetWorth() {
             </Card>
           </motion.div>
         )}
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
           {/* Assets */}
           <motion.div {...FADE} transition={{ delay: 0.1 }}>
             <Card>

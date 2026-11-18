@@ -554,11 +554,11 @@ export default function Pantry() {
         eyebrow="Kost"
         title="Skafferi"
         subtitle="Lagerstatus, utgångsdatum och priser — se vad du har hemma."
-        onBack={() => setFitnessPage('recipes')}
+        onBack={() => setFitnessPage('kosthome')}
       />
 
       {/* Toolbar */}
-      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 pt-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           {/* Search */}
           <div className="relative flex-1">
@@ -611,7 +611,7 @@ export default function Pantry() {
         </div>
       )}
 
-      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 py-6 pb-24 space-y-4">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 pb-24 space-y-4">
         {/* Expiring soon banner */}
         {expiringSoon.length > 0 && (
           <div className="flex items-start gap-3 bg-[rgba(233,193,120,0.08)] border border-gold/30 rounded-xl p-3">
@@ -638,7 +638,7 @@ export default function Pantry() {
         )}
 
         {/* Grouped list */}
-        <div className="grid lg:grid-cols-2 gap-x-6 gap-y-6 items-start">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 items-start">
         {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b, 'sv')).map(([cat, catItems]) => (
           <div key={cat}>
             <h3 className="text-xs font-semibold text-faint uppercase tracking-wide mb-2">{cat}</h3>

@@ -10,6 +10,7 @@ import { Card } from '../components/ui/Card';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area,
 } from 'recharts';
 import { RefreshCw, Edit2, Check, X, TrendingUp, TrendingDown, AlertCircle, Plus, Settings2, Pencil } from 'lucide-react';
 import type { TickerMapping, PriceData, PortfolioSnapshot } from '../types';
@@ -166,6 +167,7 @@ export default function Portfolio() {
   const [remapCount, setRemapCount] = useState<number | null>(null);
   const [sortKey, setSortKey] = useState<'name' | 'valueSEK' | 'gainPct' | 'changePercent' | 'shares'>('valueSEK');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [historyRange, setHistoryRange] = useState<'1M' | '3M' | '1Å' | 'Allt'>('Allt');
   const [indexHistory, setIndexHistory] = useState<{
     omxs30: { date: string; pct: number }[];
     nasdaq: { date: string; pct: number }[];
@@ -587,9 +589,14 @@ export default function Portfolio() {
   }, [aggregatedEnriched, enriched, selectedAccounts]);
 
   const totalValueSEK = filteredEnriched.reduce((s, h) => s + h.valueSEK, 0);
-  const totalCostSEK  = filteredEnriched.reduce((s, h) => s + h.costSEK, 0);
-  const totalGainSEK  = totalValueSEK - totalCostSEK;
+  // Gains compare like-for-like: only count the cost basis of holdings that have a
+  // current price, so positions missing a quote don't show up as a fake total loss.
+  const pricedHoldings = filteredEnriched.filter(h => h.valueSEK > 0 && h.costSEK > 0);
+  const totalCostSEK  = pricedHoldings.reduce((s, h) => s + h.costSEK, 0);
+  const totalGainSEK  = pricedHoldings.reduce((s, h) => s + h.gainSEK, 0);
   const totalGainPct  = totalCostSEK > 0 ? (totalGainSEK / totalCostSEK) * 100 : 0;
+  const hasCostBasis  = totalCostSEK > 0;
+  const missingPriceCount = filteredEnriched.filter(h => h.valueSEK === 0 && h.costSEK > 0).length;
 
   // Pie: top PIE_MAX_SLICES from aggregated, rest as "Övriga"
   const pieData = useMemo(() => {
@@ -603,7 +610,30 @@ export default function Portfolio() {
     ];
   }, [aggregatedEnriched]);
 
-  const historyData = portfolioSnapshots.map(s => ({ date: formatDate(s.date), value: s.totalValueSEK }));
+  // Portfolio value history, filtered by the selected timeframe (uses portfolioSnapshots).
+  const valueHistory = useMemo(() => {
+    const sorted = [...portfolioSnapshots].sort((a, b) => a.date.localeCompare(b.date));
+    if (!sorted.length) return [] as { date: string; value: number }[];
+    let cutoff: string | null = null;
+    if (historyRange !== 'Allt') {
+      const d = new Date();
+      if (historyRange === '1M') d.setMonth(d.getMonth() - 1);
+      else if (historyRange === '3M') d.setMonth(d.getMonth() - 3);
+      else if (historyRange === '1Å') d.setFullYear(d.getFullYear() - 1);
+      cutoff = d.toISOString().slice(0, 10);
+    }
+    const filtered = cutoff ? sorted.filter(s => s.date >= cutoff!) : sorted;
+    return filtered.map(s => ({ date: formatDate(s.date), value: s.totalValueSEK }));
+  }, [portfolioSnapshots, historyRange]);
+
+  // Change across the selected timeframe (first vs last snapshot in range).
+  const rangeChange = useMemo(() => {
+    if (valueHistory.length < 2) return null;
+    const first = valueHistory[0].value;
+    const last = valueHistory[valueHistory.length - 1].value;
+    if (!first) return null;
+    return { abs: last - first, pct: ((last - first) / first) * 100 };
+  }, [valueHistory]);
 
   // % return series for comparison chart
   const portfolioPctData = useMemo(() => {
@@ -660,7 +690,7 @@ export default function Portfolio() {
   );
 
   return (
-    <div className="flex-1 overflow-auto bg-bg text-ink">
+    <div className="flex-1 w-full overflow-auto bg-bg text-ink">
     <PageBanner
       img="/img/f-chart.jpg"
       eyebrow="Ekonomi"
@@ -688,7 +718,7 @@ export default function Portfolio() {
         </div>
       }
     />
-    <div className="p-4 lg:p-6 space-y-5">
+    <div className="max-w-[1600px] mx-auto w-full p-4 lg:p-6 space-y-5">
 
       {/* ── Header meta (status + account filter) ──────────────────────────── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -759,10 +789,19 @@ export default function Portfolio() {
         <Card className="p-4 lg:col-span-2">
           <p className="text-xs text-faint mb-1">Totalt värde {selectedAccounts.length > 0 ? `· ${selectedAccounts.map(a => accountNames[a] || a).join(', ')}` : ''}</p>
           <p className="font-display tabular-nums text-2xl text-ink">{formatSEK(totalValueSEK)}</p>
-          <p className={`text-xs mt-1 font-medium ${totalGainSEK >= 0 ? 'text-cyan' : 'text-coral'}`}>
-            {totalGainSEK >= 0 ? <TrendingUp size={11} className="inline mr-0.5" /> : <TrendingDown size={11} className="inline mr-0.5" />}
-            {formatSEK(totalGainSEK)} ({formatPct(totalGainPct)}) vs inköpspris
-          </p>
+          {hasCostBasis ? (
+            <p className={`text-xs mt-1 font-medium ${totalGainSEK >= 0 ? 'text-cyan' : 'text-coral'}`}>
+              {totalGainSEK >= 0 ? <TrendingUp size={11} className="inline mr-0.5" /> : <TrendingDown size={11} className="inline mr-0.5" />}
+              {totalGainSEK >= 0 ? '+' : ''}{formatSEK(totalGainSEK)} ({formatPct(totalGainPct)}) vs inköpspris
+            </p>
+          ) : (
+            <p className="text-xs mt-1 text-faint">Vinst/förlust – (inget inköpspris registrerat)</p>
+          )}
+          {missingPriceCount > 0 && (
+            <p className="text-[10px] text-faint mt-0.5">
+              {missingPriceCount} innehav utan aktuell kurs ingår ej i vinstberäkningen
+            </p>
+          )}
           {allAccounts.length > 1 && selectedAccounts.length === 0 && (
             <div className="mt-3 space-y-1">
               {allAccounts.map(acc => {
@@ -808,6 +847,58 @@ export default function Portfolio() {
           )}
         </Card>
       </div>
+
+      {/* ── Portfolio value over time (with timeframe selector) ────────────── */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+          <div>
+            <h2 className="font-display text-sm text-ink">Portföljvärde över tid</h2>
+            {rangeChange !== null ? (
+              <p className={`text-xs mt-0.5 font-medium ${rangeChange.abs >= 0 ? 'text-cyan' : 'text-coral'}`}>
+                {rangeChange.abs >= 0 ? <TrendingUp size={11} className="inline mr-0.5" /> : <TrendingDown size={11} className="inline mr-0.5" />}
+                {rangeChange.abs >= 0 ? '+' : ''}{formatSEK(rangeChange.abs)} ({formatPct(rangeChange.pct)}) · {historyRange === 'Allt' ? 'hela perioden' : historyRange}
+              </p>
+            ) : (
+              <p className="text-xs text-faint mt-0.5">Sparas automatiskt vid varje kursuppdatering</p>
+            )}
+          </div>
+          <div className="flex rounded-lg border border-line overflow-hidden text-xs flex-shrink-0">
+            {(['1M', '3M', '1Å', 'Allt'] as const).map(r => (
+              <button key={r} onClick={() => setHistoryRange(r)}
+                className={`px-3 py-1.5 font-medium transition-colors ${historyRange === r ? 'text-[#2a1d08]' : 'text-mut hover:bg-white/5'}`}
+                style={historyRange === r ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+        {valueHistory.length >= 2 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={valueHistory} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="pfValueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#e9c178" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#e9c178" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,241,234,.08)" />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9b9688' }} axisLine={false} tickLine={false} minTickGap={24} />
+              <YAxis tick={{ fontSize: 10, fill: '#9b9688' }} axisLine={false} tickLine={false} width={52}
+                tickFormatter={v => `${(v / 1000).toFixed(0)}k`} domain={['auto', 'auto']} />
+              <Tooltip formatter={(v: number) => [formatSEK(v), 'Värde']}
+                contentStyle={{ background: '#15151b', border: '1px solid rgba(244,241,234,.09)', color: '#f4f1ea', borderRadius: 12, fontSize: 11 }} />
+              <Area type="monotone" dataKey="value" stroke="#e9c178" strokeWidth={2} fill="url(#pfValueGrad)"
+                dot={valueHistory.length <= 30 ? { r: 2, fill: '#e9c178' } : false} activeDot={{ r: 5 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[220px] flex items-center justify-center text-center text-[13px] text-faint px-4">
+            {portfolioSnapshots.length < 2
+              ? 'Minst två sparade kursuppdateringar krävs för att visa värdeutvecklingen — uppdatera kurser igen senare.'
+              : `Inga datapunkter i vald period (${historyRange}). Välj "Allt" för att se hela historiken.`}
+          </div>
+        )}
+      </Card>
 
       {/* ── Asset class breakdown ─────────────────────────────────────────── */}
       <Card className="p-4">

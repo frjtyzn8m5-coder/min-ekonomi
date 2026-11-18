@@ -593,10 +593,10 @@ export default function WeightLog() {
         onBack={() => setFitnessPage('home')}
       />
 
-      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 columns-1 lg:columns-2 2xl:columns-3 gap-5" style={{ columnFill: 'balance' }}>
 
         {/* ── Quick log ──────────────────────────────────────────────────────── */}
-        <div className="vh-card p-5">
+        <div className="vh-card p-5 break-inside-avoid mb-5">
           <p className="text-xs font-medium text-mut mb-3 uppercase tracking-wide">Logga vikt idag</p>
           <div className="flex items-center gap-3">
             <button
@@ -647,7 +647,7 @@ export default function WeightLog() {
         </div>
 
         {/* ── Measurements ─────────────────────────────────────────────────── */}
-        <div className="vh-card overflow-hidden">
+        <div className="vh-card overflow-hidden break-inside-avoid mb-5">
           <button
             className="w-full flex items-center justify-between p-5 hover:bg-white/5 transition-colors"
             onClick={() => setShowMeasurements(v => !v)}
@@ -720,7 +720,7 @@ export default function WeightLog() {
         </div>
 
         {/* ── Weight chart ──────────────────────────────────────────────────── */}
-        <div className="vh-card p-5">
+        <div className="vh-card p-5 break-inside-avoid mb-5">
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-semibold text-ink">Viktkurva</p>
             <div className="flex gap-1">
@@ -821,7 +821,7 @@ export default function WeightLog() {
         </div>
 
         {/* ── Stats cards ───────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 break-inside-avoid mb-5">
           {[
             {
               label: 'Nuvarande (trend)',
@@ -858,7 +858,7 @@ export default function WeightLog() {
 
         {/* ── Prognosis ─────────────────────────────────────────────────────── */}
         {currentEMA != null && emaAll.length >= 14 && (
-          <div className="vh-card p-5">
+          <div className="vh-card p-5 break-inside-avoid mb-5">
             <p className="text-sm font-semibold text-ink mb-3">Prognos</p>
             <div className="space-y-2">
               {[4, 8, 12].map(weeks => {
@@ -890,7 +890,7 @@ export default function WeightLog() {
         )}
 
         {/* ── Measurement instructions ───────────────────────────────────────── */}
-        <MeasurementInstructions />
+        <div className="break-inside-avoid mb-5"><MeasurementInstructions /></div>
 
         {/* ── Progress photos ───────────────────────────────────────────────── */}
         {(() => {
@@ -902,7 +902,7 @@ export default function WeightLog() {
           const canCompare = !!(entryA?.photoUrl && entryB?.photoUrl);
 
           return (
-            <div className="vh-card p-5">
+            <div className="vh-card p-5 break-inside-avoid mb-5">
               {/* Header */}
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-semibold text-ink">Progress-foton</p>
@@ -1117,7 +1117,7 @@ export default function WeightLog() {
 
         {/* ── Measurement radar ─────────────────────────────────────────────── */}
         {radarData.length >= 3 && (
-          <div className="vh-card p-5">
+          <div className="vh-card p-5 break-inside-avoid mb-5">
             <p className="text-sm font-semibold text-ink mb-1">Mätningstrend</p>
             <p className="text-xs text-faint mb-4">Procentuell förändring sedan start</p>
             <ResponsiveContainer width="100%" height={200}>
@@ -1133,7 +1133,7 @@ export default function WeightLog() {
         )}
 
         {/* ── Profile settings ──────────────────────────────────────────────── */}
-        <div className="vh-card p-5">
+        <div className="vh-card p-5 break-inside-avoid mb-5">
           <p className="text-sm font-semibold text-ink mb-4">Profilinställningar</p>
           <div className="grid grid-cols-2 gap-3">
             <div>

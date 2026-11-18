@@ -3,10 +3,12 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { PantryItem, Recipe, PriceEntry } from '../types';
+import { isDemoMode } from './demoData';
 
 // ── Pantry ────────────────────────────────────────────────────────────────────
 
 export async function loadPantry(uid: string): Promise<PantryItem[]> {
+  if (isDemoMode()) return [];
   const snap = await getDocs(
     query(collection(db, 'users', uid, 'pantry'), orderBy('addedAt', 'desc')),
   );
@@ -48,6 +50,7 @@ export async function upsertPantryItems(uid: string, items: PantryItem[]): Promi
 // ── Recipes ───────────────────────────────────────────────────────────────────
 
 export async function loadRecipes(uid: string): Promise<Recipe[]> {
+  if (isDemoMode()) return [];
   const snap = await getDocs(
     query(collection(db, 'users', uid, 'recipes'), orderBy('createdAt', 'desc')),
   );
@@ -68,6 +71,7 @@ export async function deleteRecipe(uid: string, recipeId: string): Promise<void>
 // Key: ICA article number (7 digits) OR "barcode_{ean}" for barcode-only items.
 
 export async function loadPriceDB(uid: string): Promise<PriceEntry[]> {
+  if (isDemoMode()) return [];
   const snap = await getDocs(collection(db, 'users', uid, 'priceDB'));
   return snap.docs.map(d => d.data() as PriceEntry);
 }

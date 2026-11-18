@@ -123,7 +123,7 @@ export default function Reminders() {
         subtitle="Push-notiser till din iPhone vid rätt tidpunkt"
       />
 
-      <div className="p-6 space-y-6 max-w-2xl">
+      <div className="max-w-[1600px] mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Push-status banner */}
       <div className="vh-card p-4 flex items-center gap-4"
         style={{ border: `1px solid ${hasPush ? 'rgba(95,224,208,.25)' : 'rgba(233,193,120,.25)'}` }}>
@@ -156,7 +156,7 @@ export default function Reminders() {
       </div>
 
       {/* Reminder list */}
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         <AnimatePresence>
           {reminders.map(r => (
             <motion.div
@@ -183,6 +183,7 @@ export default function Reminders() {
       </div>
 
       {/* Add reminder */}
+      <div className="max-w-xl">
       <AnimatePresence>
         {showAdd ? (
           <motion.div
@@ -236,6 +237,7 @@ export default function Reminders() {
           </motion.button>
         )}
       </AnimatePresence>
+      </div>
       </div>
     </div>
   );

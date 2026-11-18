@@ -552,7 +552,8 @@ function SessionDetail({ session, onBack }: { session: WorkoutSession; onBack: (
         {session.mood && <span className="text-xl">{MOOD_EMOJI[session.mood]}</span>}
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-4 bg-bg">
+      <div className="flex-1 overflow-auto p-4 sm:px-6 lg:px-10 bg-bg">
+        <div className="max-w-[1600px] mx-auto w-full space-y-4">
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: 'Övningar', value: String(exercises.length) },
@@ -568,6 +569,7 @@ function SessionDetail({ session, onBack }: { session: WorkoutSession; onBack: (
 
         {session.notes && <div className="bg-soft rounded-xl p-3 text-sm text-mut">{session.notes}</div>}
 
+        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
         {exercises.map((ex: any) => {
           const exSets: any[] = ex.sets ?? [];
           const done = exSets.filter((s: any) => s.completedAt > 0 || s.completed);
@@ -596,6 +598,8 @@ function SessionDetail({ session, onBack }: { session: WorkoutSession; onBack: (
             </div>
           );
         })}
+        </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -639,25 +643,31 @@ function ActiveSession({ exercises, dayName, startTime, sessions, onAddExercise,
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-3 bg-bg">
-        {exercises.length === 0 ? (
-          <div className="text-center py-16 text-faint">
-            <Dumbbell size={32} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-medium mb-1">Inga övningar ännu</p>
-            <p className="text-xs">Lägg till övningar för att börja logga</p>
-          </div>
-        ) : exercises.map((ex, i) => (
-          <ExerciseBlock key={ex.exerciseId + i} draft={ex} sessions={sessions}
-            onChange={u => { const next = [...exercises]; next[i] = u; onUpdate(next); }}
-            onDelete={() => onUpdate(exercises.filter((_, idx) => idx !== i))}
-            onPR={() => setPrFlash(true)}
-            historicalBest={getBest1RM(sessions, ex.exerciseId)} />
-        ))}
+      <div className="flex-1 overflow-auto p-4 sm:px-6 lg:px-10 bg-bg">
+        <div className="max-w-[1600px] mx-auto w-full">
+          {exercises.length === 0 ? (
+            <div className="text-center py-16 text-faint">
+              <Dumbbell size={32} className="mx-auto mb-3 opacity-30" />
+              <p className="text-sm font-medium mb-1">Inga övningar ännu</p>
+              <p className="text-xs">Lägg till övningar för att börja logga</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3 items-start">
+              {exercises.map((ex, i) => (
+                <ExerciseBlock key={ex.exerciseId + i} draft={ex} sessions={sessions}
+                  onChange={u => { const next = [...exercises]; next[i] = u; onUpdate(next); }}
+                  onDelete={() => onUpdate(exercises.filter((_, idx) => idx !== i))}
+                  onPR={() => setPrFlash(true)}
+                  historicalBest={getBest1RM(sessions, ex.exerciseId)} />
+              ))}
+            </div>
+          )}
 
-        <button onClick={onAddExercise}
-          className="w-full flex items-center justify-center gap-2 py-3.5 border-2 border-dashed border-line rounded-2xl text-sm text-gold font-medium hover:border-[rgba(233,193,120,.4)] hover:bg-[rgba(233,193,120,.08)] transition-all">
-          <Plus size={16} /> Lägg till övning
-        </button>
+          <button onClick={onAddExercise}
+            className="w-full flex items-center justify-center gap-2 py-3.5 mt-3 border-2 border-dashed border-line rounded-2xl text-sm text-gold font-medium hover:border-[rgba(233,193,120,.4)] hover:bg-[rgba(233,193,120,.08)] transition-all">
+            <Plus size={16} /> Lägg till övning
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -765,7 +775,7 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
   }, [user, pendingSets, dayName, startTime]);
 
   return (
-    <div className="flex flex-col h-full max-w-2xl mx-auto relative bg-bg text-ink">
+    <div className="flex flex-col h-full w-full relative bg-bg text-ink">
       <AnimatePresence mode="wait">
 
         {view === 'pick-exercise' && (
@@ -799,7 +809,8 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
                 <h2 className="font-display text-ink">Passhistorik</h2>
               </div>
             </div>
-            <div className="flex-1 overflow-auto p-4 space-y-2 bg-bg">
+            <div className="flex-1 overflow-auto p-4 sm:px-6 lg:px-10 bg-bg">
+              <div className="max-w-[1600px] mx-auto w-full">
               {loadingSessions ? (
                 <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" /></div>
               ) : sessions.length === 0 ? (
@@ -807,9 +818,14 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
                   <History size={28} className="mx-auto mb-2 opacity-30" />
                   <p className="text-sm">Inga pass loggade än</p>
                 </div>
-              ) : sessions.map(s => (
-                <SessionHistoryCard key={s.id} session={s} onClick={() => { setSelectedSession(s); setView('session-detail'); }} />
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+                  {sessions.map(s => (
+                    <SessionHistoryCard key={s.id} session={s} onClick={() => { setSelectedSession(s); setView('session-detail'); }} />
+                  ))}
+                </div>
+              )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -830,7 +846,9 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
               )}
             />
 
-            <div className="flex-1 overflow-auto p-4 space-y-4 bg-bg">
+            <div className="flex-1 overflow-auto p-4 sm:px-6 lg:px-10 py-6 bg-bg">
+              <div className="max-w-[1600px] mx-auto w-full space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
               <div className="vh-card p-5">
                 <h3 className="text-sm font-semibold text-ink mb-1">Starta nytt pass</h3>
                 <p className="text-xs text-faint mb-4">Logga övningar med settyp, vikt, reps och RPE. Progressionsförslag ingår.</p>
@@ -864,6 +882,7 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
                 </div>
                 <ChevronRight size={16} className="text-faint" />
               </button>
+              </div>
 
               {!loadingSessions && sessions.length > 0 && (
                 <div>
@@ -871,13 +890,14 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
                     <h3 className="text-sm font-semibold text-ink">Senaste pass</h3>
                     <button onClick={() => setView('history')} className="text-xs text-gold">Visa alla</button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
                     {sessions.slice(0, 3).map(s => (
                       <SessionHistoryCard key={s.id} session={s} onClick={() => { setSelectedSession(s); setView('session-detail'); }} />
                     ))}
                   </div>
                 </div>
               )}
+              </div>
             </div>
           </motion.div>
         )}

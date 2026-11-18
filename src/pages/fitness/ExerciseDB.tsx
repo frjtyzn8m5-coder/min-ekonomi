@@ -160,6 +160,7 @@ function DetailPanel({
   onToggleFav,
   onAddToSession,
   addLabel,
+  standalone = true,
 }: {
   exercise: Exercise;
   isFav: boolean;
@@ -167,6 +168,7 @@ function DetailPanel({
   onToggleFav: (id: string) => void;
   onAddToSession?: (e: Exercise) => void;
   addLabel?: string;
+  standalone?: boolean;
 }) {
   const handleYouTube = () => {
     window.open(
@@ -185,7 +187,7 @@ function DetailPanel({
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-      className="absolute inset-0 bg-bg overflow-auto z-10"
+      className={`${standalone ? 'fixed' : 'absolute'} inset-0 bg-bg overflow-auto z-50`}
     >
       {/* Header */}
       <div className="sticky top-0 bg-panel/90 backdrop-blur border-b border-line px-5 py-4 flex items-center gap-3 z-10">
@@ -208,7 +210,9 @@ function DetailPanel({
         </button>
       </div>
 
-      <div className="max-w-3xl mx-auto p-5 space-y-5">
+      <div className="max-w-[1600px] mx-auto p-5 sm:px-6 lg:px-10">
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8 items-start">
+        <div className="space-y-5">
         {/* Hero photo(s) */}
         <div className={`grid gap-3 ${twoUp ? 'grid-cols-2' : 'grid-cols-1'}`}>
           {(images.length ? images.slice(0, 2) : [undefined]).map((img, i) => (
@@ -276,6 +280,8 @@ function DetailPanel({
           </button>
         )}
 
+        </div>
+        <div className="space-y-5">
         {/* Muscle Map */}
         <div className="vh-card p-4">
           <p className="text-xs font-semibold text-mut mb-3">Muskelaktivering</p>
@@ -333,6 +339,8 @@ function DetailPanel({
           <ExternalLink size={15} />
           Se teknikvideo på YouTube
         </button>
+        </div>
+       </div>
       </div>
     </motion.div>
   );
@@ -404,8 +412,8 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
         />
       )}
       {/* Header */}
-      <div className={`bg-panel border-b border-line px-4 pt-4 pb-3 ${standalone ? 'sticky top-0 z-20' : 'flex-shrink-0'}`}>
-        <div className="max-w-[1200px] mx-auto w-full">
+      <div className={`bg-panel border-b border-line px-4 sm:px-6 lg:px-10 pt-4 pb-3 ${standalone ? 'sticky top-0 z-20' : 'flex-shrink-0'}`}>
+        <div className="max-w-[1600px] mx-auto w-full">
           {!standalone && (
             <div className="flex items-center gap-3 mb-1">
               <button
@@ -517,9 +525,9 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
       </div>
 
       {/* List */}
-      <div className={`flex-1 p-4 ${standalone ? '' : 'overflow-auto'}`}>
-        <div className="max-w-[1200px] mx-auto w-full">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <div className={`flex-1 p-4 sm:px-6 lg:px-10 ${standalone ? '' : 'overflow-auto'}`}>
+        <div className="max-w-[1600px] mx-auto w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
             <AnimatePresence>
               {visible.map((ex) => (
                 <ExerciseCard
@@ -561,6 +569,7 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
             onToggleFav={toggleFav}
             onAddToSession={onAddToSession ? (e) => { onAddToSession(e); setSelected(null); } : undefined}
             addLabel={addLabel}
+            standalone={standalone}
           />
         )}
       </AnimatePresence>

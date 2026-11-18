@@ -223,6 +223,8 @@ function ShoppingList({
         )}
       </div>
 
+      {/* Items to buy + pantry — masonry columns that fill the width */}
+      <div className="columns-1 md:columns-2 xl:columns-3 gap-4 [&>*]:break-inside-avoid [&>*]:mb-4">
       {/* Items to buy — grouped by category (butiksordning) */}
       {result.groups.map(group => (
         <div key={group.category}>
@@ -289,6 +291,7 @@ function ShoppingList({
           </div>
         </div>
       )}
+      </div>
 
       {/* Draft notice (org policy: outputs must be reviewed by a person) */}
       <p className="text-[11px] text-faint text-center pt-1">
@@ -575,7 +578,7 @@ export default function MealPlan() {
         eyebrow="Kost"
         title="Måltidsplan"
         subtitle="Generera veckan, byt måltider och exportera inköpslistan."
-        onBack={() => setFitnessPage('home')}
+        onBack={() => setFitnessPage('kosthome')}
         action={
           <div className="flex items-center gap-2">
             <button
@@ -600,7 +603,7 @@ export default function MealPlan() {
 
       {/* Tabs */}
       <div className="border-b border-line">
-        <div className="flex max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+        <div className="flex max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
           {(['plan', 'shopping'] as const).map(tab => (
             <button
               key={tab}
@@ -616,11 +619,11 @@ export default function MealPlan() {
       </div>
 
       {activeTab === 'shopping' ? (
-        <div className="max-w-[900px] mx-auto px-5 sm:px-8 lg:px-10 py-6">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
           <ShoppingList plan={plan} recipes={recipes} pantry={pantry} priceDB={priceDB} />
         </div>
       ) : (
-        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 py-6 space-y-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 space-y-4">
           {/* Day selector */}
           <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
             {DAYS.map((day, d) => {
