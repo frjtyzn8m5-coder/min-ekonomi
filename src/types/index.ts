@@ -216,6 +216,7 @@ export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
 
 export type FitnessPage =
   | 'home'           // FitnessHome.tsx
+  | 'kosthome'       // KostHome.tsx (editorial nutrition hub)
   | 'weightlog'      // WeightLog.tsx
   | 'workoutlog'     // WorkoutLog.tsx
   | 'workoutprogram' // WorkoutProgram.tsx

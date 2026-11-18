@@ -281,9 +281,9 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
   const visible = filtered.slice(0, displayCount);
 
   return (
-    <div className="relative h-full flex flex-col overflow-hidden bg-bg text-ink">
+    <div className={`relative flex flex-col bg-bg text-ink ${standalone ? 'min-h-full' : 'h-full overflow-hidden'}`}>
       {/* Header */}
-      <div className="flex-shrink-0 bg-panel border-b border-line px-4 pt-4 pb-3">
+      <div className={`bg-panel border-b border-line px-4 pt-4 pb-3 ${standalone ? 'sticky top-0 z-20' : 'flex-shrink-0'}`}>
         <div className="flex items-center gap-3 mb-1">
           <button
             onClick={() => onBack ? onBack() : setFitnessPage('home')}
@@ -397,7 +397,7 @@ export default function ExerciseDB({ standalone = true, onBack, onAddToSession, 
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-auto p-4 space-y-3">
+      <div className={`flex-1 p-4 space-y-3 ${standalone ? '' : 'overflow-auto'}`}>
         <AnimatePresence>
           {visible.map((ex) => (
             <ExerciseCard

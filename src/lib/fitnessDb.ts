@@ -2,7 +2,7 @@ import {
   collection, doc, setDoc, getDocs, query, orderBy, limit, where
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { BodyEntry, WorkoutSession } from '../types';
+import type { BodyEntry, WorkoutSession, WorkoutProgram } from '../types';
 
 const bodyLogCol = (uid: string) => collection(db, 'users', uid, 'bodyLog');
 const bodyLogDoc = (uid: string, date: string) => doc(db, 'users', uid, 'bodyLog', date);
@@ -38,6 +38,17 @@ export async function loadAllBodyLog(uid: string): Promise<BodyEntry[]> {
 
 export async function saveFitnessSettings(uid: string, settings: object): Promise<void> {
   await setDoc(doc(db, 'users', uid, 'settings', 'fitness'), settings, { merge: true });
+}
+
+// ── Workout program ─────────────────────────────────────────────────────────
+// Samma dokument som WorkoutProgram-sidan läser/skriver:
+//   users/{uid}/fitness/workoutProgram
+const workoutProgramDoc = (uid: string) => doc(db, 'users', uid, 'fitness', 'workoutProgram');
+
+export async function saveWorkoutProgram(uid: string, program: WorkoutProgram): Promise<void> {
+  // Rensa undefined-fält (t.ex. valfria övnings-anteckningar) innan skrivning.
+  const clean = JSON.parse(JSON.stringify(program));
+  await setDoc(workoutProgramDoc(uid), clean);
 }
 
 // ── Workout sessions ──────────────────────────────────────────────────────────

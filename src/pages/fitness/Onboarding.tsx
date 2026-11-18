@@ -4,9 +4,11 @@ import { IDumbbell } from '../../components/ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import type { Gender, PrimaryGoal, ExperienceLevel, ActivityLevel, Contraceptive, ActiveModule, UserProfile } from '../../types';
+import type { Gender, PrimaryGoal, ExperienceLevel, ActivityLevel, Contraceptive, ActiveModule, UserProfile, TrainingProfile, TrainingGoal } from '../../types';
 import { calculateBMR, calculateTDEE, calculateMacroTargets, getAgeFromBirthDate } from '../../utils/calculations';
 import { saveUserProfile } from '../../lib/db';
+import { generateProgram } from '../../utils/programGenerator';
+import { saveWorkoutProgram } from '../../lib/fitnessDb';
 
 // ── Utrustning ────────────────────────────────────────────────────────────────
 
@@ -174,6 +176,17 @@ function recommendPrograms(days: number, level: ExperienceLevel, goal: PrimaryGo
   return PROGRAM_LIBRARY
     .sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0))
     .map(p => p.id);
+}
+
+// PrimaryGoal (onboarding) → TrainingGoal (programgenerator). 'maintain' och
+// 'general_health' finns inte i TrainingGoal → faller tillbaka på hypertrofi.
+function toTrainingGoal(goal: PrimaryGoal): TrainingGoal {
+  switch (goal) {
+    case 'lose_fat': return 'lose_fat';
+    case 'gain_muscle': return 'gain_muscle';
+    case 'recomp': return 'recomp';
+    default: return 'gain_muscle';
+  }
 }
 
 // ── Förhandsgranskningsmodal ───────────────────────────────────────────────────
@@ -385,6 +398,27 @@ export default function Onboarding() {
       await saveUserProfile(user.uid, newProfile);
     } catch (e) {
       console.error('Kunde inte spara profil:', e);
+    }
+
+    // Generera och spara ett riktigt träningsprogram i exakt det format som
+    // WorkoutProgram-sidan läser (users/{uid}/fitness/workoutProgram).
+    // Detta fixar buggen där "Inget program hittat" visades efter onboarding.
+    try {
+      const trainingProfile: TrainingProfile = {
+        age: age ?? 30,
+        gender: gender === 'female' ? 'female' : 'male',
+        height: h ?? 175,
+        weight: w ?? 80,
+        goal: toTrainingGoal(primaryGoal),
+        experienceLevel,
+        trainingDaysPerWeek: trainingDays,
+        availableEquipment: equipment,
+        preferBuilt: true,
+      };
+      const program = generateProgram(trainingProfile);
+      await saveWorkoutProgram(user.uid, program);
+    } catch (e) {
+      console.error('Kunde inte generera träningsprogram:', e);
     }
 
     setSaving(false);

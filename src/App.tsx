@@ -23,6 +23,7 @@ const ModuleSelector = lazy(() => import('./pages/ModuleSelector'));
 // ── Hub module pages (lazy) ───────────────────────────────────────────────────
 const Dashboard    = lazy(() => import('./pages/home/Dashboard'));
 const FitnessHome  = lazy(() => import('./pages/fitness/FitnessHome'));
+const KostHome     = lazy(() => import('./pages/fitness/KostHome'));
 const WeightLog    = lazy(() => import('./pages/fitness/WeightLog'));
 const FoodLog      = lazy(() => import('./pages/fitness/FoodLog'));
 const Pantry          = lazy(() => import('./pages/fitness/Pantry'));
@@ -177,6 +178,7 @@ export default function App() {
                   <ErrorBoundary resetKey={`${module}-${fitnessPage}`}>
                   {module === 'home'     && <Dashboard />}
                   {module === 'fitness'  && fitnessPage === 'home'      && <FitnessHome />}
+                  {module === 'fitness'  && fitnessPage === 'kosthome'  && <KostHome />}
                   {module === 'fitness'  && fitnessPage === 'weightlog' && <WeightLog />}
                   {module === 'fitness'  && fitnessPage === 'foodlog'   && <FoodLog />}
                   {module === 'fitness'  && fitnessPage === 'pantry'     && <Pantry />}

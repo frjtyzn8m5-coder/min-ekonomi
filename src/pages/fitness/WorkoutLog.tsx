@@ -11,7 +11,7 @@ import type { Exercise, WorkoutSet, WorkoutSession, SetType } from '../../types'
 import ExerciseDB from './ExerciseDB';
 import { saveWorkoutSession, loadWorkoutSessions } from '../../lib/fitnessDb';
 import { calculate1RM, calculateProgression, detectStagnation } from '../../utils/progressionEngine';
-import { getExerciseById } from '../../utils/exerciseUtils';
+import { getExerciseById, getExerciseByName } from '../../utils/exerciseUtils';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -685,11 +685,14 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
   const [view, setView] = useState<View>(resolvedInitial ? 'session' : 'home');
   const [sessionExercises, setSessionExercises] = useState<DraftExercise[]>(() =>
     resolvedInitial
-      ? resolvedInitial.map(ex => ({
-          exerciseId: ex.name.toLowerCase().replace(/\s+/g, '_'),
-          exerciseName: ex.name,
-          sets: [{ id: uid(), setType: 'working' as SetType, weight: 0, reps: 0, completedAt: 0 }],
-        }))
+      ? resolvedInitial.map(ex => {
+          const resolved = getExerciseByName(ex.name);
+          return {
+            exerciseId: resolved?.id ?? ex.name.toLowerCase().replace(/\s+/g, '_'),
+            exerciseName: resolved?.nameSv ?? resolved?.name ?? ex.name,
+            sets: [{ id: uid(), setType: 'working' as SetType, weight: 0, reps: 0, completedAt: 0 }],
+          };
+        })
       : []
   );
   const [startTime, setStartTime] = useState(Date.now());

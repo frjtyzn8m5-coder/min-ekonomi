@@ -97,6 +97,28 @@ export function getExerciseById(id: string): Exercise | undefined {
   return EXERCISES.find((e) => e.id === id);
 }
 
+// Name → exercise index. Matches case-insensitively (trimmed) against both the
+// Swedish (nameSv) and English (name) names. Built once from EXERCISES so it is
+// robust whether the DB has 60 or ~800 exercises. If two exercises share a name,
+// the first occurrence wins.
+const EXERCISE_BY_NAME: Map<string, Exercise> = (() => {
+  const index = new Map<string, Exercise>();
+  for (const e of EXERCISES) {
+    const keys = [e.nameSv, e.name];
+    for (const k of keys) {
+      if (!k) continue;
+      const norm = k.toLowerCase().trim();
+      if (norm && !index.has(norm)) index.set(norm, e);
+    }
+  }
+  return index;
+})();
+
+export function getExerciseByName(name: string): Exercise | undefined {
+  if (!name) return undefined;
+  return EXERCISE_BY_NAME.get(name.toLowerCase().trim());
+}
+
 export function getExercisesByIds(ids: string[]): Exercise[] {
   return ids.map((id) => EXERCISES.find((e) => e.id === id)).filter(Boolean) as Exercise[];
 }
