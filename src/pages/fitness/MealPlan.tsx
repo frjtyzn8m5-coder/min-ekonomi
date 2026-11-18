@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
 import { loadRecipes, loadPantry, loadPriceDB } from '../../lib/pantryDb';
-import { buildPriceLookup } from '../../utils/recipeCost';
+import { buildShoppingList, type PlannedRecipe } from '../../utils/shoppingEngine';
 import { RefreshCw, X, ShoppingCart, Settings, Check, Shuffle, Package } from 'lucide-react';
 import { IFlame, IUtensils, IMoon } from '../../components/ui/Icons';
 import type { Recipe, PantryItem, PriceEntry } from '../../types';
@@ -160,17 +160,7 @@ function dayTotals(day: Record<MealType, PlannedMeal>) {
   );
 }
 
-// ─── Shopping list ────────────────────────────────────────────────────────────
-
-interface ShoppingItem {
-  name: string;
-  neededGrams: number;
-  inPantryGrams: number;
-  toBuyGrams: number;
-  pricePerKg: number | null;
-  estimatedCost: number | null;
-  inPantry: boolean;
-}
+// ─── Shopping list (powered by shoppingEngine) ──────────────────────────────────
 
 function ShoppingList({
   plan, recipes, pantry, priceDB,
@@ -182,23 +172,19 @@ function ShoppingList({
 }) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
-  // 1. Aggregate needed grams per ingredient across the whole week plan
-  const neededMap = new Map<string, number>();
+  // 1. Collect planned recipes (with desired servings) from the week plan.
+  const planned: PlannedRecipe[] = [];
   for (let d = 0; d < 7; d++) {
     for (const mt of ['breakfast', 'lunch', 'dinner'] as MealType[]) {
       const meal = plan[d][mt];
       if (!meal.recipeId) continue;
       const recipe = recipes.find(r => r.id === meal.recipeId);
       if (!recipe) continue;
-      const scale = meal.servings / Math.max(recipe.servings, 1);
-      for (const ing of recipe.ingredients) {
-        const key = ing.name.toLowerCase().trim();
-        neededMap.set(key, (neededMap.get(key) ?? 0) + ing.amount * scale);
-      }
+      planned.push({ recipe, servings: meal.servings });
     }
   }
 
-  if (!neededMap.size) {
+  if (!planned.length) {
     return (
       <div className="text-center py-12 text-faint text-sm">
         Generera en veckoplan för att se inköpslistan.
@@ -206,140 +192,108 @@ function ShoppingList({
     );
   }
 
-  // 2. Build price map
-  const priceMap = buildPriceLookup(pantry, priceDB);
+  // 2. Run the deterministic engine: aggregate → subtract pantry → round to
+  //    logical packages → group by category → leftovers (pantryDelta).
+  const result = buildShoppingList(planned, pantry, { priceDB });
 
-  // 3. Build pantry stock map (grams available, fuzzy by name)
-  const pantryMap = new Map<string, number>();
-  for (const item of pantry) {
-    const key = item.name.toLowerCase().trim();
-    const grams = item.unit === 'g' ? item.amount : (item.amount * (item.unitWeightGrams ?? 100));
-    pantryMap.set(key, (pantryMap.get(key) ?? 0) + grams);
-  }
-
-  // Fuzzy lookup helper for pantry
-  function pantryGrams(name: string): number {
-    if (pantryMap.has(name)) return pantryMap.get(name)!;
-    for (const [key, val] of pantryMap) {
-      if (key.includes(name) || name.includes(key)) return val;
-    }
-    return 0;
-  }
-
-  function priceLookup(name: string): number | null {
-    const entry = priceMap.get(name) ?? [...priceMap.entries()].find(([k]) => k.includes(name) || name.includes(k))?.[1] ?? null;
-    if (!entry) return null;
-    if (entry.pricePerKg) return entry.pricePerKg;
-    if (entry.pricePerUnit && entry.unitWeightGrams) return (entry.pricePerUnit / entry.unitWeightGrams) * 1000;
-    return null;
-  }
-
-  // 4. Build shopping items
-  const items: ShoppingItem[] = [...neededMap.entries()].map(([name, neededGrams]) => {
-    const inPantryGrams = Math.min(pantryGrams(name), neededGrams);
-    const toBuyGrams = Math.max(0, neededGrams - inPantryGrams);
-    const pkgPerKg = priceLookup(name);
-    const estimatedCost = pkgPerKg !== null && toBuyGrams > 0
-      ? (toBuyGrams / 1000) * pkgPerKg
-      : null;
-    return {
-      name,
-      neededGrams: Math.round(neededGrams),
-      inPantryGrams: Math.round(inPantryGrams),
-      toBuyGrams: Math.round(toBuyGrams),
-      pricePerKg: pkgPerKg,
-      estimatedCost,
-      inPantry: inPantryGrams >= neededGrams,
-    };
-  });
-
-  // 5. Sort: items to buy first, then by estimated cost (cheapest first), then name
-  items.sort((a, b) => {
-    if (a.inPantry !== b.inPantry) return a.inPantry ? 1 : -1;
-    if (a.estimatedCost !== null && b.estimatedCost !== null) return a.estimatedCost - b.estimatedCost;
-    if (a.estimatedCost !== null) return -1;
-    if (b.estimatedCost !== null) return 1;
-    return a.name.localeCompare(b.name, 'sv');
-  });
-
-  const totalCost = items.reduce((sum, i) => sum + (i.estimatedCost ?? 0), 0);
-  const toBuyCount = items.filter(i => !i.inPantry).length;
-
-  function toggleCheck(name: string) {
+  function toggleCheck(key: string) {
     setChecked(prev => {
       const next = new Set(prev);
-      if (next.has(name)) next.delete(name); else next.add(name);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Summary bar */}
       <div className="bg-[rgba(233,193,120,0.08)] border border-gold/20 rounded-xl p-3 flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-gold tnum">{toBuyCount} varor att köpa</p>
+          <p className="text-sm font-semibold text-gold tnum">{result.toBuyCount} varor att köpa</p>
           <p className="text-xs text-mut mt-0.5 tnum">
-            {items.filter(i => i.inPantry).length} täcks av skafferiet
+            {result.covered.length} täcks av skafferiet
           </p>
         </div>
-        {totalCost > 0 && (
+        {result.totalCostSEK != null && result.totalCostSEK > 0 && (
           <div className="text-right">
             <p className="text-xs text-mut">Uppskattat</p>
-            <p className="font-display text-sm text-gold tnum">{totalCost.toFixed(0)} kr</p>
+            <p className="font-display text-sm text-gold tnum">{result.totalCostSEK.toFixed(0)} kr</p>
+            <p className="text-[10px] text-faint">endast varor med känt pris</p>
           </div>
         )}
       </div>
 
-      {/* Items to buy */}
-      <div className="bg-card rounded-2xl divide-y divide-line overflow-hidden border border-line">
-        {items.filter(i => !i.inPantry).map(item => {
-          const done = checked.has(item.name);
-          return (
-            <div
-              key={item.name}
-              onClick={() => toggleCheck(item.name)}
-              className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${done ? 'bg-white/5' : 'hover:bg-white/5'}`}
-            >
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${done ? 'bg-gold border-gold' : 'border-faint'}`}>
-                {done && <Check size={11} className="text-[#2a1d08]" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm capitalize font-medium ${done ? 'line-through text-faint' : 'text-ink'}`}>{item.name}</p>
-                <p className="text-xs text-faint tnum">{item.toBuyGrams} g behövs</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                {item.estimatedCost !== null ? (
-                  <p className="text-sm font-semibold text-mut tnum">{item.estimatedCost.toFixed(1)} kr</p>
-                ) : (
-                  <p className="text-xs text-faint">Pris okänt</p>
-                )}
-                {item.pricePerKg && (
-                  <p className="text-[10px] text-faint tnum">{item.pricePerKg.toFixed(0)} kr/kg</p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Items to buy — grouped by category (butiksordning) */}
+      {result.groups.map(group => (
+        <div key={group.category}>
+          <p className="text-xs font-semibold text-faint uppercase tracking-wide mb-2">
+            {group.category}
+          </p>
+          <div className="bg-card rounded-2xl divide-y divide-line overflow-hidden border border-line">
+            {group.items.map(item => {
+              const done = checked.has(item.key);
+              return (
+                <div
+                  key={item.key}
+                  onClick={() => toggleCheck(item.key)}
+                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${done ? 'bg-white/5' : 'hover:bg-white/5'}`}
+                >
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${done ? 'bg-gold border-gold' : 'border-faint'}`}>
+                    {done && <Check size={11} className="text-[#2a1d08]" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <p className={`text-sm capitalize font-medium ${done ? 'line-through text-faint' : 'text-ink'}`}>{item.name}</p>
+                      <span className={`text-xs font-semibold tnum flex-shrink-0 ${done ? 'text-faint' : 'text-gold'}`}>
+                        {item.displayQuantity}
+                      </span>
+                    </div>
+                    <p className="text-xs text-faint tnum">
+                      {item.packLabel ? `${item.packLabel} · ` : ''}{Math.round(item.toBuyGrams)} g behövs
+                      {item.leftoverGrams >= 20 && (
+                        <span className="text-cyan"> · {Math.round(item.leftoverGrams)} g kvar till skafferiet</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    {item.estimatedCostSEK != null ? (
+                      <p className="text-sm font-semibold text-mut tnum">{item.estimatedCostSEK.toFixed(1)} kr</p>
+                    ) : (
+                      <p className="text-xs text-faint">Pris okänt</p>
+                    )}
+                    {item.pricePerKg != null && (
+                      <p className="text-[10px] text-faint tnum">{item.pricePerKg.toFixed(0)} kr/kg</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
 
       {/* Already in pantry */}
-      {items.filter(i => i.inPantry).length > 0 && (
+      {result.covered.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-faint uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <Package size={12} /> Finns i skafferiet
           </p>
           <div className="bg-card rounded-2xl divide-y divide-line overflow-hidden border border-line opacity-60">
-            {items.filter(i => i.inPantry).map(item => (
-              <div key={item.name} className="flex items-center gap-3 px-4 py-2.5">
+            {result.covered.map(item => (
+              <div key={item.key} className="flex items-center gap-3 px-4 py-2.5">
                 <Check size={14} className="text-cyan flex-shrink-0" />
                 <p className="flex-1 text-sm text-mut capitalize">{item.name}</p>
-                <p className="text-xs text-faint tnum">{item.neededGrams} g</p>
+                <p className="text-xs text-faint tnum">{Math.round(item.neededGrams)} g</p>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Draft notice (org policy: outputs must be reviewed by a person) */}
+      <p className="text-[11px] text-faint text-center pt-1">
+        Utkast — kontrollera mängder och priser innan du handlar.
+      </p>
     </div>
   );
 }
