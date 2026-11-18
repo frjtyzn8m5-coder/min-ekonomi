@@ -58,8 +58,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-full bg-bg text-ink px-4 sm:px-6 lg:px-8 py-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-full bg-bg text-ink px-4 sm:px-6 lg:px-10 py-6">
+      <div className="max-w-7xl mx-auto">
 
         {/* header */}
         <header className="mb-6">
