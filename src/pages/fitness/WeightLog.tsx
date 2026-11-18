@@ -4,10 +4,11 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, RadarChart,
   Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
-import { ArrowLeft, Plus, Minus, ChevronDown, ChevronUp, Camera, Info, ChevronLeft, ChevronRight, X, Columns2, SlidersHorizontal } from 'lucide-react';
+import { Plus, Minus, ChevronDown, ChevronUp, Camera, Info, ChevronLeft, ChevronRight, X, Columns2, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import PageBanner from '../../components/ui/PageBanner';
 import { saveBodyEntry, loadBodyLog } from '../../lib/fitnessDb';
 import type { BodyEntry, BodyMeasurements } from '../../types';
 
@@ -584,18 +585,15 @@ export default function WeightLog() {
 
   return (
     <div className="min-h-full bg-bg text-ink pb-24 lg:pb-8">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-bg/80 backdrop-blur border-b border-line px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => setFitnessPage('home')}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-mut hover:bg-white/5 hover:text-ink transition-colors"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <h1 className="font-display text-xl text-ink">Vikt & Kropp</h1>
-      </div>
+      <PageBanner
+        img="/img/f-body6.jpg"
+        eyebrow="Kropp"
+        title="Vikt & Kropp"
+        subtitle="Vikt, mått, kroppsfett och progress-foton — följ din utveckling över tid."
+        onBack={() => setFitnessPage('home')}
+      />
 
-      <div className="max-w-2xl mx-auto px-4 pt-5 space-y-5">
+      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
 
         {/* ── Quick log ──────────────────────────────────────────────────────── */}
         <div className="vh-card p-5">

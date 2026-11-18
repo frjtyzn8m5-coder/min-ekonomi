@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card';
 import { Plus, Trash2, Zap, Check, RefreshCw } from 'lucide-react';
 import { autoCat, autoIsTransfer, smartCategorize } from '../utils/categorize';
 import type { Category } from '../types';
+import PageBanner from '../components/ui/PageBanner';
 
 // Bank account numbers: 8–14 digits that do NOT start with 46 (those are Swish/phone)
 const BANK_ACCOUNT_RX = /^\d{8,14}$/;
@@ -125,9 +126,15 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
-      <h1 className="font-display text-2xl text-ink">Inställningar</h1>
+    <div className="flex-1 overflow-auto bg-bg text-ink">
+      <PageBanner
+        img="/img/f-fin.jpg"
+        eyebrow="Ekonomi"
+        title="Inställningar"
+        subtitle="Egna konton och automatisk kategorisering"
+      />
 
+      <div className="p-4 lg:p-6 space-y-5">
       {/* Own accounts */}
       <Card className="p-5 space-y-4">
         <div>
@@ -252,6 +259,7 @@ export default function Settings() {
           )}
         </div>
       </Card>
+      </div>
     </div>
   );
 }

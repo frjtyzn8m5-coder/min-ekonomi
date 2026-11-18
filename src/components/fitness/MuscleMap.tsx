@@ -1,14 +1,18 @@
 /**
- * MuscleMap – SVG-baserad muskelkarta med tre lägen.
- * Ersätter react-muscle-highlighter med en intern SVG-lösning.
+ * MuscleMap – anatomisk muskelkarta byggd på react-body-highlighter (MIT).
+ * Visar fram- och baksida med markerade muskler i tre lägen:
+ *  - exercise:       primär / sekundär / stabilisator för en övning
+ *  - weekly_volume:  antal set per muskelgrupp (heatmap)
+ *  - fatigue:        återhämtningsstatus (dagar sedan träning)
+ *
+ * Behåller samma publika API (MuscleMapProps) som tidigare SVG-versionen så att
+ * ExerciseDB och Development inte behöver ändras.
  */
+import Model, { type IExerciseData, type Muscle, type IMuscleStats } from 'react-body-highlighter';
 import type { AnatomicalMuscle } from '../../types';
 import { getExerciseById } from '../../utils/exerciseUtils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-type MuscleRole = 'primary' | 'secondary' | 'stabilizer' | 'none';
-type FatigueState = 'fresh' | 'ready' | 'recovering' | 'resting';
 
 export interface MuscleMapProps {
   mode: 'exercise' | 'weekly_volume' | 'fatigue';
@@ -19,409 +23,164 @@ export interface MuscleMapProps {
   compact?: boolean;
 }
 
-// ── Colour helpers ────────────────────────────────────────────────────────────
-// Dark-friendly base tone for unworked muscles; palette accents for highlights.
+// ── Palette ───────────────────────────────────────────────────────────────────
 
-const BASE_MUSCLE = 'rgba(244,241,234,.08)';
+const GOLD = '#e9c178';
+const CYAN = '#5fe0d0';
+const VIOLET = '#9b8cff';
+const LIME = '#aee07a';
+const CORAL = '#ff8f7a';
+const BODY_BASE = 'rgba(244,241,234,.10)'; // unworked muscles on dark bg
 
-function roleColor(role: MuscleRole): string {
-  switch (role) {
-    case 'primary':   return '#e9c178'; // gold
-    case 'secondary': return '#5fe0d0'; // cyan
-    case 'stabilizer':return '#9b8cff'; // violet
-    default:          return BASE_MUSCLE;
+// ── Muscle mapping: our AnatomicalMuscle → react-body-highlighter Muscle ────────
+
+const MUSCLE_TO_LIB: Record<AnatomicalMuscle, Muscle | null> = {
+  pectoralis_major: 'chest',
+  pectoralis_minor: 'chest',
+  serratus_anterior: 'chest',
+  latissimus_dorsi: 'upper-back',
+  rhomboids: 'upper-back',
+  trapezius: 'trapezius',
+  rear_deltoid: 'back-deltoids',
+  rotator_cuff: 'back-deltoids',
+  anterior_deltoid: 'front-deltoids',
+  medial_deltoid: 'front-deltoids',
+  biceps_brachii: 'biceps',
+  brachialis: 'biceps',
+  triceps_brachii: 'triceps',
+  brachioradialis: 'forearm',
+  forearms: 'forearm',
+  quadriceps: 'quadriceps',
+  hamstrings: 'hamstring',
+  gluteus_maximus: 'gluteal',
+  gluteus_medius: 'gluteal',
+  gluteus_minimus: 'gluteal',
+  gastrocnemius: 'calves',
+  soleus: 'calves',
+  rectus_abdominis: 'abs',
+  transverse_abdominis: 'abs',
+  core: 'abs',
+  obliques: 'obliques',
+  erector_spinae: 'lower-back',
+  multifidus: 'lower-back',
+};
+
+// Reverse (best-effort, first match) for onMuscleClick callbacks.
+const LIB_TO_MUSCLE: Partial<Record<Muscle, AnatomicalMuscle>> = (() => {
+  const m: Partial<Record<Muscle, AnatomicalMuscle>> = {};
+  for (const [anat, lib] of Object.entries(MUSCLE_TO_LIB) as [AnatomicalMuscle, Muscle | null][]) {
+    if (lib && !m[lib]) m[lib] = anat;
   }
+  return m;
+})();
+
+function mapMuscles(muscles: AnatomicalMuscle[]): Muscle[] {
+  const out: Muscle[] = [];
+  for (const mm of muscles) {
+    const lib = MUSCLE_TO_LIB[mm];
+    if (lib && !out.includes(lib)) out.push(lib);
+  }
+  return out;
 }
 
-function volumeColor(sets: number): string {
-  if (sets === 0)  return BASE_MUSCLE;
-  if (sets <= 5)   return '#5fe0d0'; // cyan – light
-  if (sets <= 10)  return '#aee07a'; // lime
-  if (sets <= 20)  return '#e9c178'; // gold
-  return '#ff8f7a';                  // coral – high
+// ── Build data + colour scale per mode ──────────────────────────────────────────
+// react-body-highlighter colours by summed frequency: highlightedColors[freq-1].
+// We assign disjoint frequency buckets (higher-priority role wins) so every
+// highlighted muscle lands on exactly one colour.
+
+interface BuiltData {
+  data: IExerciseData[];
+  colors: string[];
 }
 
-function fatigueColor(days: number | undefined): string {
-  if (days === undefined) return BASE_MUSCLE; // never trained
-  if (days < 1)   return '#e9c178'; // gold – just trained (rest)
-  if (days < 2)   return '#ff8f7a'; // coral – 24–48h
-  if (days <= 7)  return '#aee07a'; // lime – ready
-  return BASE_MUSCLE;               // base – 7+ days, high priority
-}
-
-// ── SVG muscle shapes (simplified polygons / paths) ──────────────────────────
-// Front view: chest, abs, quads, shoulders, biceps, obliques
-// Back view:  lats, traps, glutes, hamstrings, triceps, erectors
-
-// Each shape is { id: AnatomicalMuscle, front: boolean, d: string }
-const MUSCLE_SHAPES: Array<{
-  id: AnatomicalMuscle;
-  front: boolean;
-  d: string;
-  label: string;
-}> = [
-  // ── FRONT ──
-  // Pectoralis major (chest) – two sides
-  {
-    id: 'pectoralis_major',
-    front: true,
-    d: 'M 68,55 C 68,50 75,45 85,48 C 90,55 88,68 82,72 C 76,70 68,65 68,55 Z',
-    label: 'Bröst L',
-  },
-  {
-    id: 'pectoralis_major',
-    front: true,
-    d: 'M 132,55 C 132,50 125,45 115,48 C 110,55 112,68 118,72 C 124,70 132,65 132,55 Z',
-    label: 'Bröst R',
-  },
-  // Anterior deltoid (front shoulder)
-  {
-    id: 'anterior_deltoid',
-    front: true,
-    d: 'M 60,45 C 58,38 62,32 68,35 C 72,40 70,50 68,55 C 64,52 60,48 60,45 Z',
-    label: 'Främre delt L',
-  },
-  {
-    id: 'anterior_deltoid',
-    front: true,
-    d: 'M 140,45 C 142,38 138,32 132,35 C 128,40 130,50 132,55 C 136,52 140,48 140,45 Z',
-    label: 'Främre delt R',
-  },
-  // Medial deltoid
-  {
-    id: 'medial_deltoid',
-    front: true,
-    d: 'M 55,42 C 52,36 56,28 62,30 C 66,34 66,40 64,46 C 60,44 56,43 55,42 Z',
-    label: 'Laterala delt L',
-  },
-  {
-    id: 'medial_deltoid',
-    front: true,
-    d: 'M 145,42 C 148,36 144,28 138,30 C 134,34 134,40 136,46 C 140,44 144,43 145,42 Z',
-    label: 'Laterala delt R',
-  },
-  // Biceps
-  {
-    id: 'biceps_brachii',
-    front: true,
-    d: 'M 52,55 C 48,55 44,62 44,70 C 44,78 48,84 52,84 C 56,84 58,78 58,70 C 58,62 56,55 52,55 Z',
-    label: 'Biceps L',
-  },
-  {
-    id: 'biceps_brachii',
-    front: true,
-    d: 'M 148,55 C 152,55 156,62 156,70 C 156,78 152,84 148,84 C 144,84 142,78 142,70 C 142,62 144,55 148,55 Z',
-    label: 'Biceps R',
-  },
-  // Rectus abdominis
-  {
-    id: 'rectus_abdominis',
-    front: true,
-    d: 'M 87,75 C 87,72 89,70 91,70 C 93,70 95,72 95,75 L 95,90 C 95,92 93,94 91,94 C 89,94 87,92 87,90 Z',
-    label: 'Mage övre',
-  },
-  {
-    id: 'rectus_abdominis',
-    front: true,
-    d: 'M 105,75 C 105,72 107,70 109,70 C 111,70 113,72 113,75 L 113,90 C 113,92 111,94 109,94 C 107,94 105,92 105,90 Z',
-    label: 'Mage övre R',
-  },
-  {
-    id: 'rectus_abdominis',
-    front: true,
-    d: 'M 87,95 C 87,93 89,91 91,91 L 95,91 C 95,93 95,110 91,110 C 88,110 87,108 87,95 Z',
-    label: 'Mage nedre',
-  },
-  // Obliques
-  {
-    id: 'obliques',
-    front: true,
-    d: 'M 79,75 C 77,70 79,63 83,68 C 84,75 85,82 84,90 C 82,90 79,85 79,75 Z',
-    label: 'Obliques L',
-  },
-  {
-    id: 'obliques',
-    front: true,
-    d: 'M 121,75 C 123,70 121,63 117,68 C 116,75 115,82 116,90 C 118,90 121,85 121,75 Z',
-    label: 'Obliques R',
-  },
-  // Quadriceps
-  {
-    id: 'quadriceps',
-    front: true,
-    d: 'M 78,118 C 76,115 74,108 76,100 C 79,93 85,95 87,100 L 88,130 C 86,132 80,128 78,118 Z',
-    label: 'Quad L',
-  },
-  {
-    id: 'quadriceps',
-    front: true,
-    d: 'M 122,118 C 124,115 126,108 124,100 C 121,93 115,95 113,100 L 112,130 C 114,132 120,128 122,118 Z',
-    label: 'Quad R',
-  },
-  // Gastrocnemius (front calf)
-  {
-    id: 'gastrocnemius',
-    front: true,
-    d: 'M 79,162 C 77,158 77,150 80,146 C 83,143 86,145 87,150 L 87,165 C 85,167 80,165 79,162 Z',
-    label: 'Vad L',
-  },
-  {
-    id: 'gastrocnemius',
-    front: true,
-    d: 'M 121,162 C 123,158 123,150 120,146 C 117,143 114,145 113,150 L 113,165 C 115,167 120,165 121,162 Z',
-    label: 'Vad R',
-  },
-  // Forearms (front)
-  {
-    id: 'forearms',
-    front: true,
-    d: 'M 47,88 C 44,88 41,94 41,102 C 41,110 44,116 47,116 C 50,116 52,110 52,102 C 52,94 50,88 47,88 Z',
-    label: 'Underarm L',
-  },
-  {
-    id: 'forearms',
-    front: true,
-    d: 'M 153,88 C 156,88 159,94 159,102 C 159,110 156,116 153,116 C 150,116 148,110 148,102 C 148,94 150,88 153,88 Z',
-    label: 'Underarm R',
-  },
-
-  // ── BACK ──
-  // Trapezius
-  {
-    id: 'trapezius',
-    front: false,
-    d: 'M 80,30 C 80,25 88,20 100,22 C 112,20 120,25 120,30 L 118,50 C 110,55 90,55 82,50 Z',
-    label: 'Trapezius',
-  },
-  // Latissimus dorsi
-  {
-    id: 'latissimus_dorsi',
-    front: false,
-    d: 'M 68,52 C 64,55 62,65 64,80 C 66,88 72,92 78,90 C 82,82 84,68 82,55 C 78,50 72,50 68,52 Z',
-    label: 'Lat L',
-  },
-  {
-    id: 'latissimus_dorsi',
-    front: false,
-    d: 'M 132,52 C 136,55 138,65 136,80 C 134,88 128,92 122,90 C 118,82 116,68 118,55 C 122,50 128,50 132,52 Z',
-    label: 'Lat R',
-  },
-  // Rhomboids
-  {
-    id: 'rhomboids',
-    front: false,
-    d: 'M 82,50 C 86,47 90,48 100,48 C 110,48 114,47 118,50 L 116,68 C 110,72 90,72 84,68 Z',
-    label: 'Romboiderna',
-  },
-  // Rear deltoid
-  {
-    id: 'rear_deltoid',
-    front: false,
-    d: 'M 60,42 C 58,36 62,28 68,32 C 72,36 72,45 70,52 C 66,50 60,46 60,42 Z',
-    label: 'Bakre delt L',
-  },
-  {
-    id: 'rear_deltoid',
-    front: false,
-    d: 'M 140,42 C 142,36 138,28 132,32 C 128,36 128,45 130,52 C 134,50 140,46 140,42 Z',
-    label: 'Bakre delt R',
-  },
-  // Triceps
-  {
-    id: 'triceps_brachii',
-    front: false,
-    d: 'M 52,52 C 48,52 44,60 44,70 C 44,80 48,86 52,86 C 56,86 58,80 58,70 C 58,60 56,52 52,52 Z',
-    label: 'Triceps L',
-  },
-  {
-    id: 'triceps_brachii',
-    front: false,
-    d: 'M 148,52 C 152,52 156,60 156,70 C 156,80 152,86 148,86 C 144,86 142,80 142,70 C 142,60 144,52 148,52 Z',
-    label: 'Triceps R',
-  },
-  // Erector spinae
-  {
-    id: 'erector_spinae',
-    front: false,
-    d: 'M 90,72 C 88,70 87,65 88,60 C 90,57 95,57 96,60 L 96,90 C 95,92 91,92 90,90 Z',
-    label: 'Erector L',
-  },
-  {
-    id: 'erector_spinae',
-    front: false,
-    d: 'M 110,72 C 112,70 113,65 112,60 C 110,57 105,57 104,60 L 104,90 C 105,92 109,92 110,90 Z',
-    label: 'Erector R',
-  },
-  // Gluteus maximus
-  {
-    id: 'gluteus_maximus',
-    front: false,
-    d: 'M 78,95 C 76,92 74,85 78,80 C 82,76 88,78 90,85 L 90,100 C 88,104 80,102 78,95 Z',
-    label: 'Glutes L',
-  },
-  {
-    id: 'gluteus_maximus',
-    front: false,
-    d: 'M 122,95 C 124,92 126,85 122,80 C 118,76 112,78 110,85 L 110,100 C 112,104 120,102 122,95 Z',
-    label: 'Glutes R',
-  },
-  // Hamstrings
-  {
-    id: 'hamstrings',
-    front: false,
-    d: 'M 78,102 C 76,100 74,108 76,118 C 78,128 82,134 86,132 L 88,104 C 86,100 80,100 78,102 Z',
-    label: 'Hamstring L',
-  },
-  {
-    id: 'hamstrings',
-    front: false,
-    d: 'M 122,102 C 124,100 126,108 124,118 C 122,128 118,134 114,132 L 112,104 C 114,100 120,100 122,102 Z',
-    label: 'Hamstring R',
-  },
-  // Gastrocnemius (back calf)
-  {
-    id: 'gastrocnemius',
-    front: false,
-    d: 'M 79,148 C 77,144 78,136 81,133 C 84,130 87,132 88,138 L 88,155 C 86,157 80,155 79,148 Z',
-    label: 'Vad L bak',
-  },
-  {
-    id: 'gastrocnemius',
-    front: false,
-    d: 'M 121,148 C 123,144 122,136 119,133 C 116,130 113,132 112,138 L 112,155 C 114,157 120,155 121,148 Z',
-    label: 'Vad R bak',
-  },
-  // Rotator cuff (back)
-  {
-    id: 'rotator_cuff',
-    front: false,
-    d: 'M 62,38 C 62,34 66,30 70,32 C 72,36 72,42 70,46 C 66,46 62,42 62,38 Z',
-    label: 'Rotatorkuff L',
-  },
-  {
-    id: 'rotator_cuff',
-    front: false,
-    d: 'M 138,38 C 138,34 134,30 130,32 C 128,36 128,42 130,46 C 134,46 138,42 138,38 Z',
-    label: 'Rotatorkuff R',
-  },
-];
-
-// ── Body silhouette paths ─────────────────────────────────────────────────────
-
-const BODY_FRONT = `
-  M 100,10 C 88,10 80,18 80,26 C 80,34 84,40 90,44 L 68,52 C 58,56 56,68 60,80
-  L 56,120 C 55,130 58,138 64,140 L 68,175 C 70,182 75,186 80,185
-  C 85,184 88,180 87,175 L 84,145 C 90,147 95,148 100,148
-  C 105,148 110,147 116,145 L 113,175 C 112,180 115,184 120,185
-  C 125,186 130,182 132,175 L 136,140 C 142,138 145,130 144,120
-  L 140,80 C 144,68 142,56 132,52 L 110,44 C 116,40 120,34 120,26 C 120,18 112,10 100,10 Z
-`;
-
-const BODY_BACK = `
-  M 100,10 C 88,10 80,18 80,26 C 80,34 84,40 90,44 L 68,52 C 58,56 56,68 60,80
-  L 56,120 C 55,130 58,138 64,140 L 68,175 C 70,182 75,186 80,185
-  C 85,184 88,180 87,175 L 84,145 C 90,147 95,148 100,148
-  C 105,148 110,147 116,145 L 113,175 C 112,180 115,184 120,185
-  C 125,186 130,182 132,175 L 136,140 C 142,138 145,130 144,120
-  L 140,80 C 144,68 142,56 132,52 L 110,44 C 116,40 120,34 120,26 C 120,18 112,10 100,10 Z
-`;
-
-// ── Build colour maps per mode ────────────────────────────────────────────────
-
-function buildExerciseColors(exerciseId?: string): Map<AnatomicalMuscle, string> {
-  const map = new Map<AnatomicalMuscle, string>();
-  if (!exerciseId) return map;
+function buildExercise(exerciseId?: string): BuiltData {
+  const colors = [VIOLET, CYAN, GOLD]; // freq 1 = stabiliser, 2 = secondary, 3 = primary
+  if (!exerciseId) return { data: [], colors };
   const ex = getExerciseById(exerciseId);
-  if (!ex) return map;
-  ex.primaryMuscles.forEach(m => map.set(m, roleColor('primary')));
-  ex.secondaryMuscles.forEach(m => { if (!map.has(m)) map.set(m, roleColor('secondary')); });
-  ex.stabilizers.forEach(m => { if (!map.has(m)) map.set(m, roleColor('stabilizer')); });
-  return map;
+  if (!ex) return { data: [], colors };
+
+  const assigned = new Set<Muscle>();
+  const take = (muscles: AnatomicalMuscle[]): Muscle[] => {
+    const libs: Muscle[] = [];
+    for (const lib of mapMuscles(muscles)) {
+      if (!assigned.has(lib)) { assigned.add(lib); libs.push(lib); }
+    }
+    return libs;
+  };
+
+  // primary first (highest priority), then secondary, then stabilisers
+  const primary = take(ex.primaryMuscles);
+  const secondary = take(ex.secondaryMuscles);
+  const stabilisers = take(ex.stabilizers);
+
+  const data: IExerciseData[] = [];
+  if (stabilisers.length) data.push({ name: 'Stabilisator', muscles: stabilisers, frequency: 1 });
+  if (secondary.length) data.push({ name: 'Sekundär', muscles: secondary, frequency: 2 });
+  if (primary.length) data.push({ name: 'Primär', muscles: primary, frequency: 3 });
+  return { data, colors };
 }
 
-function buildVolumeColors(volume?: Partial<Record<AnatomicalMuscle, number>>): Map<AnatomicalMuscle, string> {
-  const map = new Map<AnatomicalMuscle, string>();
-  if (!volume) return map;
+function volumeBucket(sets: number): number {
+  if (sets <= 0) return 0;
+  if (sets <= 5) return 1;
+  if (sets <= 10) return 2;
+  if (sets <= 20) return 3;
+  return 4;
+}
+
+function buildVolume(volume?: Partial<Record<AnatomicalMuscle, number>>): BuiltData {
+  const colors = [CYAN, LIME, GOLD, CORAL]; // freq 1..4
+  const data: IExerciseData[] = [];
+  if (!volume) return { data, colors };
+  const byBucket: Record<number, Muscle[]> = {};
   for (const [muscle, sets] of Object.entries(volume)) {
-    map.set(muscle as AnatomicalMuscle, volumeColor(sets as number));
+    const b = volumeBucket(sets as number);
+    if (b === 0) continue;
+    const lib = MUSCLE_TO_LIB[muscle as AnatomicalMuscle];
+    if (!lib) continue;
+    (byBucket[b] ||= []).push(lib);
   }
-  return map;
+  for (const [b, muscles] of Object.entries(byBucket)) {
+    data.push({ name: `vol-${b}`, muscles: [...new Set(muscles)], frequency: Number(b) });
+  }
+  return { data, colors };
 }
 
-function buildFatigueColors(lastTrained?: Partial<Record<AnatomicalMuscle, number>>): Map<AnatomicalMuscle, string> {
-  const map = new Map<AnatomicalMuscle, string>();
-  if (!lastTrained) return map;
+function fatigueBucket(days: number | undefined): number {
+  if (days === undefined) return 0;
+  if (days <= 7) return 1;     // ready (lime)
+  return 0;
+}
+// NOTE: fatigue colour semantics – 1=redo(lime), 2=24-48h(coral), 3=<24h(guld)
+function buildFatigue(lastTrained?: Partial<Record<AnatomicalMuscle, number>>): BuiltData {
+  const colors = [LIME, CORAL, GOLD]; // freq 1..3
+  const data: IExerciseData[] = [];
+  if (!lastTrained) return { data, colors };
+  const byBucket: Record<number, Muscle[]> = {};
   for (const [muscle, days] of Object.entries(lastTrained)) {
-    map.set(muscle as AnatomicalMuscle, fatigueColor(days as number));
+    const d = days as number;
+    let b: number;
+    if (d < 1) b = 3;        // just trained → rest (gold)
+    else if (d < 2) b = 2;   // 24–48h (coral)
+    else if (d <= 7) b = 1;  // ready (lime)
+    else continue;           // 7+ days → base
+    const lib = MUSCLE_TO_LIB[muscle as AnatomicalMuscle];
+    if (!lib) continue;
+    (byBucket[b] ||= []).push(lib);
   }
-  return map;
+  for (const [b, muscles] of Object.entries(byBucket)) {
+    data.push({ name: `fat-${b}`, muscles: [...new Set(muscles)], frequency: Number(b) });
+  }
+  return { data, colors };
 }
 
-// ── SVG Body View ─────────────────────────────────────────────────────────────
+// ── Legends ─────────────────────────────────────────────────────────────────────
 
-function BodyView({
-  front,
-  colorMap,
-  onMuscleClick,
-  compact,
-}: {
-  front: boolean;
-  colorMap: Map<AnatomicalMuscle, string>;
-  onMuscleClick?: (m: AnatomicalMuscle) => void;
-  compact?: boolean;
-}) {
-  const size = compact ? 120 : 180;
-  const shapes = MUSCLE_SHAPES.filter(s => s.front === front);
-
-  // Deduplicate by id – collect all paths for same muscle
-  const seen = new Set<AnatomicalMuscle>();
-  const deduped = shapes.filter(s => {
-    if (seen.has(s.id)) return true; // allow duplicates (left/right)
-    seen.add(s.id);
-    return true;
-  });
-
+function Legend({ items, prefix }: { items: { color: string; label: string }[]; prefix?: string }) {
   return (
-    <svg viewBox="30 5 140 185" width={size} height={size * 1.1} className="flex-shrink-0">
-      {/* body silhouette */}
-      <path d={front ? BODY_FRONT : BODY_BACK} fill="rgba(244,241,234,.04)" stroke="rgba(244,241,234,.14)" strokeWidth="1" />
-
-      {/* muscle shapes */}
-      {deduped.map((shape, i) => {
-        const color = colorMap.get(shape.id) ?? BASE_MUSCLE;
-        const isBase = color === BASE_MUSCLE;
-        return (
-          <path
-            key={`${shape.id}-${i}`}
-            d={shape.d}
-            fill={color}
-            fillOpacity={isBase ? 1 : 0.9}
-            stroke={isBase ? 'rgba(244,241,234,.14)' : color}
-            strokeWidth="0.5"
-            style={{ cursor: onMuscleClick ? 'pointer' : 'default' }}
-            onClick={() => onMuscleClick?.(shape.id)}
-          />
-        );
-      })}
-
-      {/* label */}
-      <text x="100" y="195" textAnchor="middle" fontSize="9" fill="#9b9688">
-        {front ? 'Framsida' : 'Baksida'}
-      </text>
-    </svg>
-  );
-}
-
-// ── Legend ────────────────────────────────────────────────────────────────────
-
-function ExerciseLegend() {
-  return (
-    <div className="flex items-center gap-3 flex-wrap">
-      {[
-        { color: '#e9c178', label: 'Primär' },
-        { color: '#5fe0d0', label: 'Sekundär' },
-        { color: '#9b8cff', label: 'Stabilisator' },
-      ].map(({ color, label }) => (
+    <div className="flex items-center gap-3 flex-wrap justify-center">
+      {prefix && <span className="text-[11px] text-mut">{prefix}</span>}
+      {items.map(({ color, label }) => (
         <div key={label} className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color }} />
           <span className="text-[11px] text-mut">{label}</span>
@@ -431,40 +190,35 @@ function ExerciseLegend() {
   );
 }
 
-function VolumeLegend() {
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-[11px] text-mut">Set/vecka:</span>
-      {[
-        { color: BASE_MUSCLE, label: '0' },
-        { color: '#5fe0d0', label: '1–5' },
-        { color: '#aee07a', label: '6–10' },
-        { color: '#e9c178', label: '11–20' },
-        { color: '#ff8f7a', label: '>20' },
-      ].map(({ color, label }) => (
-        <div key={label} className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-sm" style={{ background: color }} />
-          <span className="text-[10px] text-mut">{label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
+// ── Body view wrapper ────────────────────────────────────────────────────────────
 
-function FatigueLegend() {
+function BodyView({
+  type,
+  data,
+  colors,
+  onClick,
+  label,
+  size,
+}: {
+  type: 'anterior' | 'posterior';
+  data: IExerciseData[];
+  colors: string[];
+  onClick?: (e: IMuscleStats) => void;
+  label: string;
+  size: number;
+}) {
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {[
-        { color: '#e9c178', label: '<24h (vila)' },
-        { color: '#ff8f7a', label: '24–48h' },
-        { color: '#aee07a', label: 'Redo' },
-        { color: BASE_MUSCLE, label: 'Ej tränad' },
-      ].map(({ color, label }) => (
-        <div key={label} className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full" style={{ background: color }} />
-          <span className="text-[10px] text-mut">{label}</span>
-        </div>
-      ))}
+    <div className="flex flex-col items-center gap-1.5">
+      <Model
+        type={type}
+        data={data}
+        bodyColor={BODY_BASE}
+        highlightedColors={colors}
+        onClick={onClick as any}
+        style={{ width: size, height: 'auto' }}
+        svgStyle={{ width: '100%', height: 'auto' }}
+      />
+      <span className="text-[10px] text-faint">{label}</span>
     </div>
   );
 }
@@ -479,28 +233,51 @@ export default function MuscleMap({
   onMuscleClick,
   compact,
 }: MuscleMapProps) {
-  let colorMap: Map<AnatomicalMuscle, string>;
+  let built: BuiltData;
+  if (mode === 'exercise') built = buildExercise(exerciseId);
+  else if (mode === 'weekly_volume') built = buildVolume(weeklyVolume);
+  else built = buildFatigue(lastTrainedDays);
 
-  if (mode === 'exercise') {
-    colorMap = buildExerciseColors(exerciseId);
-  } else if (mode === 'weekly_volume') {
-    colorMap = buildVolumeColors(weeklyVolume);
-  } else {
-    colorMap = buildFatigueColors(lastTrainedDays);
-  }
+  const size = compact ? 120 : 150;
+
+  const handleClick = onMuscleClick
+    ? (stats: IMuscleStats) => {
+        const anat = LIB_TO_MUSCLE[stats.muscle];
+        if (anat) onMuscleClick(anat);
+      }
+    : undefined;
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-center gap-4">
-        <BodyView front={true}  colorMap={colorMap} onMuscleClick={onMuscleClick} compact={compact} />
-        <BodyView front={false} colorMap={colorMap} onMuscleClick={onMuscleClick} compact={compact} />
+      <div className="flex justify-center gap-6">
+        <BodyView type="anterior" data={built.data} colors={built.colors} onClick={handleClick} label="Framsida" size={size} />
+        <BodyView type="posterior" data={built.data} colors={built.colors} onClick={handleClick} label="Baksida" size={size} />
       </div>
 
       {!compact && (
         <div className="pt-1">
-          {mode === 'exercise'      && <ExerciseLegend />}
-          {mode === 'weekly_volume' && <VolumeLegend />}
-          {mode === 'fatigue'       && <FatigueLegend />}
+          {mode === 'exercise' && (
+            <Legend items={[
+              { color: GOLD, label: 'Primär' },
+              { color: CYAN, label: 'Sekundär' },
+              { color: VIOLET, label: 'Stabilisator' },
+            ]} />
+          )}
+          {mode === 'weekly_volume' && (
+            <Legend prefix="Set/vecka:" items={[
+              { color: CYAN, label: '1–5' },
+              { color: LIME, label: '6–10' },
+              { color: GOLD, label: '11–20' },
+              { color: CORAL, label: '>20' },
+            ]} />
+          )}
+          {mode === 'fatigue' && (
+            <Legend items={[
+              { color: GOLD, label: '<24h (vila)' },
+              { color: CORAL, label: '24–48h' },
+              { color: LIME, label: 'Redo' },
+            ]} />
+          )}
         </div>
       )}
     </div>

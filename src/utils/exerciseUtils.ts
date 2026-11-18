@@ -116,9 +116,56 @@ const EXERCISE_BY_NAME: Map<string, Exercise> = (() => {
   return index;
 })();
 
+// ── Program-name aliases ────────────────────────────────────────────────────────
+// programGenerator.ts names exercises with everyday Swedish gym terms (e.g.
+// "Bänkpress", "Knäböj") that don't map 1:1 to the DB's English names. This alias
+// table links each generated-program exercise to a concrete DB entry (by its
+// English `name`) so program exercises resolve to a real DB item and can link to
+// the detail page.
+const PROGRAM_ALIASES: Record<string, string> = {
+  'bänkpress': 'Barbell Bench Press - Medium Grip',
+  'bänkpress (lutande)': 'Barbell Incline Bench Press - Medium Grip',
+  'lutande bänkpress': 'Barbell Incline Bench Press - Medium Grip',
+  'militärpress': 'Barbell Shoulder Press',
+  'lutande hantelpress': 'Incline Dumbbell Press',
+  'hantelpress': 'Dumbbell Bench Press',
+  'kabelflyes': 'Cable Crossover',
+  'lateral raises': 'Side Lateral Raise',
+  'framifrån-höjningar': 'Front Dumbbell Raise',
+  'triceps pushdown': 'Triceps Pushdown',
+  'overhead triceps extension': 'Cable Rope Overhead Triceps Extension',
+  'marklyft': 'Barbell Deadlift',
+  'skivstångsrodd': 'Bent Over Barbell Row',
+  'latsdrag bred': 'Wide-Grip Lat Pulldown',
+  'latsdrag smal': 'Close-Grip Front Lat Pulldown',
+  'seated cable row': 'Seated Cable Rows',
+  'face pulls': 'Face Pull',
+  'hammer curl': 'Hammer Curls',
+  'biceps curl': 'Barbell Curl',
+  'knäböj': 'Barbell Squat',
+  'frontknäböj': 'Front Squat (Clean Grip)',
+  'romanian deadlift': 'Romanian Deadlift',
+  'sumo marklyft': 'Sumo Deadlift',
+  'leg press': 'Leg Press',
+  'leg curl': 'Lying Leg Curls',
+  'leg extension': 'Leg Extensions',
+  'stående vadpress': 'Standing Calf Raises',
+  'enarms kabelrodd': 'Seated One-arm Cable Pulley Rows',
+};
+
+const EXERCISE_BY_ALIAS: Map<string, Exercise> = (() => {
+  const index = new Map<string, Exercise>();
+  for (const [alias, englishName] of Object.entries(PROGRAM_ALIASES)) {
+    const match = EXERCISE_BY_NAME.get(englishName.toLowerCase().trim());
+    if (match) index.set(alias.toLowerCase().trim(), match);
+  }
+  return index;
+})();
+
 export function getExerciseByName(name: string): Exercise | undefined {
   if (!name) return undefined;
-  return EXERCISE_BY_NAME.get(name.toLowerCase().trim());
+  const norm = name.toLowerCase().trim();
+  return EXERCISE_BY_NAME.get(norm) ?? EXERCISE_BY_ALIAS.get(norm);
 }
 
 export function getExercisesByIds(ids: string[]): Exercise[] {

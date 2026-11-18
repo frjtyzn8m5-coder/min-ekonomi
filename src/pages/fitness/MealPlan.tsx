@@ -3,9 +3,10 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
 import { loadRecipes, loadPantry, loadPriceDB } from '../../lib/pantryDb';
 import { buildPriceLookup } from '../../utils/recipeCost';
-import { ArrowLeft, RefreshCw, X, ShoppingCart, Settings, Check, Shuffle, Package } from 'lucide-react';
+import { RefreshCw, X, ShoppingCart, Settings, Check, Shuffle, Package } from 'lucide-react';
 import { IFlame, IUtensils, IMoon } from '../../components/ui/Icons';
 import type { Recipe, PantryItem, PriceEntry } from '../../types';
+import PageBanner from '../../components/ui/PageBanner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -615,53 +616,57 @@ export default function MealPlan() {
 
   return (
     <div className="min-h-full bg-bg text-ink pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-panel border-b border-line px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => setFitnessPage('home')}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
-        >
-          <ArrowLeft size={18} className="text-mut" />
-        </button>
-        <h1 className="font-display text-base text-ink flex-1">Veckoplanering 🗓️</h1>
-        <button
-          onClick={() => setShowSettings(true)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"
-        >
-          <Settings size={16} className="text-faint" />
-        </button>
-        <button
-          onClick={regenerate}
-          disabled={!recipes.length}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#2a1d08] disabled:opacity-40"
-          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
-        >
-          <RefreshCw size={14} />
-          Generera
-        </button>
-      </div>
+      <PageBanner
+        img="/img/f-meal5.jpg"
+        eyebrow="Kost"
+        title="Måltidsplan"
+        subtitle="Generera veckan, byt måltider och exportera inköpslistan."
+        onBack={() => setFitnessPage('home')}
+        action={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-xl text-white/80 hover:text-white border border-white/15 backdrop-blur transition-colors"
+              style={{ background: 'rgba(255,255,255,.08)' }}
+            >
+              <Settings size={16} />
+            </button>
+            <button
+              onClick={regenerate}
+              disabled={!recipes.length}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#2a1d08] disabled:opacity-40"
+              style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
+            >
+              <RefreshCw size={14} />
+              Generera
+            </button>
+          </div>
+        }
+      />
 
       {/* Tabs */}
-      <div className="flex border-b border-line bg-panel px-4">
-        {(['plan', 'shopping'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab ? 'border-gold text-gold' : 'border-transparent text-mut hover:text-ink'
-            }`}
-          >
-            {tab === 'plan' ? '📅 Plan' : <><ShoppingCart size={14} />Inköpslista</>}
-          </button>
-        ))}
+      <div className="border-b border-line">
+        <div className="flex max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10">
+          {(['plan', 'shopping'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab ? 'border-gold text-gold' : 'border-transparent text-mut hover:text-ink'
+              }`}
+            >
+              {tab === 'plan' ? '📅 Plan' : <><ShoppingCart size={14} />Inköpslista</>}
+            </button>
+          ))}
+        </div>
       </div>
 
       {activeTab === 'shopping' ? (
-        <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="max-w-[900px] mx-auto px-5 sm:px-8 lg:px-10 py-6">
           <ShoppingList plan={plan} recipes={recipes} pantry={pantry} priceDB={priceDB} />
         </div>
       ) : (
-        <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 py-6 space-y-4">
           {/* Day selector */}
           <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
             {DAYS.map((day, d) => {
@@ -688,6 +693,9 @@ export default function MealPlan() {
             })}
           </div>
 
+          <div className="grid lg:grid-cols-[1fr_380px] gap-6 items-start">
+          {/* Left: selected day */}
+          <div className="space-y-4">
           {/* Day totals bar */}
           {todayTotals.kcal > 0 && (
             <div className="bg-card border border-line rounded-xl p-4">
@@ -753,10 +761,11 @@ export default function MealPlan() {
               </button>
             </div>
           )}
+          </div>
 
-          {/* Whole-week overview (compact) */}
+          {/* Right: whole-week overview (compact) */}
           {recipes.length > 0 && (
-            <div className="bg-card border border-line rounded-xl overflow-hidden">
+            <div className="bg-card border border-line rounded-xl overflow-hidden lg:sticky lg:top-6">
               <p className="px-4 pt-4 pb-2 text-xs font-semibold text-faint uppercase tracking-wide">Hela veckan</p>
               {DAYS.map((day, d) => {
                 const tots = dayTotals(plan[d]);
@@ -783,6 +792,7 @@ export default function MealPlan() {
               })}
             </div>
           )}
+          </div>
         </div>
       )}
 

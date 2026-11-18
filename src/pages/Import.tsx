@@ -8,6 +8,7 @@ import { saveTxBatch, saveImport, deleteImport, saveHoldings } from '../lib/db';
 import type { Transaction, ImportBatch } from '../types';
 import { Upload, FileText, Check, X, Trash2, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PageBanner from '../components/ui/PageBanner';
 
 // ── Pending upload card ────────────────────────────────────────────────────────
 
@@ -329,16 +330,16 @@ export default function Import() {
   const newTxCount = pending.reduce((s, p) => s + p.transactions.length, 0);
 
   return (
-    <div className="p-4 lg:p-6 space-y-6 max-w-2xl mx-auto w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl text-ink">Importera</h1>
-          <p className="text-sm text-faint mt-0.5">Ladda upp kontoutdrag</p>
-        </div>
-        <ExportButton />
-      </div>
+    <div className="min-h-full bg-bg text-ink">
+      <PageBanner
+        img="/img/f-fin.jpg"
+        eyebrow="Ekonomi"
+        title="Importera"
+        subtitle="Ladda upp kontoutdrag från bank, Avanza, Klarna och CSN"
+        action={<ExportButton />}
+      />
 
+      <div className="p-4 lg:p-6 space-y-6 max-w-2xl mx-auto w-full">
       {/* Drop zone */}
       <DropZone onFiles={handleFiles} />
 
@@ -385,6 +386,7 @@ export default function Import() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

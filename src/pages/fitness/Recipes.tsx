@@ -12,6 +12,7 @@ import {
   Utensils, Check, AlertCircle, Shuffle, ArrowLeft,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
+import PageBanner from '../../components/ui/PageBanner';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -810,30 +811,26 @@ export default function Recipes() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 space-y-4 min-h-full bg-bg text-ink">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div className="min-h-full bg-bg text-ink">
+      <PageBanner
+        img="/img/f-cook.jpg"
+        eyebrow="Kost"
+        title="Recept"
+        subtitle={`${recipes.length} recept · kostnad & näring via Livsmedelsverket.`}
+        onBack={() => setFitnessPage('home')}
+        action={
           <button
-            onClick={() => setFitnessPage('home')}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 -ml-1 mr-1"
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold rounded-xl text-[#2a1d08]"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
           >
-            <ArrowLeft size={18} className="text-mut" />
+            <Link size={14} />
+            Importera
           </button>
-          <ChefHat size={22} className="text-gold" />
-          <h1 className="font-display text-lg text-ink">Recept</h1>
-          <span className="text-sm text-faint tnum">({recipes.length})</span>
-        </div>
-        <button
-          onClick={() => setShowImport(true)}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-xl text-[#2a1d08]"
-          style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
-        >
-          <Link size={14} />
-          Importera
-        </button>
-      </div>
+        }
+      />
 
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-10 py-6 pb-24 space-y-4">
       {/* Log success toast */}
       {logSuccess && (
         <div className="flex items-center gap-2 px-4 py-3 bg-[rgba(95,224,208,0.1)] border border-cyan/30 rounded-xl text-sm text-cyan">
@@ -870,7 +867,7 @@ export default function Recipes() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(recipe => {
             const cost = calcRecipeCost(recipe.ingredients, recipe.servings, pantry, priceDB);
             const hasPrice = cost.totalRawSEK > 0;
@@ -927,6 +924,7 @@ export default function Recipes() {
           })}
         </div>
       )}
+      </div>
 
       {/* Import dialog */}
       {showImport && (

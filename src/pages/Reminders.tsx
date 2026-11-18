@@ -4,6 +4,7 @@ import { auth } from '../lib/firebase';
 import type { Reminder } from '../types';
 import { Bell, BellOff, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PageBanner from '../components/ui/PageBanner';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string;
 
@@ -114,12 +115,15 @@ export default function Reminders() {
   const hasPush = !!pushSubscription;
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl">
-      <div>
-        <h1 className="font-display text-2xl text-ink">Påminnelser</h1>
-        <p className="text-sm text-faint mt-0.5">Push-notiser till din iPhone vid rätt tidpunkt</p>
-      </div>
+    <div className="min-h-full bg-bg text-ink">
+      <PageBanner
+        img="/img/f-cal.jpg"
+        eyebrow="Ekonomi"
+        title="Påminnelser"
+        subtitle="Push-notiser till din iPhone vid rätt tidpunkt"
+      />
 
+      <div className="p-6 space-y-6 max-w-2xl">
       {/* Push-status banner */}
       <div className="vh-card p-4 flex items-center gap-4"
         style={{ border: `1px solid ${hasPush ? 'rgba(95,224,208,.25)' : 'rgba(233,193,120,.25)'}` }}>
@@ -232,6 +236,7 @@ export default function Reminders() {
           </motion.button>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

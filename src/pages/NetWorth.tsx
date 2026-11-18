@@ -12,6 +12,7 @@ import {
 import { Plus, TrendingUp, TrendingDown, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { AssetSnapshot, DebtSnapshot } from '../types';
+import PageBanner from '../components/ui/PageBanner';
 
 const FADE = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 
@@ -178,13 +179,15 @@ export default function NetWorth() {
   const currentNetWorth    = currentTotalAssets - currentTotalDebts;
 
   return (
-    <div className="flex flex-col h-full overflow-auto">
-      <div className="px-4 lg:px-6 py-4 bg-panel border-b border-line">
-        <h1 className="font-display text-2xl text-ink">Förmögenhet & Skulder</h1>
-        <p className="text-sm text-faint mt-0.5">Totalt nettovärde och skuldöversikt</p>
-      </div>
+    <div className="flex flex-col h-full overflow-auto bg-bg text-ink">
+      <PageBanner
+        img="/img/f-save.jpg"
+        eyebrow="Ekonomi"
+        title="Förmögenhet"
+        subtitle="Totalt nettovärde och skuldöversikt"
+      />
 
-      <div className="p-4 lg:p-6 space-y-4">
+      <div className="px-4 sm:px-6 lg:px-10 py-6 space-y-4">
         {/* KPIs */}
         <motion.div {...FADE} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import { IUtensils } from '../../components/ui/Icons';
+import PageBanner from '../../components/ui/PageBanner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -124,17 +125,23 @@ export default function NutritionOnboarding() {
   }
 
   return (
-    <div className="min-h-full bg-bg text-ink flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+    <div className="min-h-full bg-bg text-ink">
+      <PageBanner
+        img="/img/f-food4.jpg"
+        eyebrow="Kost"
+        title="Kom igång"
+        subtitle="Vi skräddarsyr din kostplan utifrån mål, mått och preferenser."
+      />
+      <div className="w-full max-w-lg mx-auto px-5 sm:px-8 py-8">
 
-        {/* Header */}
+        {/* Step indicator */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="vh-tile vh-tile--gold w-9 h-9">
               <IUtensils size={18} />
             </div>
             <div>
-              <h1 className="font-display text-base text-ink">Kostprofil</h1>
+              <h2 className="font-display text-base text-ink">Kostprofil</h2>
               <p className="text-xs text-faint tnum">Steg {step} av {TOTAL_STEPS}</p>
             </div>
           </div>

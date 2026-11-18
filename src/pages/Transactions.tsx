@@ -8,6 +8,7 @@ import FilterBar from '../components/ui/FilterBar';
 import { Plus, ChevronDown, ChevronUp, Trash2, Tag, Check, X } from 'lucide-react';
 import type { Transaction, Category } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+import PageBanner from '../components/ui/PageBanner';
 
 const GOLD_BTN = { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' };
 
@@ -335,22 +336,26 @@ export default function Transactions() {
     <div className="flex flex-col h-full bg-bg text-ink">
       {showModal && <ManualTxModal onClose={() => setShowModal(false)} />}
 
-      {/* Header */}
-      <div className="bg-panel border-b border-line px-4 lg:px-6 py-3 flex items-center justify-between flex-shrink-0">
-        <div>
-          <h1 className="font-display text-ink text-[17px]">Transaktioner</h1>
-          <p className="text-xs text-faint">{filtered.length} transaktioner</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-4 text-xs">
-            <span className="text-cyan font-medium tabular-nums">+{formatSEK(totalIncome)}</span>
-            <span className="text-mut tabular-nums">−{formatSEK(totalExpense)}</span>
-          </div>
-          <button onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 text-[#2a1d08] text-xs font-medium px-3 py-1.5 rounded-lg" style={GOLD_BTN}>
-            <Plus size={13} /> Ny
-          </button>
-        </div>
+      {/* Banner */}
+      <div className="flex-shrink-0">
+        <PageBanner
+          img="/img/f-fin.jpg"
+          eyebrow="Ekonomi"
+          title="Transaktioner"
+          subtitle={`${filtered.length} transaktioner`}
+          action={
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-4 text-xs">
+                <span className="text-cyan font-medium tabular-nums">+{formatSEK(totalIncome)}</span>
+                <span className="text-white/60 tabular-nums">−{formatSEK(totalExpense)}</span>
+              </div>
+              <button onClick={() => setShowModal(true)}
+                className="flex items-center gap-1.5 text-[#2a1d08] text-xs font-semibold px-3.5 py-2 rounded-xl" style={GOLD_BTN}>
+                <Plus size={13} /> Ny
+              </button>
+            </div>
+          }
+        />
       </div>
 
       <FilterBar />

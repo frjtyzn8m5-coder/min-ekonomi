@@ -104,6 +104,8 @@ interface AppState {
   setModule: (m: Module) => void;
   setPage: (p: Page) => void;
   setFitnessPage: (p: FitnessPage) => void;
+  selectedExerciseId: string | null;
+  setSelectedExerciseId: (id: string | null) => void;
   pendingWorkout: { exercises: { name: string }[]; dayName: string } | null;
   setPendingWorkout: (w: { exercises: { name: string }[]; dayName: string } | null) => void;
   setFitnessProfile: (p: Partial<FitnessProfile>) => void;
@@ -180,6 +182,7 @@ export const useStore = create<AppState>()(
       module: 'home',
       page: 'overview',
       fitnessPage: 'home',
+      selectedExerciseId: null,
       pendingWorkout: null,
       fitnessProfile: DEFAULT_FITNESS_PROFILE,
       nutritionSettings: DEFAULT_NUTRITION_SETTINGS,
@@ -239,6 +242,7 @@ export const useStore = create<AppState>()(
       setModule: (module) => set({ module }),
       setPage: (page) => set({ page }),
       setFitnessPage: (fitnessPage) => set({ fitnessPage }),
+      setSelectedExerciseId: (selectedExerciseId) => set({ selectedExerciseId }),
       setPendingWorkout: (pendingWorkout) => set({ pendingWorkout }),
       setFitnessProfile: (p) => set(s => ({ fitnessProfile: { ...s.fitnessProfile, ...p } })),
       setNutritionSettings: (s2) => set(s => ({ nutritionSettings: { ...s.nutritionSettings, ...s2 } })),

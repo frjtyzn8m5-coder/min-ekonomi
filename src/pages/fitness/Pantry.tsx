@@ -9,9 +9,10 @@ import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
 import {
   Package, Plus, Trash2, ScanBarcode, FileText, Search,
-  AlertTriangle, Edit2, Check, X, ArrowLeft,
+  AlertTriangle, Edit2, Check, X,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
+import PageBanner from '../../components/ui/PageBanner';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -548,53 +549,51 @@ export default function Pantry() {
 
   return (
     <div className="min-h-full bg-bg text-ink">
-      {/* Header */}
-      <div className="bg-panel border-b border-line px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <button onClick={() => setFitnessPage('recipes')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 -ml-1">
-                <ArrowLeft size={18} className="text-mut" />
-              </button>
-              <Package size={20} className="text-gold" />
-              <h1 className="font-display text-lg text-ink">Skafferi</h1>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setView(v => v === 'barcode' ? 'list' : 'barcode')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${view === 'barcode' ? 'text-gold' : 'bg-soft text-mut hover:text-ink'}`}
-                style={view === 'barcode' ? { background: 'rgba(233,193,120,.12)' } : undefined}
-              >
-                <ScanBarcode size={15} />
-                Skanna
-              </button>
-              <button
-                onClick={() => setShowReceipt(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-soft text-mut hover:text-ink text-sm font-medium transition-colors"
-              >
-                <FileText size={15} />
-                Kvitto
-              </button>
-              <button
-                onClick={() => { setEditItem(null); setShowManual(true); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#2a1d08] text-sm font-semibold"
-                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
-              >
-                <Plus size={15} />
-                Lägg till
-              </button>
-            </div>
-          </div>
+      <PageBanner
+        img="/img/f-pantry.jpg"
+        eyebrow="Kost"
+        title="Skafferi"
+        subtitle="Lagerstatus, utgångsdatum och priser — se vad du har hemma."
+        onBack={() => setFitnessPage('recipes')}
+      />
 
+      {/* Toolbar */}
+      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
             <input
-              className="w-full pl-9 pr-4 py-2 border border-line rounded-xl text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold bg-soft"
+              className="w-full pl-9 pr-4 py-2.5 border border-line rounded-xl text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold bg-soft"
               placeholder="Sök i skafferiet…"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <button
+              onClick={() => setView(v => v === 'barcode' ? 'list' : 'barcode')}
+              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${view === 'barcode' ? 'text-gold' : 'bg-soft text-mut hover:text-ink'}`}
+              style={view === 'barcode' ? { background: 'rgba(233,193,120,.12)' } : undefined}
+            >
+              <ScanBarcode size={15} />
+              Skanna
+            </button>
+            <button
+              onClick={() => setShowReceipt(true)}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-soft text-mut hover:text-ink text-sm font-medium transition-colors"
+            >
+              <FileText size={15} />
+              Kvitto
+            </button>
+            <button
+              onClick={() => { setEditItem(null); setShowManual(true); }}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-[#2a1d08] text-sm font-semibold"
+              style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
+            >
+              <Plus size={15} />
+              Lägg till
+            </button>
           </div>
         </div>
       </div>
@@ -612,7 +611,7 @@ export default function Pantry() {
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-10 py-6 pb-24 space-y-4">
         {/* Expiring soon banner */}
         {expiringSoon.length > 0 && (
           <div className="flex items-start gap-3 bg-[rgba(233,193,120,0.08)] border border-gold/30 rounded-xl p-3">
@@ -639,6 +638,7 @@ export default function Pantry() {
         )}
 
         {/* Grouped list */}
+        <div className="grid lg:grid-cols-2 gap-x-6 gap-y-6 items-start">
         {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b, 'sv')).map(([cat, catItems]) => (
           <div key={cat}>
             <h3 className="text-xs font-semibold text-faint uppercase tracking-wide mb-2">{cat}</h3>
@@ -696,6 +696,7 @@ export default function Pantry() {
             </div>
           </div>
         ))}
+        </div>
       </div>
 
       {/* Modals */}

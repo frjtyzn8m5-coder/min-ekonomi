@@ -8,6 +8,7 @@ import {
   Dumbbell, ChevronRight, ArrowLeft, Play, Edit2, X, Plus, Trash2, Clock, RotateCcw,
 } from 'lucide-react';
 import { IDumbbell, ITrend } from '../../components/ui/Icons';
+import { getExerciseByName } from '../../utils/exerciseUtils';
 
 // ── Hjälpare ──────────────────────────────────────────────────────────────────
 
@@ -145,7 +146,14 @@ function EditExerciseModal({ exercise, onSave, onClose }: EditExerciseModalProps
 
 export default function WorkoutProgramPage() {
   const { user } = useAuthStore();
-  const { setFitnessPage, setPendingWorkout } = useStore();
+  const { setFitnessPage, setPendingWorkout, setSelectedExerciseId } = useStore();
+
+  function openExerciseDetail(name: string) {
+    const resolved = getExerciseByName(name);
+    if (!resolved) return;
+    setSelectedExerciseId(resolved.id);
+    setFitnessPage('exercises');
+  }
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
@@ -308,10 +316,18 @@ export default function WorkoutProgramPage() {
 
               {/* Exercise list */}
               <div className="divide-y divide-line">
-                {day.exercises.map((ex, exIdx) => (
+                {day.exercises.map((ex, exIdx) => {
+                  const resolved = !editMode && ex.name ? getExerciseByName(ex.name) : undefined;
+                  return (
                   <div key={exIdx} className="flex items-center gap-3 px-4 py-2.5 pl-14">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-ink font-medium">{ex.name || <span className="text-faint italic">Namnlös</span>}</p>
+                    <div
+                      className={`flex-1 min-w-0 ${resolved ? 'cursor-pointer group/ex' : ''}`}
+                      onClick={resolved ? () => openExerciseDetail(ex.name) : undefined}
+                    >
+                      <p className={`text-sm font-medium flex items-center gap-1 ${resolved ? 'text-ink group-hover/ex:text-gold transition-colors' : 'text-ink'}`}>
+                        {ex.name || <span className="text-faint italic">Namnlös</span>}
+                        {resolved && <ChevronRight size={13} className="text-faint group-hover/ex:text-gold" />}
+                      </p>
                       <p className="text-xs text-faint tnum">{ex.sets} × {ex.repsRange} · {formatRest(ex.rest)} vila</p>
                     </div>
                     {editMode && (
@@ -327,7 +343,8 @@ export default function WorkoutProgramPage() {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
                 {editMode && (
                   <button onClick={() => handleAddExercise(schedIdx)}
                     className="w-full flex items-center gap-2 px-4 py-2.5 pl-14 text-gold hover:bg-[rgba(233,193,120,.1)] text-sm">

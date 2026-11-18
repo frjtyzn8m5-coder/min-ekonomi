@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import PageBanner from '../../components/ui/PageBanner';
 import type { Exercise, WorkoutSet, WorkoutSession, SetType } from '../../types';
 import ExerciseDB from './ExerciseDB';
 import { saveWorkoutSession, loadWorkoutSessions } from '../../lib/fitnessDb';
@@ -815,20 +816,19 @@ export default function WorkoutLog({ initialExercises, programDayName }: Workout
 
         {view === 'home' && (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col h-full">
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-line bg-panel">
-              <button onClick={() => setFitnessPage('home')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">
-                <ChevronLeft size={18} className="text-mut" />
-              </button>
-              <div className="flex items-center gap-2 flex-1">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(233,193,120,.15)' }}>
-                  <Dumbbell size={14} className="text-gold" />
-                </div>
-                <h1 className="font-display text-ink text-sm">Träningslogg</h1>
-              </div>
-              <button onClick={() => setView('history')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-faint">
-                <History size={16} />
-              </button>
-            </div>
+            <PageBanner
+              img="/img/f-gym1.jpg"
+              eyebrow="Dagligt"
+              title="Träningslogg"
+              subtitle="Logga pass med set, vikt, reps och RPE."
+              onBack={() => setFitnessPage('home')}
+              action={(
+                <button onClick={() => setView('history')}
+                  className="inline-flex items-center gap-1.5 text-[13px] text-white/80 hover:text-white bg-white/10 backdrop-blur border border-white/15 rounded-xl px-3.5 py-2 transition-colors">
+                  <History size={15} /> Historik
+                </button>
+              )}
+            />
 
             <div className="flex-1 overflow-auto p-4 space-y-4 bg-bg">
               <div className="vh-card p-5">

@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { RefreshCw, Edit2, Check, X, TrendingUp, TrendingDown, AlertCircle, Plus, Settings2, Pencil } from 'lucide-react';
 import type { TickerMapping, PriceData, PortfolioSnapshot } from '../types';
+import PageBanner from '../components/ui/PageBanner';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -659,14 +660,40 @@ export default function Portfolio() {
   );
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-auto bg-bg text-ink">
+    <PageBanner
+      img="/img/f-chart.jpg"
+      eyebrow="Ekonomi"
+      title="Portfölj"
+      subtitle="Dina innehav, kurser och fördelning per tillgångsklass"
+      action={
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={remapAllTickers}
+            disabled={refreshing || searchStatus === 'searching'}
+            title="Söker om alla automatiska tickers via Morningstar och Yahoo"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white/10 text-white border border-white/20 rounded-xl text-sm hover:bg-white/15 disabled:opacity-40 transition-all backdrop-blur-sm">
+            {searchStatus === 'searching'
+              ? <><span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> Söker…</>
+              : 'Återsök tickers'}
+          </button>
+          <button
+            onClick={() => refreshPrices()}
+            disabled={refreshing || !tickerMappings.length}
+            className="flex items-center gap-1.5 px-3 py-2 text-[#2a1d08] rounded-xl text-sm font-semibold disabled:opacity-40 transition-all"
+            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
+            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+            Uppdatera kurser
+          </button>
+        </div>
+      }
+    />
     <div className="p-4 lg:p-6 space-y-5">
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header meta (status + account filter) ──────────────────────────── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-ink">Portfölj</h1>
             {priceAgeMinutes !== null && (
               <p className="text-[11px] text-faint">Kurser uppdaterade för {priceAgeMinutes} min sedan</p>
             )}
@@ -717,26 +744,6 @@ export default function Portfolio() {
               ))}
             </div>
           )}
-        </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={remapAllTickers}
-            disabled={refreshing || searchStatus === 'searching'}
-            title="Söker om alla automatiska tickers via Morningstar och Yahoo"
-            className="flex items-center gap-1.5 px-3 py-2 bg-soft text-mut border border-line rounded-lg text-sm hover:bg-card disabled:opacity-40 transition-all">
-            {searchStatus === 'searching'
-              ? <><span className="w-3 h-3 border border-mut border-t-transparent rounded-full animate-spin" /> Söker…</>
-              : 'Återsök tickers'}
-          </button>
-          <button
-            onClick={() => refreshPrices()}
-            disabled={refreshing || !tickerMappings.length}
-            className="flex items-center gap-1.5 px-3 py-2 text-[#2a1d08] rounded-lg text-sm disabled:opacity-40 transition-all"
-            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}>
-            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-            Uppdatera kurser
-          </button>
         </div>
       </div>
 

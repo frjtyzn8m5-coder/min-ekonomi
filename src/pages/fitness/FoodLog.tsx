@@ -8,6 +8,7 @@ import { saveFoodEntry, deleteFoodEntry, loadFoodLog, loadFoodLogRange, saveNutr
 import { sumDayNutrition, tdeeFromProfile } from '../../utils/tdee';
 import type { FoodEntry, NutritionSettings } from '../../types';
 import type { SelectedFood } from '../../components/fitness/FoodSearch';
+import PageBanner from '../../components/ui/PageBanner';
 
 const FoodSearch = lazy(() => import('../../components/fitness/FoodSearch'));
 
@@ -411,23 +412,30 @@ export default function FoodLog() {
 
   return (
     <div className="min-h-full bg-bg text-ink">
-      {/* Header */}
-      <div className="bg-panel border-b border-line px-4 pt-4 pb-3">
-        <div className="flex items-center justify-between mb-3">
-          <button onClick={() => setFitnessPage('home')} className="text-faint hover:text-ink transition-colors">
-            <ChevronLeft size={22} />
+      <PageBanner
+        img="/img/f-food4.jpg"
+        eyebrow="Kost"
+        title="Matdagbok"
+        subtitle="Logga måltider, följ makron och håll koll på veckan."
+        onBack={() => setFitnessPage('home')}
+        action={
+          <button
+            onClick={() => setShowSettings(true)}
+            className="inline-flex items-center gap-1.5 text-[12px] text-white/80 hover:text-white rounded-xl px-3.5 py-2.5 border border-white/15 backdrop-blur transition-colors"
+            style={{ background: 'rgba(255,255,255,.08)' }}
+          >
+            <Settings2 size={15} /> Inställningar
           </button>
-          <h1 className="font-display text-ink">Mat & Kalorier</h1>
-          <button onClick={() => setShowSettings(true)} className="text-faint hover:text-ink transition-colors">
-            <Settings2 size={20} />
-          </button>
-        </div>
+        }
+      />
+
+      <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-10 py-6 pb-24">
 
         {/* Date navigator */}
-        <div className="flex items-center justify-between">
+        <div className="vh-card flex items-center justify-between px-3 py-2 mb-6">
           <button
             onClick={() => setCurrentDate(toDateStr(new Date(new Date(currentDate).getTime() - 86400000)))}
-            className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/5 text-faint"
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/5 text-faint"
           >
             <ChevronLeft size={18} />
           </button>
@@ -437,14 +445,15 @@ export default function FoodLog() {
           <button
             disabled={isToday}
             onClick={() => setCurrentDate(toDateStr(new Date(new Date(currentDate).getTime() + 86400000)))}
-            className={`w-8 h-8 flex items-center justify-center rounded-xl ${isToday ? 'text-faint/40' : 'hover:bg-white/5 text-faint'}`}
+            className={`w-9 h-9 flex items-center justify-center rounded-xl ${isToday ? 'text-faint/40' : 'hover:bg-white/5 text-faint'}`}
           >
             <ChevronRight size={18} />
           </button>
         </div>
-      </div>
 
-      <div className="p-4 space-y-4 max-w-2xl mx-auto pb-24">
+        <div className="grid lg:grid-cols-[360px_1fr] gap-6 items-start">
+        {/* Left column: summary + chart */}
+        <div className="space-y-4 lg:sticky lg:top-6">
 
         {/* Calorie summary card */}
         <div className="vh-card p-4">
@@ -505,23 +514,6 @@ export default function FoodLog() {
           </div>
         </div>
 
-        {/* Meal sections */}
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 size={24} className="text-gold animate-spin" />
-          </div>
-        ) : (
-          MEAL_ORDER.map(meal => (
-            <MealSection
-              key={meal}
-              mealType={meal}
-              entries={mealEntries(meal)}
-              onAddFood={(m) => { setActiveMeal(m); setShowSearch(true); }}
-              onDelete={handleDelete}
-            />
-          ))
-        )}
-
         {/* 7-day chart */}
         {weekData.length > 0 && (
           <div className="vh-card p-4">
@@ -555,6 +547,27 @@ export default function FoodLog() {
             </p>
           </div>
         )}
+        </div>
+
+        {/* Right column: meal sections */}
+        <div className="space-y-4">
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 size={24} className="text-gold animate-spin" />
+          </div>
+        ) : (
+          MEAL_ORDER.map(meal => (
+            <MealSection
+              key={meal}
+              mealType={meal}
+              entries={mealEntries(meal)}
+              onAddFood={(m) => { setActiveMeal(m); setShowSearch(true); }}
+              onDelete={handleDelete}
+            />
+          ))
+        )}
+        </div>
+        </div>
       </div>
 
       {/* Search overlay */}
