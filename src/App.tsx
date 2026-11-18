@@ -35,6 +35,7 @@ const WorkoutLog      = lazy(() => import('./pages/fitness/WorkoutLog'));
 const ExerciseDB      = lazy(() => import('./pages/fitness/ExerciseDB'));
 const Development     = lazy(() => import('./pages/fitness/Development'));
 const CycleHub        = lazy(() => import('./pages/fitness/CycleHub'));
+const Pregnancy       = lazy(() => import('./pages/fitness/Pregnancy'));
 const GoalCenter      = lazy(() => import('./pages/fitness/GoalCenter'));
 const CalendarHome        = lazy(() => import('./pages/calendar/CalendarHome'));
 const NutritionOnboarding = lazy(() => import('./pages/nutrition/NutritionOnboarding'));
@@ -167,13 +168,13 @@ export default function App() {
             </div>
           </>
         ) : (
-          <main className="flex-1 overflow-auto pb-16 lg:pb-0">
+          <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto pb-16 lg:pb-0">
             <Suspense fallback={<Spinner />}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={module === 'fitness' ? `fitness-${fitnessPage}` : module}
                   {...PAGE_TRANSITION}
-                  className="min-h-full"
+                  className="min-h-full min-w-0"
                 >
                   <ErrorBoundary resetKey={`${module}-${fitnessPage}`}>
                   {module === 'home'     && <Dashboard />}
@@ -194,6 +195,7 @@ export default function App() {
                   {module === 'fitness'  && fitnessPage === 'exercises'    && <ExerciseDB />}
                   {module === 'fitness'  && fitnessPage === 'development'  && <Development />}
                   {module === 'fitness'  && fitnessPage === 'cyclehub'     && <CycleHub />}
+                  {module === 'fitness'  && fitnessPage === 'pregnancy'    && <Pregnancy />}
                   {module === 'fitness'  && fitnessPage === 'goalcenter'   && <GoalCenter />}
                   {module === 'calendar' && <CalendarHome />}
                   </ErrorBoundary>

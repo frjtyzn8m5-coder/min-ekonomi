@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       const view = new URLSearchParams(window.location.search).get('view');
       if (view) {
         const econ = ['overview', 'transactions', 'analytics', 'budget', 'networth', 'portfolio', 'import', 'reminders', 'settings'];
-        const fit = ['home', 'weightlog', 'foodlog', 'pantry', 'recipes', 'mealplan', 'program', 'workoutlog', 'exercises', 'development', 'cyclehub', 'goalcenter'];
+        const fit = ['home', 'weightlog', 'foodlog', 'pantry', 'recipes', 'mealplan', 'program', 'workoutlog', 'exercises', 'development', 'cyclehub', 'pregnancy', 'goalcenter'];
         if (view === 'economy') store.setModule('economy');
         else if (view === 'calendar') store.setModule('calendar');
         else if (econ.includes(view)) { store.setModule('economy'); store.setPage(view as never); }

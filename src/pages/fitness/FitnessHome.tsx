@@ -5,8 +5,11 @@ import type { FitnessPage } from '../../types';
 const IMG = (f: string) => `/img/${f}.jpg`;
 
 export default function FitnessHome() {
-  const { setFitnessPage } = useStore();
+  const { setFitnessPage, userProfile } = useStore();
   const go = (p: FitnessPage) => setFitnessPage(p);
+
+  // Kvinnohälsa: visa tjej-sidan när kön är kvinna eller cykelspårning aktiverats.
+  const showWomensHealth = userProfile?.gender === 'female' || !!userProfile?.cycleTrackingEnabled;
 
   return (
     <div className="min-h-full bg-bg text-ink">
@@ -54,6 +57,23 @@ export default function FitnessHome() {
               onClick={() => go('development')} />
           </div>
         </section>
+
+        {showWomensHealth && (
+          <section className="pt-2 pb-4">
+            <p className="text-[12px] tracking-[0.2em] uppercase text-gold">Kvinnohälsa</p>
+            <h2 className="font-display text-ink mt-3 leading-tight" style={{ fontSize: 'clamp(28px,4vw,46px)', letterSpacing: '-0.02em' }}>
+              I takt med <em className="italic text-gold-2">din kropp.</em>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-7" style={{ gridAutoRows: '220px' }}>
+              <ImageTile className="lg:col-span-3" img={IMG('f-run3')} tint="rgba(155,140,255,.42)"
+                tag="Cykel" title="Cykelspårning" desc="Följ menscykeln och anpassa träning, kost och återhämtning efter fas."
+                onClick={() => go('cyclehub')} />
+              <ImageTile className="lg:col-span-3" img={IMG('f-body6')} tint="rgba(255,143,122,.42)"
+                tag="Graviditet" title="Graviditet" desc="Vecka för vecka — utveckling, träning, kost och viktökning."
+                onClick={() => go('pregnancy')} />
+            </div>
+          </section>
+        )}
 
         <section className="pb-16">
           <p className="text-[12px] tracking-[0.2em] uppercase text-gold">Kost</p>

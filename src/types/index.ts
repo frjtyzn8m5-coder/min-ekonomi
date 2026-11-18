@@ -80,6 +80,10 @@ export interface UserProfile {
   contraceptive?: Contraceptive
   cycleIrregular?: boolean
 
+  // Graviditet (women's-health suite)
+  pregnancyDueDate?: string     // YYYY-MM-DD (beräknat förlossningsdatum)
+  pregnancyActive?: boolean
+
   // Supplement-tracking
   activeSupplements?: string[]  // ['creatine', 'fish_oil', 'vitamin_d', 'multivitamin', 'caffeine']
 
@@ -228,6 +232,7 @@ export type FitnessPage =
   | 'mealplan'       // MealPlan.tsx
   | 'development'    // Development.tsx – grafer och statistik
   | 'cyclehub'       // CycleHub.tsx – menscykel (bara om female)
+  | 'pregnancy'      // Pregnancy.tsx – graviditetsspårning
   | 'goalcenter'     // GoalCenter.tsx
   | 'onboarding'     // Onboarding.tsx (legacy)
   | 'program'        // WorkoutProgram.tsx (legacy alias)

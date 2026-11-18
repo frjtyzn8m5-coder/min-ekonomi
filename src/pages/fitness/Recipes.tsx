@@ -9,10 +9,21 @@ import { getLvData, matchToLV, nutritionForGrams, calcRecipeNutrition } from '..
 import type { Recipe, RecipeIngredient, PantryItem, PriceEntry, FoodEntry, FoodItem } from '../../types';
 import {
   ChefHat, Trash2, Link, Loader2, Search, X, ChevronDown, ChevronUp,
-  Utensils, Check, AlertCircle, Shuffle, ArrowLeft,
+  Utensils, Check, AlertCircle, Shuffle, ArrowLeft, BookOpen, Plus,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import PageBanner from '../../components/ui/PageBanner';
+import libraryRecipesRaw from '../../data/recipes.json';
+
+// Bundled recipe library (shipped with the app). The JSON carries an extra
+// `category` field used only for browsing/filtering in the Bibliotek view.
+type LibraryRecipe = Recipe & { category?: string };
+const LIBRARY_RECIPES = (libraryRecipesRaw as unknown as LibraryRecipe[])
+  .slice()
+  .sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+const LIBRARY_CATEGORIES = Array.from(
+  new Set(LIBRARY_RECIPES.map(r => r.category).filter(Boolean) as string[]),
+);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -306,13 +317,17 @@ interface RecipeDetailProps {
   recipe: Recipe;
   pantry: PantryItem[];
   priceDB: PriceEntry[];
-  onSave: (r: Recipe) => void;
   onClose: () => void;
-  onDelete: (id: string) => void;
   onLog: (r: Recipe, servings: number) => void;
+  /** 'own' = user's own recipe (editable). 'library' = bundled recipe (read-only + copy). */
+  mode?: 'own' | 'library';
+  onSave?: (r: Recipe) => void;
+  onDelete?: (id: string) => void;
+  onAddToMine?: (r: Recipe) => void;
+  savingCopy?: boolean;
 }
 
-function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLog }: RecipeDetailProps) {
+function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLog, mode = 'own', onAddToMine, savingCopy }: RecipeDetailProps) {
   const [servings, setServings] = useState(recipe.servings);
   const [ingredients, setIngredients] = useState<ResolvedIngredient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -379,7 +394,7 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
       ingredients: ingredients.map(({ lvItem, nutrition, ...rest }) => rest),
       nutritionPerServing: newNutrition.kcal > 0 ? newNutrition : recipe.nutritionPerServing,
     };
-    onSave(recipeToSave);
+    onSave?.(recipeToSave);
   }
 
   const matchedCount = ingredients.filter(i => i.lvItem !== null).length;
@@ -399,19 +414,33 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
           Tillbaka
         </button>
         <div className="flex gap-2">
-          <button
-            onClick={() => onDelete(recipe.id)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[rgba(255,143,122,0.08)] text-faint hover:text-coral"
-          >
-            <Trash2 size={16} />
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-3 py-1.5 rounded-lg text-sm font-semibold text-[#2a1d08]"
-            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
-          >
-            Spara
-          </button>
+          {mode === 'own' ? (
+            <>
+              <button
+                onClick={() => onDelete?.(recipe.id)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[rgba(255,143,122,0.08)] text-faint hover:text-coral"
+              >
+                <Trash2 size={16} />
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold text-[#2a1d08]"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
+              >
+                Spara
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => onAddToMine?.(recipe)}
+              disabled={savingCopy}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#2a1d08] disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
+            >
+              {savingCopy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+              Lägg till i mina recept
+            </button>
+          )}
         </div>
       </div>
 
@@ -593,6 +622,17 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
             </div>
           )}
 
+          {/* Library hint: how it reaches the meal plan */}
+          {mode === 'library' && (
+            <div className="flex items-start gap-2 bg-[rgba(233,193,120,0.08)] border border-gold/20 rounded-xl p-3">
+              <BookOpen size={15} className="text-gold flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-mut leading-relaxed">
+                Lägg till receptet i <span className="text-ink font-medium">dina recept</span> för att kunna
+                redigera det och använda det i måltidsplanen.
+              </p>
+            </div>
+          )}
+
           {/* Log section */}
           <div className="bg-soft rounded-xl p-4 space-y-3">
             <p className="text-xs font-semibold text-faint uppercase tracking-wide">Logga måltid</p>
@@ -634,6 +674,55 @@ function RecipeDetail({ recipe, pantry, priceDB, onSave, onClose, onDelete, onLo
   );
 }
 
+// ─── Recipe card (shared by own-recipes and library grids) ───────────────────
+
+function RecipeCard({ recipe, pantry, priceDB, onClick }: {
+  recipe: Recipe;
+  pantry: PantryItem[];
+  priceDB: PriceEntry[];
+  onClick: () => void;
+}) {
+  const cost = calcRecipeCost(recipe.ingredients, recipe.servings, pantry, priceDB);
+  const hasPrice = cost.totalRawSEK > 0;
+
+  return (
+    <button onClick={onClick} className="text-left vh-card overflow-hidden">
+      {recipe.imageUrl ? (
+        <div className="h-28 bg-soft">
+          <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
+        </div>
+      ) : (
+        <div className="h-20 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,rgba(233,193,120,.12),rgba(207,154,63,.18))' }}>
+          <ChefHat size={28} className="text-gold/60" />
+        </div>
+      )}
+      <div className="p-3">
+        <p className="text-sm font-semibold text-ink line-clamp-2 leading-snug">{recipe.name}</p>
+        <p className="text-[11px] text-faint mt-1 tnum">{recipe.servings} port.</p>
+        <div className="flex items-center justify-between mt-2">
+          {recipe.nutritionPerServing.kcal > 0 ? (
+            <span className="text-[11px] font-medium text-gold px-2 py-0.5 rounded-full tnum" style={{ background: 'rgba(233,193,120,.12)' }}>
+              {recipe.nutritionPerServing.kcal} kcal/port
+            </span>
+          ) : (
+            <span />
+          )}
+          {hasPrice ? (
+            <span className="text-[11px] text-mut tnum">{formatCost(cost.perServingRaw)}/port</span>
+          ) : null}
+        </div>
+        {recipe.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {recipe.tags.slice(0, 2).map(tag => (
+              <span key={tag} className="text-[10px] bg-soft text-mut px-1.5 py-0.5 rounded-full">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </button>
+  );
+}
+
 // ─── Main Recipes page ────────────────────────────────────────────────────────
 
 export default function Recipes() {
@@ -647,6 +736,10 @@ export default function Recipes() {
   const [selected, setSelected] = useState<Recipe | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [logSuccess, setLogSuccess] = useState('');
+  const [view, setView] = useState<'mine' | 'library'>('mine');
+  const [libSelected, setLibSelected] = useState<LibraryRecipe | null>(null);
+  const [libCategory, setLibCategory] = useState<string>('Alla');
+  const [savingCopy, setSavingCopy] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -725,6 +818,30 @@ export default function Recipes() {
     setSelected(r);
   }
 
+  // Copy a bundled library recipe into the user's own Firestore recipes.
+  async function handleAddToMine(lib: LibraryRecipe) {
+    if (!user) return;
+    setSavingCopy(true);
+    try {
+      // Strip the library-only `category` field; build a clean Recipe.
+      const { category, ...base } = lib;
+      const copy: Recipe = {
+        ...base,
+        id: nanoid(),
+        createdAt: Date.now(),
+        source: base.source ?? 'Bibliotek',
+      };
+      await saveRecipe(user.uid, copy);
+      setRecipes(prev => [copy, ...prev]);
+      setLogSuccess(`${lib.name} tillagd i dina recept!`);
+      setTimeout(() => setLogSuccess(''), 3000);
+      setLibSelected(null);
+      setView('mine');
+    } finally {
+      setSavingCopy(false);
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!user) return;
     await deleteRecipe(user.uid, id);
@@ -789,10 +906,19 @@ export default function Recipes() {
     setSelected(null);
   }
 
+  const q = search.toLowerCase();
   const filtered = recipes.filter(r =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
-    r.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
+    r.name.toLowerCase().includes(q) ||
+    r.tags.some(t => t.toLowerCase().includes(q))
   );
+
+  const filteredLibrary = LIBRARY_RECIPES.filter(r => {
+    const matchesCat = libCategory === 'Alla' || r.category === libCategory;
+    const matchesSearch = !q ||
+      r.name.toLowerCase().includes(q) ||
+      r.tags.some(t => t.toLowerCase().includes(q));
+    return matchesCat && matchesSearch;
+  });
 
   if (loading) {
     return (
@@ -818,25 +944,68 @@ export default function Recipes() {
     );
   }
 
+  // ── Library recipe detail (read-only + copy to own) ──────────────────────────
+  if (libSelected) {
+    return (
+      <RecipeDetail
+        recipe={libSelected}
+        pantry={pantry}
+        priceDB={priceDB}
+        mode="library"
+        onClose={() => setLibSelected(null)}
+        onLog={handleLog}
+        onAddToMine={handleAddToMine}
+        savingCopy={savingCopy}
+      />
+    );
+  }
+
   return (
     <div className="min-h-full bg-bg text-ink">
       <PageBanner
         img="/img/f-cook.jpg"
         eyebrow="Kost"
         title="Recept"
-        subtitle={`${recipes.length} recept · kostnad & näring via Livsmedelsverket.`}
+        subtitle={
+          view === 'mine'
+            ? `${recipes.length} egna recept · kostnad & näring via Livsmedelsverket.`
+            : `${LIBRARY_RECIPES.length} färdiga recept att välja bland – ingen import krävs.`
+        }
         onBack={() => setFitnessPage('kosthome')}
         action={
-          <button
-            onClick={() => setShowImport(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold rounded-xl text-[#2a1d08]"
-            style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
-          >
-            <Link size={14} />
-            Importera
-          </button>
+          view === 'mine' ? (
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold rounded-xl text-[#2a1d08]"
+              style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
+            >
+              <Link size={14} />
+              Importera
+            </button>
+          ) : undefined
         }
       />
+
+      {/* Tabs: Mina recept / Bibliotek */}
+      <div className="border-b border-line">
+        <div className="flex max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+          {([
+            { key: 'mine' as const, label: `Mina recept (${recipes.length})`, Icon: ChefHat },
+            { key: 'library' as const, label: `Bibliotek (${LIBRARY_RECIPES.length})`, Icon: BookOpen },
+          ]).map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => { setView(tab.key); setSearch(''); }}
+              className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                view === tab.key ? 'border-gold text-gold' : 'border-transparent text-mut hover:text-ink'
+              }`}
+            >
+              <tab.Icon size={14} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 pb-24 space-y-4">
       {/* Log success toast */}
@@ -866,71 +1035,66 @@ export default function Recipes() {
         )}
       </div>
 
-      {/* Recipe grid */}
-      {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-          <ChefHat size={40} className="text-faint" />
-          <p className="text-faint text-sm">
-            {search ? 'Inga recept matchar sökningen.' : 'Du har inga recept ännu. Importera ett för att börja!'}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-          {filtered.map(recipe => {
-            const cost = calcRecipeCost(recipe.ingredients, recipe.servings, pantry, priceDB);
-            const hasPrice = cost.totalRawSEK > 0;
-
-            return (
+      {view === 'mine' ? (
+        /* ── Own recipes grid ── */
+        filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+            <ChefHat size={40} className="text-faint" />
+            <p className="text-faint text-sm">
+              {search ? 'Inga recept matchar sökningen.' : 'Du har inga egna recept ännu. Importera ett eller välj från Biblioteket!'}
+            </p>
+            {!search && (
               <button
-                key={recipe.id}
-                onClick={() => setSelected(recipe)}
-                className="text-left vh-card overflow-hidden"
+                onClick={() => { setView('library'); setSearch(''); }}
+                className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold rounded-xl text-[#2a1d08]"
+                style={{ background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' }}
               >
-                {recipe.imageUrl && (
-                  <div className="h-28 bg-soft">
-                    <img
-                      src={recipe.imageUrl}
-                      alt={recipe.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                {!recipe.imageUrl && (
-                  <div className="h-20 flex items-center justify-center" style={{ background: 'linear-gradient(135deg,rgba(233,193,120,.12),rgba(207,154,63,.18))' }}>
-                    <ChefHat size={28} className="text-gold/60" />
-                  </div>
-                )}
-                <div className="p-3">
-                  <p className="text-sm font-semibold text-ink line-clamp-2 leading-snug">{recipe.name}</p>
-                  <p className="text-[11px] text-faint mt-1 tnum">{recipe.servings} port.</p>
-                  <div className="flex items-center justify-between mt-2">
-                    {recipe.nutritionPerServing.kcal > 0 ? (
-                      <span className="text-[11px] font-medium text-gold px-2 py-0.5 rounded-full tnum" style={{ background: 'rgba(233,193,120,.12)' }}>
-                        {recipe.nutritionPerServing.kcal} kcal/port
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                    {hasPrice ? (
-                      <span className="text-[11px] text-mut tnum">
-                        {formatCost(cost.perServingRaw)}/port
-                      </span>
-                    ) : null}
-                  </div>
-                  {recipe.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {recipe.tags.slice(0, 2).map(tag => (
-                        <span key={tag} className="text-[10px] bg-soft text-mut px-1.5 py-0.5 rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <BookOpen size={14} />
+                Bläddra i Biblioteket
               </button>
-            );
-          })}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+            {filtered.map(recipe => (
+              <RecipeCard key={recipe.id} recipe={recipe} pantry={pantry} priceDB={priceDB} onClick={() => setSelected(recipe)} />
+            ))}
+          </div>
+        )
+      ) : (
+        /* ── Library view ── */
+        <>
+          {/* Category filter chips */}
+          <div className="flex flex-wrap gap-2">
+            {['Alla', ...LIBRARY_CATEGORIES].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setLibCategory(cat)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  libCategory === cat
+                    ? 'text-[#2a1d08]'
+                    : 'bg-soft text-mut border border-line hover:bg-white/5'
+                }`}
+                style={libCategory === cat ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {filteredLibrary.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+              <BookOpen size={40} className="text-faint" />
+              <p className="text-faint text-sm">Inga recept matchar.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+              {filteredLibrary.map(recipe => (
+                <RecipeCard key={recipe.id} recipe={recipe} pantry={pantry} priceDB={priceDB} onClick={() => setLibSelected(recipe)} />
+              ))}
+            </div>
+          )}
+        </>
       )}
       </div>
 

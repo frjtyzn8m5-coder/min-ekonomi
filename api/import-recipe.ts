@@ -4,7 +4,7 @@ import { assertPublicHttpUrl } from './_lib/safeFetch';
 interface SchemaRecipe {
   name?: string;
   recipeIngredient?: string[];
-  recipeInstructions?: Array<{ text?: string } | string>;
+  recipeInstructions?: unknown; // string | HowToStep[] | HowToSection[] | nested
   recipeYield?: string | number | string[];
   image?: string | { url?: string } | Array<{ url?: string } | string>;
   prepTime?: string;
@@ -61,9 +61,36 @@ function parseImage(image?: SchemaRecipe['image']): string | undefined {
 
 function parseInstructions(raw?: SchemaRecipe['recipeInstructions']): string[] {
   if (!raw) return [];
-  return raw.map(step =>
-    typeof step === 'string' ? step : step.text ?? '',
-  ).filter(Boolean);
+
+  // schema.org allows recipeInstructions to be a single Text block, an array of
+  // HowToStep, or HowToSection objects that nest their steps in itemListElement.
+  const out: string[] = [];
+
+  const pushText = (t: unknown) => {
+    if (typeof t !== 'string') return;
+    // A single string block may contain multiple newline-separated steps.
+    for (const line of t.split(/\r?\n+/)) {
+      const trimmed = line.trim();
+      if (trimmed) out.push(trimmed);
+    }
+  };
+
+  const walk = (node: unknown) => {
+    if (node == null) return;
+    if (typeof node === 'string') { pushText(node); return; }
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (typeof node === 'object') {
+      const o = node as Record<string, unknown>;
+      // HowToSection → recurse into its steps.
+      if (Array.isArray(o.itemListElement)) { walk(o.itemListElement); return; }
+      // HowToStep / HowToDirection → take its text/name.
+      if (typeof o.text === 'string') { pushText(o.text); return; }
+      if (typeof o.name === 'string') { pushText(o.name); return; }
+    }
+  };
+
+  walk(raw);
+  return out;
 }
 
 function parseTags(raw?: string | string[]): string[] {

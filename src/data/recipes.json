@@ -1,0 +1,3950 @@
+[
+  {
+    "id": "lib-001-havregrynsgröt",
+    "name": "Havregrynsgröt",
+    "servings": 1,
+    "prepTime": 10,
+    "ingredients": [
+      {
+        "name": "havregryn",
+        "originalText": "1 dl havregryn",
+        "amount": 40,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vatten",
+        "originalText": "2,5 dl vatten",
+        "amount": 250,
+        "originalAmount": 2.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 krm salt",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "0,5 dl mjölk",
+        "amount": 52,
+        "originalAmount": 0.5,
+        "originalUnit": "dl"
+      }
+    ],
+    "instructions": [
+      "Koka upp vatten och salt i en kastrull.",
+      "Rör ner havregrynen och låt sjuda under omrörning i 3–5 minuter.",
+      "Häll upp och servera med kall mjölk, och gärna bär, sylt eller kanel."
+    ],
+    "tags": [
+      "Frukost",
+      "Snabbt",
+      "Vegetariskt",
+      "Billigt"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 174,
+      "protein": 7,
+      "fat": 3.6,
+      "carbs": 26.2,
+      "fiber": 4
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-002-overnight-oats-med-bär",
+    "name": "Overnight oats med bär",
+    "servings": 1,
+    "prepTime": 5,
+    "ingredients": [
+      {
+        "name": "havregryn",
+        "originalText": "1 dl havregryn",
+        "amount": 40,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "1,5 dl mjölk",
+        "amount": 156,
+        "originalAmount": 1.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "yoghurt",
+        "originalText": "1 dl yoghurt",
+        "amount": 105,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "blåbär",
+        "originalText": "1 dl blåbär",
+        "amount": 70,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "honung",
+        "originalText": "1 tsk honung",
+        "amount": 7,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Blanda havregryn, mjölk och yoghurt i en burk.",
+      "Rör ner honung och ställ i kylen över natten.",
+      "Toppa med bär på morgonen innan servering."
+    ],
+    "tags": [
+      "Frukost",
+      "Förbered",
+      "Vegetariskt"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 346,
+      "protein": 14.5,
+      "fat": 8.5,
+      "carbs": 48.9,
+      "fiber": 6.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-003-pannkakor",
+    "name": "Pannkakor",
+    "servings": 4,
+    "prepTime": 30,
+    "ingredients": [
+      {
+        "name": "vetemjöl",
+        "originalText": "3 dl vetemjöl",
+        "amount": 180,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "6 dl mjölk",
+        "amount": 624,
+        "originalAmount": 6,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "ägg",
+        "originalText": "3 ägg",
+        "amount": 180,
+        "originalAmount": 3,
+        "originalUnit": "st"
+      },
+      {
+        "name": "smör",
+        "originalText": "50 g smör",
+        "amount": 50,
+        "originalAmount": 50,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 krm salt",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Vispa ihop mjöl med hälften av mjölken till en slät smet.",
+      "Tillsätt resten av mjölken, ägg och salt. Rör ner smält smör.",
+      "Stek tunna pannkakor i smör på medelvärme tills gyllene på båda sidor.",
+      "Servera med sylt och grädde."
+    ],
+    "tags": [
+      "Frukost",
+      "Klassiker",
+      "Vegetariskt",
+      "Barnvänligt"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 386,
+      "protein": 15.6,
+      "fat": 17.5,
+      "carbs": 40.4,
+      "fiber": 1.4
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-004-äggröra-på-rostat-bröd",
+    "name": "Äggröra på rostat bröd",
+    "servings": 2,
+    "prepTime": 10,
+    "ingredients": [
+      {
+        "name": "ägg",
+        "originalText": "4 ägg",
+        "amount": 240,
+        "originalAmount": 4,
+        "originalUnit": "st"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "0,5 dl mjölk",
+        "amount": 52,
+        "originalAmount": 0.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "smör",
+        "originalText": "15 g smör",
+        "amount": 15,
+        "originalAmount": 15,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 krm salt",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      },
+      {
+        "name": "svartpeppar",
+        "originalText": "1 krm svartpeppar",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      },
+      {
+        "name": "bröd",
+        "originalText": "2 skiva bröd",
+        "amount": 50,
+        "originalAmount": 2,
+        "originalUnit": "skiva"
+      }
+    ],
+    "instructions": [
+      "Vispa ihop ägg, mjölk, salt och peppar.",
+      "Smält smör i en panna på låg värme och häll i äggsmeten.",
+      "Rör långsamt tills äggröran stannar krämig.",
+      "Servera på rostat bröd."
+    ],
+    "tags": [
+      "Frukost",
+      "Snabbt",
+      "Proteinrikt",
+      "Vegetariskt"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 307,
+      "protein": 18.4,
+      "fat": 18.7,
+      "carbs": 14,
+      "fiber": 1.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-005-yoghurt-med-m-sli-och-bär",
+    "name": "Yoghurt med müsli och bär",
+    "servings": 1,
+    "prepTime": 5,
+    "ingredients": [
+      {
+        "name": "yoghurt",
+        "originalText": "2 dl yoghurt",
+        "amount": 210,
+        "originalAmount": 2,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "müsli",
+        "originalText": "0,75 dl müsli",
+        "amount": 45,
+        "originalAmount": 0.75,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "banan",
+        "originalText": "0,5 banan",
+        "amount": 60,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "blåbär",
+        "originalText": "0,5 dl blåbär",
+        "amount": 35,
+        "originalAmount": 0.5,
+        "originalUnit": "dl"
+      }
+    ],
+    "instructions": [
+      "Häll yoghurt i en skål.",
+      "Toppa med müsli, skivad banan och bär."
+    ],
+    "tags": [
+      "Frukost",
+      "Snabbt",
+      "Vegetariskt"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 366,
+      "protein": 11.9,
+      "fat": 9.3,
+      "carbs": 54.8,
+      "fiber": 5.4
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-006-omelett-med-ost-och-skinka",
+    "name": "Omelett med ost och skinka",
+    "servings": 1,
+    "prepTime": 10,
+    "ingredients": [
+      {
+        "name": "ägg",
+        "originalText": "3 ägg",
+        "amount": 180,
+        "originalAmount": 3,
+        "originalUnit": "st"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "0,5 dl mjölk",
+        "amount": 52,
+        "originalAmount": 0.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "riven ost",
+        "originalText": "50 g riven ost",
+        "amount": 50,
+        "originalAmount": 50,
+        "originalUnit": "g"
+      },
+      {
+        "name": "skinka",
+        "originalText": "50 g skinka",
+        "amount": 50,
+        "originalAmount": 50,
+        "originalUnit": "g"
+      },
+      {
+        "name": "smör",
+        "originalText": "10 g smör",
+        "amount": 10,
+        "originalAmount": 10,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 krm salt",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Vispa ägg med mjölk och salt.",
+      "Smält smör i en panna och häll i äggsmeten.",
+      "När omeletten stannat, lägg på ost och skinka på ena halvan.",
+      "Vik ihop och låt osten smälta. Servera."
+    ],
+    "tags": [
+      "Frukost",
+      "Snabbt",
+      "Proteinrikt",
+      "Lågkolhydrat"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 608,
+      "protein": 46.5,
+      "fat": 44.1,
+      "carbs": 4.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-007-smoothie-banan-och-bär",
+    "name": "Smoothie banan och bär",
+    "servings": 1,
+    "prepTime": 5,
+    "ingredients": [
+      {
+        "name": "banan",
+        "originalText": "1 banan",
+        "amount": 120,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "frysta hallon",
+        "originalText": "1 dl frysta hallon",
+        "amount": 70,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "yoghurt",
+        "originalText": "1,5 dl yoghurt",
+        "amount": 157,
+        "originalAmount": 1.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "1 dl mjölk",
+        "amount": 104,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "havregryn",
+        "originalText": "0,5 dl havregryn",
+        "amount": 20,
+        "originalAmount": 0.5,
+        "originalUnit": "dl"
+      }
+    ],
+    "instructions": [
+      "Lägg alla ingredienser i en mixer.",
+      "Mixa slät och häll upp i ett glas."
+    ],
+    "tags": [
+      "Frukost",
+      "Snabbt",
+      "Vegetariskt"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 369,
+      "protein": 13.5,
+      "fat": 8.5,
+      "carbs": 52.8,
+      "fiber": 8.6
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-008-risgrynsgröt",
+    "name": "Risgrynsgröt",
+    "servings": 4,
+    "prepTime": 45,
+    "ingredients": [
+      {
+        "name": "grötris",
+        "originalText": "3 dl grötris",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vatten",
+        "originalText": "3 dl vatten",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "8 dl mjölk",
+        "amount": 832,
+        "originalAmount": 8,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "kanel",
+        "originalText": "1 msk kanel",
+        "amount": 8,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      }
+    ],
+    "instructions": [
+      "Koka upp vatten i en tjockbottnad kastrull och tillsätt riset.",
+      "Låt sjuda 10 minuter tills vattnet kokat in.",
+      "Tillsätt mjölk och salt, sjud under lock i ca 30 minuter under omrörning.",
+      "Servera med kanel och socker."
+    ],
+    "tags": [
+      "Frukost",
+      "Klassiker",
+      "Vegetariskt"
+    ],
+    "category": "Frukost",
+    "nutritionPerServing": {
+      "kcal": 363,
+      "protein": 12.4,
+      "fat": 3.9,
+      "carbs": 70,
+      "fiber": 1.8
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-009-köttfärssås-med-spaghetti",
+    "name": "Köttfärssås med spaghetti",
+    "servings": 4,
+    "prepTime": 40,
+    "ingredients": [
+      {
+        "name": "köttfärs",
+        "originalText": "500 g köttfärs",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "tomatpuré",
+        "originalText": "1 msk tomatpuré",
+        "amount": 18,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "oregano",
+        "originalText": "1 msk oregano",
+        "amount": 3,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "svartpeppar",
+        "originalText": "1 krm svartpeppar",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      },
+      {
+        "name": "spaghetti",
+        "originalText": "320 g spaghetti",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      }
+    ],
+    "instructions": [
+      "Hacka lök och vitlök. Fräs i olja tills mjuk.",
+      "Tillsätt köttfärsen och bryn den smulig.",
+      "Rör ner tomatpuré och fräs någon minut, tillsätt sedan krossade tomater.",
+      "Krydda med oregano, salt och peppar. Låt såsen sjuda 20 minuter.",
+      "Koka spaghetti enligt paketet och servera med såsen."
+    ],
+    "tags": [
+      "Middag",
+      "Klassiker",
+      "Barnvänligt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 569,
+      "protein": 35.7,
+      "fat": 15.4,
+      "carbs": 67.7,
+      "fiber": 5.3
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-010-tacos",
+    "name": "Tacos",
+    "servings": 4,
+    "prepTime": 30,
+    "ingredients": [
+      {
+        "name": "köttfärs",
+        "originalText": "500 g köttfärs",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "tacokrydda",
+        "originalText": "1 påse tacokrydda",
+        "amount": 30,
+        "originalAmount": 1,
+        "originalUnit": "påse"
+      },
+      {
+        "name": "vatten",
+        "originalText": "1 dl vatten",
+        "amount": 100,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "tortilla",
+        "originalText": "8 tortilla",
+        "amount": 320,
+        "originalAmount": 8,
+        "originalUnit": "st"
+      },
+      {
+        "name": "riven ost",
+        "originalText": "150 g riven ost",
+        "amount": 150,
+        "originalAmount": 150,
+        "originalUnit": "g"
+      },
+      {
+        "name": "tomat",
+        "originalText": "2 tomat",
+        "amount": 240,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "gurka",
+        "originalText": "0,5 gurka",
+        "amount": 200,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "majs",
+        "originalText": "1 burk majs",
+        "amount": 285,
+        "originalAmount": 1,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "crème fraiche",
+        "originalText": "2 dl crème fraiche",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "dl"
+      }
+    ],
+    "instructions": [
+      "Bryn köttfärsen i en panna.",
+      "Tillsätt tacokrydda och vatten, låt puttra några minuter.",
+      "Tärna tomat och gurka, riv osten.",
+      "Värm tortillabröden och duka fram alla tillbehör.",
+      "Låt var och en bygga sina egna tacos."
+    ],
+    "tags": [
+      "Middag",
+      "Fredagsmys",
+      "Barnvänligt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 858,
+      "protein": 44.8,
+      "fat": 49.4,
+      "carbs": 59.5,
+      "fiber": 6.7
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-011-köttbullar-med-potatismos",
+    "name": "Köttbullar med potatismos",
+    "servings": 4,
+    "prepTime": 45,
+    "ingredients": [
+      {
+        "name": "köttfärs",
+        "originalText": "500 g köttfärs",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "ägg",
+        "originalText": "1 ägg",
+        "amount": 60,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "ströbröd",
+        "originalText": "1 dl ströbröd",
+        "amount": 60,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "1 dl mjölk",
+        "amount": 104,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "0,5 gul lök",
+        "amount": 75,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "potatis",
+        "originalText": "800 g potatis",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "smör",
+        "originalText": "30 g smör",
+        "amount": 30,
+        "originalAmount": 30,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "2 tsk salt",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Blanda ströbröd med mjölk och låt svälla.",
+      "Blanda i köttfärs, ägg, riven lök och salt. Rulla köttbullar.",
+      "Stek köttbullarna gyllene runt om i smör.",
+      "Koka potatisen mjuk, mosa med smör och lite mjölk.",
+      "Servera köttbullarna med moset, gärna med lingon."
+    ],
+    "tags": [
+      "Middag",
+      "Klassiker",
+      "Husmanskost",
+      "Barnvänligt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 534,
+      "protein": 32.5,
+      "fat": 22.6,
+      "carbs": 46.4,
+      "fiber": 5
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-012-chili-con-carne",
+    "name": "Chili con carne",
+    "servings": 4,
+    "prepTime": 40,
+    "ingredients": [
+      {
+        "name": "köttfärs",
+        "originalText": "500 g köttfärs",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "kidneybönor",
+        "originalText": "1 burk kidneybönor",
+        "amount": 380,
+        "originalAmount": 1,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "majs",
+        "originalText": "1 burk majs",
+        "amount": 285,
+        "originalAmount": 1,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "chilipulver",
+        "originalText": "1 msk chilipulver",
+        "amount": 8,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "spiskummin",
+        "originalText": "1 tsk spiskummin",
+        "amount": 3,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Hacka och fräs lök och vitlök. Bryn köttfärsen.",
+      "Tillsätt kryddor och fräs en minut.",
+      "Häll i krossade tomater, sköljda bönor och majs.",
+      "Låt sjuda 20–25 minuter. Smaka av med salt.",
+      "Servera med ris eller bröd."
+    ],
+    "tags": [
+      "Middag",
+      "Matlåda",
+      "Fylligt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 453,
+      "protein": 35.8,
+      "fat": 15.8,
+      "carbs": 35.9,
+      "fiber": 11.9
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-013-lasagne",
+    "name": "Lasagne",
+    "servings": 4,
+    "prepTime": 60,
+    "ingredients": [
+      {
+        "name": "köttfärs",
+        "originalText": "500 g köttfärs",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "tomatpuré",
+        "originalText": "2 msk tomatpuré",
+        "amount": 36,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "lasagneplattor",
+        "originalText": "250 g lasagneplattor",
+        "amount": 250,
+        "originalAmount": 250,
+        "originalUnit": "g"
+      },
+      {
+        "name": "smör",
+        "originalText": "40 g smör",
+        "amount": 40,
+        "originalAmount": 40,
+        "originalUnit": "g"
+      },
+      {
+        "name": "vetemjöl",
+        "originalText": "3 msk vetemjöl",
+        "amount": 27,
+        "originalAmount": 3,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "6 dl mjölk",
+        "amount": 624,
+        "originalAmount": 6,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "riven ost",
+        "originalText": "150 g riven ost",
+        "amount": 150,
+        "originalAmount": 150,
+        "originalUnit": "g"
+      }
+    ],
+    "instructions": [
+      "Fräs lök, bryn färsen och tillsätt tomatpuré och krossade tomater. Sjud 15 min.",
+      "Gör en bechamelsås: smält smör, vispa i mjöl och späd med mjölk till en slät sås.",
+      "Varva köttfärssås, lasagneplattor och bechamel i en ugnsform.",
+      "Toppa med riven ost.",
+      "Gratinera i 200°C i ca 30 minuter."
+    ],
+    "tags": [
+      "Middag",
+      "Gratäng",
+      "Helg"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 822,
+      "protein": 49.4,
+      "fat": 38.4,
+      "carbs": 66.8,
+      "fiber": 4.7
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-014-köttfärslimpa",
+    "name": "Köttfärslimpa",
+    "servings": 4,
+    "prepTime": 60,
+    "ingredients": [
+      {
+        "name": "köttfärs",
+        "originalText": "600 g köttfärs",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "ägg",
+        "originalText": "1 ägg",
+        "amount": 60,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "ströbröd",
+        "originalText": "1 dl ströbröd",
+        "amount": 60,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "1,5 dl mjölk",
+        "amount": 156,
+        "originalAmount": 1.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "bacon",
+        "originalText": "140 g bacon",
+        "amount": 140,
+        "originalAmount": 140,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1,5 tsk salt",
+        "amount": 8,
+        "originalAmount": 1.5,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "svartpeppar",
+        "originalText": "1 krm svartpeppar",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Blanda ströbröd med mjölk, låt svälla.",
+      "Blanda i färs, ägg, riven lök och kryddor. Forma en limpa i en ugnsform.",
+      "Lägg baconskivor över limpan.",
+      "Grädda i 200°C i ca 45 minuter.",
+      "Servera med kokt potatis och gräddsås."
+    ],
+    "tags": [
+      "Middag",
+      "Husmanskost",
+      "Ugn"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 493,
+      "protein": 38.4,
+      "fat": 30,
+      "carbs": 14.3,
+      "fiber": 1.4
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-015-kyckling-och-ris",
+    "name": "Kyckling och ris",
+    "servings": 4,
+    "prepTime": 35,
+    "ingredients": [
+      {
+        "name": "kycklingfilé",
+        "originalText": "600 g kycklingfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "jasminris",
+        "originalText": "3 dl jasminris",
+        "amount": 270,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vatten",
+        "originalText": "6 dl vatten",
+        "amount": 600,
+        "originalAmount": 6,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "paprika",
+        "originalText": "1 paprika",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "soja",
+        "originalText": "2 msk soja",
+        "amount": 36,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "olja",
+        "originalText": "1 msk olja",
+        "amount": 14,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka riset enligt paketet.",
+      "Skär kycklingen i bitar och stek i olja tills genomstekt.",
+      "Tillsätt strimlad paprika och pressad vitlök, fräs några minuter.",
+      "Smaka av med soja och salt.",
+      "Servera kycklingen med riset."
+    ],
+    "tags": [
+      "Middag",
+      "Proteinrikt",
+      "Vardag"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 455,
+      "protein": 40.3,
+      "fat": 6.6,
+      "carbs": 56.4,
+      "fiber": 1.5
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-016-krämig-kycklinggryta-med-curry",
+    "name": "Krämig kycklinggryta med curry",
+    "servings": 4,
+    "prepTime": 35,
+    "ingredients": [
+      {
+        "name": "kycklingfilé",
+        "originalText": "600 g kycklingfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "kokosmjölk",
+        "originalText": "400 g kokosmjölk",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "currypasta",
+        "originalText": "2 msk currypasta",
+        "amount": 30,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "paprika",
+        "originalText": "1 paprika",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "jasminris",
+        "originalText": "3 dl jasminris",
+        "amount": 270,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka ris enligt paketet.",
+      "Skär kycklingen i bitar och bryn i en gryta.",
+      "Tillsätt hackad lök och curry, fräs en minut.",
+      "Häll i kokosmjölk och strimlad paprika. Låt sjuda 15 minuter.",
+      "Smaka av med salt och servera med riset."
+    ],
+    "tags": [
+      "Middag",
+      "Gryta",
+      "Krämigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 640,
+      "protein": 42.3,
+      "fat": 23.6,
+      "carbs": 61.4,
+      "fiber": 2.3
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-017-kyckling-tikka-masala",
+    "name": "Kyckling tikka masala",
+    "servings": 4,
+    "prepTime": 40,
+    "ingredients": [
+      {
+        "name": "kycklingfilé",
+        "originalText": "600 g kycklingfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "2 dl matlagningsgrädde",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "tikka masala",
+        "originalText": "2 msk tikka masala",
+        "amount": 30,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "jasminris",
+        "originalText": "3 dl jasminris",
+        "amount": 270,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka riset.",
+      "Bryn kycklingbitar i en gryta, ta upp.",
+      "Fräs lök, vitlök och tikka masala-krydda.",
+      "Tillsätt krossade tomater och grädde, lägg tillbaka kycklingen.",
+      "Sjud 15 minuter, smaka av med salt och servera med ris."
+    ],
+    "tags": [
+      "Middag",
+      "Indiskt",
+      "Krämigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 544,
+      "protein": 43,
+      "fat": 11.3,
+      "carbs": 64.2,
+      "fiber": 3.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-018-kyckling-i-ugn-med-rotfrukter",
+    "name": "Kyckling i ugn med rotfrukter",
+    "servings": 4,
+    "prepTime": 50,
+    "ingredients": [
+      {
+        "name": "kycklinglår",
+        "originalText": "800 g kycklinglår",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "potatis",
+        "originalText": "600 g potatis",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "morot",
+        "originalText": "3 morot",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "st"
+      },
+      {
+        "name": "rödlök",
+        "originalText": "1 rödlök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "olivolja",
+        "originalText": "2 msk olivolja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "3 vitlök",
+        "amount": 15,
+        "originalAmount": 3,
+        "originalUnit": "st"
+      },
+      {
+        "name": "salt",
+        "originalText": "1,5 tsk salt",
+        "amount": 8,
+        "originalAmount": 1.5,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "timjan",
+        "originalText": "1 msk timjan",
+        "amount": 3,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      }
+    ],
+    "instructions": [
+      "Sätt ugnen på 200°C.",
+      "Skär potatis, morot och lök i bitar och lägg i en långpanna.",
+      "Lägg kycklinglåren ovanpå.",
+      "Ringla över olja, pressad vitlök och kryddor.",
+      "Rör runt och tillaga i ugnen 40 minuter tills kycklingen är genomstekt."
+    ],
+    "tags": [
+      "Middag",
+      "Ugn",
+      "Enkelt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 571,
+      "protein": 40.4,
+      "fat": 29.4,
+      "carbs": 34.5,
+      "fiber": 6.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-019-kycklingwok-med-nudlar",
+    "name": "Kycklingwok med nudlar",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "kycklingfilé",
+        "originalText": "500 g kycklingfilé",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "äggnudlar",
+        "originalText": "250 g äggnudlar",
+        "amount": 250,
+        "originalAmount": 250,
+        "originalUnit": "g"
+      },
+      {
+        "name": "broccoli",
+        "originalText": "300 g broccoli",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "paprika",
+        "originalText": "1 paprika",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "morot",
+        "originalText": "2 morot",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "soja",
+        "originalText": "3 msk soja",
+        "amount": 54,
+        "originalAmount": 3,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "olja",
+        "originalText": "2 msk olja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      }
+    ],
+    "instructions": [
+      "Koka nudlarna enligt paketet.",
+      "Strimla kycklingen och stek i het wok.",
+      "Tillsätt grönsaker i strimlor och woka några minuter.",
+      "Blanda i nudlar, soja och pressad vitlök.",
+      "Woka ihop och servera direkt."
+    ],
+    "tags": [
+      "Middag",
+      "Wok",
+      "Snabbt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 495,
+      "protein": 40.3,
+      "fat": 11.9,
+      "carbs": 52.4,
+      "fiber": 6.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-020-kycklingsallad-med-fetaost",
+    "name": "Kycklingsallad med fetaost",
+    "servings": 2,
+    "prepTime": 20,
+    "ingredients": [
+      {
+        "name": "kycklingfilé",
+        "originalText": "300 g kycklingfilé",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "sallad",
+        "originalText": "150 g sallad",
+        "amount": 150,
+        "originalAmount": 150,
+        "originalUnit": "g"
+      },
+      {
+        "name": "tomat",
+        "originalText": "2 tomat",
+        "amount": 240,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "gurka",
+        "originalText": "0,5 gurka",
+        "amount": 200,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "fetaost",
+        "originalText": "100 g fetaost",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "olivolja",
+        "originalText": "2 msk olivolja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 krm salt",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Stek kycklingen och skär i skivor.",
+      "Skölj och blanda salladsblad, tärnad tomat och gurka i en skål.",
+      "Toppa med kyckling och smulad fetaost.",
+      "Ringla över olivolja och salta lätt."
+    ],
+    "tags": [
+      "Middag",
+      "Sallad",
+      "Lätt",
+      "Lågkolhydrat"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 466,
+      "protein": 44.3,
+      "fat": 27.7,
+      "carbs": 7.2,
+      "fiber": 3.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-021-ugnsbakad-lax-med-potatis",
+    "name": "Ugnsbakad lax med potatis",
+    "servings": 4,
+    "prepTime": 35,
+    "ingredients": [
+      {
+        "name": "laxfilé",
+        "originalText": "600 g laxfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "potatis",
+        "originalText": "800 g potatis",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "citron",
+        "originalText": "1 citron",
+        "amount": 120,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "smör",
+        "originalText": "30 g smör",
+        "amount": 30,
+        "originalAmount": 30,
+        "originalUnit": "g"
+      },
+      {
+        "name": "dill",
+        "originalText": "1 knippe dill",
+        "amount": 20,
+        "originalAmount": 1,
+        "originalUnit": "knippe"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "svartpeppar",
+        "originalText": "1 krm svartpeppar",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Sätt ugnen på 200°C och koka potatisen.",
+      "Lägg laxen i en ugnsform, salta och peppra.",
+      "Lägg klickar av smör och citronskivor ovanpå.",
+      "Baka i ugnen 15–18 minuter.",
+      "Toppa med hackad dill och servera med potatisen."
+    ],
+    "tags": [
+      "Middag",
+      "Fisk",
+      "Nyttigt",
+      "Omega-3"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 527,
+      "protein": 34.6,
+      "fat": 26,
+      "carbs": 35.5,
+      "fiber": 5.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-022-krämig-laxpasta",
+    "name": "Krämig laxpasta",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "laxfilé",
+        "originalText": "400 g laxfilé",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "pasta",
+        "originalText": "320 g pasta",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "3 dl matlagningsgrädde",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "spenat",
+        "originalText": "100 g spenat",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "citron",
+        "originalText": "0,5 citron",
+        "amount": 60,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka pastan enligt paketet.",
+      "Skär laxen i bitar och stek i en panna.",
+      "Tillsätt pressad vitlök och grädde, låt sjuda.",
+      "Rör ner spenat och ett stänk citron.",
+      "Blanda i pastan och smaka av med salt."
+    ],
+    "tags": [
+      "Middag",
+      "Fisk",
+      "Krämigt",
+      "Snabbt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 621,
+      "protein": 32.7,
+      "fat": 25.6,
+      "carbs": 62.9,
+      "fiber": 3.4
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-023-torsk-i-ugn-med-citron",
+    "name": "Torsk i ugn med citron",
+    "servings": 4,
+    "prepTime": 30,
+    "ingredients": [
+      {
+        "name": "torskfilé",
+        "originalText": "600 g torskfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "citron",
+        "originalText": "1 citron",
+        "amount": 120,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "smör",
+        "originalText": "40 g smör",
+        "amount": 40,
+        "originalAmount": 40,
+        "originalUnit": "g"
+      },
+      {
+        "name": "potatis",
+        "originalText": "800 g potatis",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "persilja",
+        "originalText": "1 knippe persilja",
+        "amount": 20,
+        "originalAmount": 1,
+        "originalUnit": "knippe"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Sätt ugnen på 200°C och koka potatisen.",
+      "Lägg torsken i en smord ugnsform och salta.",
+      "Lägg smörklickar och citronskivor ovanpå.",
+      "Baka 15–20 minuter tills fisken är genomtillagad.",
+      "Strö över hackad persilja och servera med potatis."
+    ],
+    "tags": [
+      "Middag",
+      "Fisk",
+      "Nyttigt",
+      "Lågkolhydrat"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 365,
+      "protein": 31.5,
+      "fat": 9.6,
+      "carbs": 35.3,
+      "fiber": 5.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-024-fiskgratäng-med-räkor",
+    "name": "Fiskgratäng med räkor",
+    "servings": 4,
+    "prepTime": 45,
+    "ingredients": [
+      {
+        "name": "torskfilé",
+        "originalText": "500 g torskfilé",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "räkor",
+        "originalText": "150 g räkor",
+        "amount": 150,
+        "originalAmount": 150,
+        "originalUnit": "g"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "3 dl matlagningsgrädde",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "potatis",
+        "originalText": "800 g potatis",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "riven ost",
+        "originalText": "100 g riven ost",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "dill",
+        "originalText": "1 knippe dill",
+        "amount": 20,
+        "originalAmount": 1,
+        "originalUnit": "knippe"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka potatisen och sätt ugnen på 200°C.",
+      "Lägg fisken i en ugnsform, salta och häll över grädde.",
+      "Strö över räkor, dill och riven ost.",
+      "Gratinera 20 minuter.",
+      "Servera med kokt eller mosad potatis."
+    ],
+    "tags": [
+      "Middag",
+      "Fisk",
+      "Gratäng",
+      "Husmanskost"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 518,
+      "protein": 42.8,
+      "fat": 21.2,
+      "carbs": 37.6,
+      "fiber": 4.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-025-räkpasta",
+    "name": "Räkpasta",
+    "servings": 4,
+    "prepTime": 20,
+    "ingredients": [
+      {
+        "name": "pasta",
+        "originalText": "320 g pasta",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      },
+      {
+        "name": "räkor",
+        "originalText": "250 g räkor",
+        "amount": 250,
+        "originalAmount": 250,
+        "originalUnit": "g"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "3 dl matlagningsgrädde",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "körsbärstomater",
+        "originalText": "200 g körsbärstomater",
+        "amount": 200,
+        "originalAmount": 200,
+        "originalUnit": "g"
+      },
+      {
+        "name": "persilja",
+        "originalText": "1 knippe persilja",
+        "amount": 20,
+        "originalAmount": 1,
+        "originalUnit": "knippe"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka pastan.",
+      "Fräs pressad vitlök och halverade tomater i en panna.",
+      "Häll i grädde och låt sjuda.",
+      "Rör ner räkorna och värm försiktigt.",
+      "Blanda med pastan och toppa med persilja."
+    ],
+    "tags": [
+      "Middag",
+      "Fisk",
+      "Snabbt",
+      "Krämigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 486,
+      "protein": 25,
+      "fat": 13.5,
+      "carbs": 63.9,
+      "fiber": 3.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-026-tonfiskpasta",
+    "name": "Tonfiskpasta",
+    "servings": 4,
+    "prepTime": 20,
+    "ingredients": [
+      {
+        "name": "pasta",
+        "originalText": "320 g pasta",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      },
+      {
+        "name": "tonfisk",
+        "originalText": "2 burk tonfisk",
+        "amount": 300,
+        "originalAmount": 2,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "olivolja",
+        "originalText": "1 msk olivolja",
+        "amount": 14,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka pastan.",
+      "Fräs hackad lök och vitlök i olja.",
+      "Tillsätt krossade tomater och låt sjuda 10 minuter.",
+      "Rör ner avrunnen tonfisk och värm.",
+      "Blanda med pastan och salta."
+    ],
+    "tags": [
+      "Middag",
+      "Snabbt",
+      "Billigt",
+      "Skafferi"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 451,
+      "protein": 30.5,
+      "fat": 5.8,
+      "carbs": 66.4,
+      "fiber": 4.7
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-027-korv-stroganoff",
+    "name": "Korv stroganoff",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "falukorv",
+        "originalText": "400 g falukorv",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "tomatpuré",
+        "originalText": "2 msk tomatpuré",
+        "amount": 36,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "3 dl matlagningsgrädde",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "paprikapulver",
+        "originalText": "1 tsk paprikapulver",
+        "amount": 3,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "jasminris",
+        "originalText": "3 dl jasminris",
+        "amount": 270,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka riset.",
+      "Skär falukorven i stavar och stek i en panna.",
+      "Tillsätt hackad lök och fräs mjuk.",
+      "Rör ner tomatpuré och paprikapulver, häll sedan i grädden.",
+      "Låt sjuda 5 minuter och servera med ris."
+    ],
+    "tags": [
+      "Middag",
+      "Snabbt",
+      "Billigt",
+      "Barnvänligt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 654,
+      "protein": 18.7,
+      "fat": 35.1,
+      "carbs": 66.4,
+      "fiber": 2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-028-pytt-i-panna",
+    "name": "Pytt i panna",
+    "servings": 4,
+    "prepTime": 30,
+    "ingredients": [
+      {
+        "name": "potatis",
+        "originalText": "800 g potatis",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "falukorv",
+        "originalText": "300 g falukorv",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "ägg",
+        "originalText": "4 ägg",
+        "amount": 240,
+        "originalAmount": 4,
+        "originalUnit": "st"
+      },
+      {
+        "name": "smör",
+        "originalText": "30 g smör",
+        "amount": 30,
+        "originalAmount": 30,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Tärna potatis, korv och lök.",
+      "Stek potatisen gyllene i smör.",
+      "Tillsätt korv och lök, stek tills allt fått färg.",
+      "Stek ägg i en separat panna.",
+      "Servera pytten med stekt ägg och rödbetor."
+    ],
+    "tags": [
+      "Middag",
+      "Husmanskost",
+      "Rester",
+      "Billigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 518,
+      "protein": 20.3,
+      "fat": 29.4,
+      "carbs": 41,
+      "fiber": 4.8
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-029-fläskfil-med-klyftpotatis",
+    "name": "Fläskfilé med klyftpotatis",
+    "servings": 4,
+    "prepTime": 45,
+    "ingredients": [
+      {
+        "name": "fläskfilé",
+        "originalText": "600 g fläskfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "potatis",
+        "originalText": "800 g potatis",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "olivolja",
+        "originalText": "2 msk olivolja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "3 dl matlagningsgrädde",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "dijonsenap",
+        "originalText": "1 msk dijonsenap",
+        "amount": 18,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1,5 tsk salt",
+        "amount": 8,
+        "originalAmount": 1.5,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "svartpeppar",
+        "originalText": "1 krm svartpeppar",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Sätt ugnen på 200°C. Skär potatisen i klyftor, ringla på olja och salt, baka 30 min.",
+      "Bryn fläskfilén runt om och lägg in i ugnen sista 15 minuterna.",
+      "Koka ihop grädde och senap till en sås.",
+      "Skiva köttet och servera med klyftpotatis och sås."
+    ],
+    "tags": [
+      "Middag",
+      "Helg",
+      "Ugn"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 522,
+      "protein": 37.9,
+      "fat": 23.4,
+      "carbs": 37.5,
+      "fiber": 4.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-030-pannbiff-med-lök",
+    "name": "Pannbiff med lök",
+    "servings": 4,
+    "prepTime": 35,
+    "ingredients": [
+      {
+        "name": "köttfärs",
+        "originalText": "500 g köttfärs",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "2 gul lök",
+        "amount": 300,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "ströbröd",
+        "originalText": "1 dl ströbröd",
+        "amount": 60,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "1 dl mjölk",
+        "amount": 104,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "potatis",
+        "originalText": "800 g potatis",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "smör",
+        "originalText": "30 g smör",
+        "amount": 30,
+        "originalAmount": 30,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1,5 tsk salt",
+        "amount": 8,
+        "originalAmount": 1.5,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Blanda ströbröd och mjölk, låt svälla. Rör i färs och salt.",
+      "Forma till biffar och stek i smör.",
+      "Stek lökringar mjuka och gyllene.",
+      "Koka potatis.",
+      "Servera pannbiffarna med stekt lök, brunsås och potatis."
+    ],
+    "tags": [
+      "Middag",
+      "Husmanskost",
+      "Klassiker"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 534,
+      "protein": 31.2,
+      "fat": 21.2,
+      "carbs": 49.7,
+      "fiber": 6.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-031-grönsakswok-med-halloumi",
+    "name": "Grönsakswok med halloumi",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "halloumi",
+        "originalText": "400 g halloumi",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "broccoli",
+        "originalText": "300 g broccoli",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "paprika",
+        "originalText": "2 paprika",
+        "amount": 300,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "morot",
+        "originalText": "2 morot",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "nudlar",
+        "originalText": "250 g nudlar",
+        "amount": 250,
+        "originalAmount": 250,
+        "originalUnit": "g"
+      },
+      {
+        "name": "soja",
+        "originalText": "3 msk soja",
+        "amount": 54,
+        "originalAmount": 3,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "olja",
+        "originalText": "2 msk olja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      }
+    ],
+    "instructions": [
+      "Koka nudlarna.",
+      "Skär halloumi i skivor och stek gyllene, ta upp.",
+      "Woka grönsaker i strimlor med pressad vitlök.",
+      "Blanda i nudlar och soja.",
+      "Lägg tillbaka halloumin och servera."
+    ],
+    "tags": [
+      "Middag",
+      "Vegetariskt",
+      "Wok",
+      "Snabbt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 699,
+      "protein": 37,
+      "fat": 36.1,
+      "carbs": 56.3,
+      "fiber": 7
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-032-linsgryta-dahl",
+    "name": "Linsgryta (dahl)",
+    "servings": 4,
+    "prepTime": 35,
+    "ingredients": [
+      {
+        "name": "röda linser",
+        "originalText": "3 dl röda linser",
+        "amount": 255,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "kokosmjölk",
+        "originalText": "400 g kokosmjölk",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "currypasta",
+        "originalText": "2 msk currypasta",
+        "amount": 30,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "vatten",
+        "originalText": "3 dl vatten",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Fräs hackad lök, vitlök och curry i en gryta.",
+      "Tillsätt sköljda linser, krossade tomater, kokosmjölk och vatten.",
+      "Låt sjuda 20–25 minuter tills linserna är mjuka.",
+      "Smaka av med salt. Servera med ris eller bröd."
+    ],
+    "tags": [
+      "Middag",
+      "Vegetariskt",
+      "Vegan",
+      "Gryta",
+      "Billigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 479,
+      "protein": 19.6,
+      "fat": 21.8,
+      "carbs": 43.7,
+      "fiber": 9.5
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-033-vegetarisk-bönchili",
+    "name": "Vegetarisk bönchili",
+    "servings": 4,
+    "prepTime": 30,
+    "ingredients": [
+      {
+        "name": "kidneybönor",
+        "originalText": "2 burk kidneybönor",
+        "amount": 760,
+        "originalAmount": 2,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "svarta bönor",
+        "originalText": "1 burk svarta bönor",
+        "amount": 380,
+        "originalAmount": 1,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "majs",
+        "originalText": "1 burk majs",
+        "amount": 285,
+        "originalAmount": 1,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "chilipulver",
+        "originalText": "1 msk chilipulver",
+        "amount": 8,
+        "originalAmount": 1,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "spiskummin",
+        "originalText": "1 tsk spiskummin",
+        "amount": 3,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Fräs hackad lök och vitlök.",
+      "Tillsätt kryddorna och fräs en minut.",
+      "Häll i sköljda bönor, majs och krossade tomater.",
+      "Låt sjuda 20 minuter. Servera med ris eller bröd."
+    ],
+    "tags": [
+      "Middag",
+      "Vegetariskt",
+      "Vegan",
+      "Matlåda"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 447,
+      "protein": 27.3,
+      "fat": 3,
+      "carbs": 66.3,
+      "fiber": 25.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-034-halloumisallad-med-quinoa",
+    "name": "Halloumisallad med quinoa",
+    "servings": 2,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "halloumi",
+        "originalText": "250 g halloumi",
+        "amount": 250,
+        "originalAmount": 250,
+        "originalUnit": "g"
+      },
+      {
+        "name": "quinoa",
+        "originalText": "1,5 dl quinoa",
+        "amount": 135,
+        "originalAmount": 1.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vatten",
+        "originalText": "3 dl vatten",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "tomat",
+        "originalText": "2 tomat",
+        "amount": 240,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "gurka",
+        "originalText": "0,5 gurka",
+        "amount": 200,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "sallad",
+        "originalText": "100 g sallad",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "olivolja",
+        "originalText": "2 msk olivolja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      }
+    ],
+    "instructions": [
+      "Koka quinoan enligt paketet och låt svalna lite.",
+      "Stek halloumi i skivor tills gyllene.",
+      "Blanda quinoa med tärnad tomat, gurka och salladsblad.",
+      "Toppa med halloumi och ringla över olivolja."
+    ],
+    "tags": [
+      "Middag",
+      "Vegetariskt",
+      "Sallad",
+      "Nyttigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 820,
+      "protein": 43.1,
+      "fat": 51,
+      "carbs": 48,
+      "fiber": 7.5
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-035-krämig-tomatsoppa",
+    "name": "Krämig tomatsoppa",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "krossade tomater",
+        "originalText": "800 g krossade tomater",
+        "amount": 800,
+        "originalAmount": 800,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "2 dl matlagningsgrädde",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "grönsaksbuljong",
+        "originalText": "1 grönsaksbuljong",
+        "amount": 10,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vatten",
+        "originalText": "4 dl vatten",
+        "amount": 400,
+        "originalAmount": 4,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "basilika",
+        "originalText": "1 knippe basilika",
+        "amount": 15,
+        "originalAmount": 1,
+        "originalUnit": "knippe"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Fräs hackad lök och vitlök i en kastrull.",
+      "Tillsätt krossade tomater, vatten och buljong.",
+      "Låt sjuda 15 minuter och mixa slät.",
+      "Rör ner grädde och smaka av med salt.",
+      "Toppa med basilika. Servera med bröd."
+    ],
+    "tags": [
+      "Soppa",
+      "Vegetariskt",
+      "Snabbt",
+      "Billigt"
+    ],
+    "category": "Soppa",
+    "nutritionPerServing": {
+      "kcal": 167,
+      "protein": 5.2,
+      "fat": 8.3,
+      "carbs": 15.7,
+      "fiber": 3.9
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-036-morotssoppa-med-ingefära",
+    "name": "Morotssoppa med ingefära",
+    "servings": 4,
+    "prepTime": 30,
+    "ingredients": [
+      {
+        "name": "morot",
+        "originalText": "700 g morot",
+        "amount": 700,
+        "originalAmount": 700,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "ingefära",
+        "originalText": "20 g ingefära",
+        "amount": 20,
+        "originalAmount": 20,
+        "originalUnit": "g"
+      },
+      {
+        "name": "kokosmjölk",
+        "originalText": "400 g kokosmjölk",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "grönsaksbuljong",
+        "originalText": "1 grönsaksbuljong",
+        "amount": 10,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vatten",
+        "originalText": "5 dl vatten",
+        "amount": 500,
+        "originalAmount": 5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Skala och skiva morötterna. Fräs lök och riven ingefära.",
+      "Tillsätt morötter, vatten och buljong. Koka tills mjukt.",
+      "Mixa slät och rör ner kokosmjölk.",
+      "Smaka av med salt och servera med bröd."
+    ],
+    "tags": [
+      "Soppa",
+      "Vegetariskt",
+      "Vegan",
+      "Nyttigt"
+    ],
+    "category": "Soppa",
+    "nutritionPerServing": {
+      "kcal": 285,
+      "protein": 4.2,
+      "fat": 20.5,
+      "carbs": 18.9,
+      "fiber": 5.4
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-037-ärtsoppa",
+    "name": "Ärtsoppa",
+    "servings": 4,
+    "prepTime": 90,
+    "ingredients": [
+      {
+        "name": "gula ärtor",
+        "originalText": "4 dl gula ärtor",
+        "amount": 340,
+        "originalAmount": 4,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vatten",
+        "originalText": "12 dl vatten",
+        "amount": 1200,
+        "originalAmount": 12,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "fläsklägg",
+        "originalText": "300 g fläsklägg",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "timjan",
+        "originalText": "1 tsk timjan",
+        "amount": 2,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Skölj ärtorna och lägg i blöt om de är torra.",
+      "Koka ärtorna i vatten med fläsklägg och hackad lök.",
+      "Skumma av och låt sjuda tills ärtorna är mjuka, ca 1–1,5 timme.",
+      "Ta upp köttet, skär i bitar och lägg tillbaka.",
+      "Krydda med timjan och salt. Servera med senap."
+    ],
+    "tags": [
+      "Soppa",
+      "Klassiker",
+      "Husmanskost",
+      "Billigt"
+    ],
+    "category": "Soppa",
+    "nutritionPerServing": {
+      "kcal": 469,
+      "protein": 32.7,
+      "fat": 15.3,
+      "carbs": 45.1,
+      "fiber": 13.7
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-038-broccolisoppa",
+    "name": "Broccolisoppa",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "broccoli",
+        "originalText": "500 g broccoli",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "potatis",
+        "originalText": "200 g potatis",
+        "amount": 200,
+        "originalAmount": 200,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "2 dl matlagningsgrädde",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "grönsaksbuljong",
+        "originalText": "1 grönsaksbuljong",
+        "amount": 10,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vatten",
+        "originalText": "6 dl vatten",
+        "amount": 600,
+        "originalAmount": 6,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Fräs hackad lök i en kastrull.",
+      "Tillsätt broccolibuketter, tärnad potatis, vatten och buljong.",
+      "Koka tills grönsakerna är mjuka, ca 12 minuter.",
+      "Mixa slät och rör ner grädde. Smaka av med salt."
+    ],
+    "tags": [
+      "Soppa",
+      "Vegetariskt",
+      "Snabbt",
+      "Lågkolhydrat"
+    ],
+    "category": "Soppa",
+    "nutritionPerServing": {
+      "kcal": 188,
+      "protein": 6.7,
+      "fat": 8.2,
+      "carbs": 18.4,
+      "fiber": 5.5
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-039-pasta-carbonara",
+    "name": "Pasta carbonara",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "spaghetti",
+        "originalText": "320 g spaghetti",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      },
+      {
+        "name": "bacon",
+        "originalText": "140 g bacon",
+        "amount": 140,
+        "originalAmount": 140,
+        "originalUnit": "g"
+      },
+      {
+        "name": "ägg",
+        "originalText": "3 ägg",
+        "amount": 180,
+        "originalAmount": 3,
+        "originalUnit": "st"
+      },
+      {
+        "name": "riven parmesan",
+        "originalText": "80 g riven parmesan",
+        "amount": 80,
+        "originalAmount": 80,
+        "originalUnit": "g"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "1 vitlök",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "svartpeppar",
+        "originalText": "1 tsk svartpeppar",
+        "amount": 2,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka spaghettin.",
+      "Stek bacon knaprigt med pressad vitlök.",
+      "Vispa ihop ägg och riven parmesan.",
+      "Blanda het pasta med bacon, dra av värmen och rör i äggblandningen snabbt.",
+      "Toppa med rikligt med svartpeppar."
+    ],
+    "tags": [
+      "Middag",
+      "Pasta",
+      "Klassiker",
+      "Snabbt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 555,
+      "protein": 27.5,
+      "fat": 22.1,
+      "carbs": 59.2,
+      "fiber": 2.6
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-040-krämig-pasta-med-kyckling-och-pesto",
+    "name": "Krämig pasta med kyckling och pesto",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "pasta",
+        "originalText": "320 g pasta",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      },
+      {
+        "name": "kycklingfilé",
+        "originalText": "400 g kycklingfilé",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "3 dl matlagningsgrädde",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "pesto",
+        "originalText": "1 dl pesto",
+        "amount": 90,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "körsbärstomater",
+        "originalText": "200 g körsbärstomater",
+        "amount": 200,
+        "originalAmount": 200,
+        "originalUnit": "g"
+      },
+      {
+        "name": "riven parmesan",
+        "originalText": "50 g riven parmesan",
+        "amount": 50,
+        "originalAmount": 50,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka pastan.",
+      "Skär kycklingen i bitar och stek genom.",
+      "Tillsätt grädde, pesto och halverade tomater, låt sjuda.",
+      "Blanda med pastan och toppa med parmesan."
+    ],
+    "tags": [
+      "Middag",
+      "Pasta",
+      "Krämigt",
+      "Snabbt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 677,
+      "protein": 41,
+      "fat": 27.4,
+      "carbs": 64.3,
+      "fiber": 3.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-041-pasta-pomodoro",
+    "name": "Pasta pomodoro",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "pasta",
+        "originalText": "320 g pasta",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "1 gul lök",
+        "amount": 150,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "olivolja",
+        "originalText": "2 msk olivolja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "basilika",
+        "originalText": "1 knippe basilika",
+        "amount": 15,
+        "originalAmount": 1,
+        "originalUnit": "knippe"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka pastan.",
+      "Fräs hackad lök och vitlök i olivolja.",
+      "Tillsätt krossade tomater och låt sjuda 15 minuter.",
+      "Smaka av med salt och blanda i pastan.",
+      "Toppa med färsk basilika."
+    ],
+    "tags": [
+      "Middag",
+      "Pasta",
+      "Vegetariskt",
+      "Vegan",
+      "Billigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 401,
+      "protein": 11.8,
+      "fat": 8.6,
+      "carbs": 66.4,
+      "fiber": 4.8
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-042-potatisgratäng",
+    "name": "Potatisgratäng",
+    "servings": 4,
+    "prepTime": 70,
+    "ingredients": [
+      {
+        "name": "potatis",
+        "originalText": "1000 g potatis",
+        "amount": 1000,
+        "originalAmount": 1000,
+        "originalUnit": "g"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "5 dl matlagningsgrädde",
+        "amount": 500,
+        "originalAmount": 5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vitlök",
+        "originalText": "2 vitlök",
+        "amount": 10,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "riven ost",
+        "originalText": "100 g riven ost",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      },
+      {
+        "name": "svartpeppar",
+        "originalText": "1 krm svartpeppar",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Sätt ugnen på 200°C. Skala och skiva potatisen tunt.",
+      "Lägg i en smord form och häll över grädde blandad med pressad vitlök.",
+      "Salta och peppra, strö över riven ost.",
+      "Gratinera 45–55 minuter tills potatisen är mjuk och ytan gyllene."
+    ],
+    "tags": [
+      "Middag",
+      "Gratäng",
+      "Tillbehör",
+      "Helg"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 503,
+      "protein": 15.2,
+      "fat": 27.3,
+      "carbs": 48.6,
+      "fiber": 5.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-043-janssons-frestelse",
+    "name": "Janssons frestelse",
+    "servings": 4,
+    "prepTime": 70,
+    "ingredients": [
+      {
+        "name": "potatis",
+        "originalText": "1000 g potatis",
+        "amount": 1000,
+        "originalAmount": 1000,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "2 gul lök",
+        "amount": 300,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "ansjovis",
+        "originalText": "1 burk ansjovis",
+        "amount": 125,
+        "originalAmount": 1,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "4 dl matlagningsgrädde",
+        "amount": 400,
+        "originalAmount": 4,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "ströbröd",
+        "originalText": "1 dl ströbröd",
+        "amount": 60,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "smör",
+        "originalText": "30 g smör",
+        "amount": 30,
+        "originalAmount": 30,
+        "originalUnit": "g"
+      }
+    ],
+    "instructions": [
+      "Sätt ugnen på 200°C. Skär potatis och lök i strimlor.",
+      "Varva potatis, lök och ansjovis i en smord form.",
+      "Häll över hälften av grädden och ansjovisspadet.",
+      "Strö över ströbröd och klicka smör.",
+      "Grädda ca 50 minuter, häll på resten av grädden halvvägs."
+    ],
+    "tags": [
+      "Middag",
+      "Husmanskost",
+      "Gratäng",
+      "Helg"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 557,
+      "protein": 14.8,
+      "fat": 26.2,
+      "carbs": 62.2,
+      "fiber": 7.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-044-pastasallad-med-kyckling",
+    "name": "Pastasallad med kyckling",
+    "servings": 4,
+    "prepTime": 25,
+    "ingredients": [
+      {
+        "name": "pasta",
+        "originalText": "300 g pasta",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "kycklingfilé",
+        "originalText": "400 g kycklingfilé",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "körsbärstomater",
+        "originalText": "200 g körsbärstomater",
+        "amount": 200,
+        "originalAmount": 200,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gurka",
+        "originalText": "0,5 gurka",
+        "amount": 200,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "fetaost",
+        "originalText": "100 g fetaost",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "pesto",
+        "originalText": "0,5 dl pesto",
+        "amount": 45,
+        "originalAmount": 0.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka pastan och låt svalna.",
+      "Stek kycklingen och skär i bitar.",
+      "Blanda pasta, kyckling, halverade tomater och tärnad gurka.",
+      "Rör ner pesto och smula över fetaost."
+    ],
+    "tags": [
+      "Sallad",
+      "Matlåda",
+      "Kall",
+      "Förbered"
+    ],
+    "category": "Sallad",
+    "nutritionPerServing": {
+      "kcal": 511,
+      "protein": 36.9,
+      "fat": 13.1,
+      "carbs": 58.2,
+      "fiber": 3.2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-045-tonfisksallad",
+    "name": "Tonfisksallad",
+    "servings": 2,
+    "prepTime": 15,
+    "ingredients": [
+      {
+        "name": "tonfisk",
+        "originalText": "2 burk tonfisk",
+        "amount": 300,
+        "originalAmount": 2,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "sallad",
+        "originalText": "150 g sallad",
+        "amount": 150,
+        "originalAmount": 150,
+        "originalUnit": "g"
+      },
+      {
+        "name": "majs",
+        "originalText": "1 burk majs",
+        "amount": 285,
+        "originalAmount": 1,
+        "originalUnit": "burk"
+      },
+      {
+        "name": "tomat",
+        "originalText": "2 tomat",
+        "amount": 240,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "rödlök",
+        "originalText": "0,5 rödlök",
+        "amount": 75,
+        "originalAmount": 0.5,
+        "originalUnit": "st"
+      },
+      {
+        "name": "olivolja",
+        "originalText": "2 msk olivolja",
+        "amount": 28,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      }
+    ],
+    "instructions": [
+      "Skölj och blanda salladsblad i en skål.",
+      "Tillsätt avrunnen tonfisk, majs, tärnad tomat och tunt skivad rödlök.",
+      "Ringla över olivolja och blanda."
+    ],
+    "tags": [
+      "Sallad",
+      "Snabbt",
+      "Lågkolhydrat",
+      "Billigt"
+    ],
+    "category": "Sallad",
+    "nutritionPerServing": {
+      "kcal": 458,
+      "protein": 44,
+      "fat": 17.4,
+      "carbs": 29.8,
+      "fiber": 7.6
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-046-makaroner-med-falukorv",
+    "name": "Makaroner med falukorv",
+    "servings": 4,
+    "prepTime": 20,
+    "ingredients": [
+      {
+        "name": "makaroner",
+        "originalText": "320 g makaroner",
+        "amount": 320,
+        "originalAmount": 320,
+        "originalUnit": "g"
+      },
+      {
+        "name": "falukorv",
+        "originalText": "400 g falukorv",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "ketchup",
+        "originalText": "1 dl ketchup",
+        "amount": 110,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "smör",
+        "originalText": "20 g smör",
+        "amount": 20,
+        "originalAmount": 20,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka makaronerna.",
+      "Skär falukorven i bitar och stek i smör.",
+      "Servera makaroner med stekt korv och ketchup."
+    ],
+    "tags": [
+      "Middag",
+      "Barnvänligt",
+      "Snabbt",
+      "Billigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 625,
+      "protein": 21,
+      "fat": 28.4,
+      "carbs": 71.6,
+      "fiber": 2.7
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-047-ugnspannkaka-med-bacon",
+    "name": "Ugnspannkaka med bacon",
+    "servings": 4,
+    "prepTime": 40,
+    "ingredients": [
+      {
+        "name": "vetemjöl",
+        "originalText": "3 dl vetemjöl",
+        "amount": 180,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "mjölk",
+        "originalText": "6 dl mjölk",
+        "amount": 624,
+        "originalAmount": 6,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "ägg",
+        "originalText": "3 ägg",
+        "amount": 180,
+        "originalAmount": 3,
+        "originalUnit": "st"
+      },
+      {
+        "name": "bacon",
+        "originalText": "140 g bacon",
+        "amount": 140,
+        "originalAmount": 140,
+        "originalUnit": "g"
+      },
+      {
+        "name": "smör",
+        "originalText": "20 g smör",
+        "amount": 20,
+        "originalAmount": 20,
+        "originalUnit": "g"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 krm salt",
+        "amount": 1,
+        "originalAmount": 1,
+        "originalUnit": "krm"
+      }
+    ],
+    "instructions": [
+      "Sätt ugnen på 225°C. Vispa ihop mjöl, mjölk, ägg och salt.",
+      "Smält smör i en långpanna.",
+      "Lägg i baconbitar och häll över smeten.",
+      "Grädda 25–30 minuter tills gyllene. Servera med lingon."
+    ],
+    "tags": [
+      "Middag",
+      "Barnvänligt",
+      "Ugn",
+      "Billigt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 446,
+      "protein": 20.1,
+      "fat": 22.2,
+      "carbs": 40.4,
+      "fiber": 1.4
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-048-flygande-jakob",
+    "name": "Flygande Jakob",
+    "servings": 4,
+    "prepTime": 40,
+    "ingredients": [
+      {
+        "name": "kycklingfilé",
+        "originalText": "600 g kycklingfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "bacon",
+        "originalText": "140 g bacon",
+        "amount": 140,
+        "originalAmount": 140,
+        "originalUnit": "g"
+      },
+      {
+        "name": "banan",
+        "originalText": "2 banan",
+        "amount": 240,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vispgrädde",
+        "originalText": "3 dl vispgrädde",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "chilisås",
+        "originalText": "1 dl chilisås",
+        "amount": 110,
+        "originalAmount": 1,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "jasminris",
+        "originalText": "3 dl jasminris",
+        "amount": 270,
+        "originalAmount": 3,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "salt",
+        "originalText": "1 tsk salt",
+        "amount": 5,
+        "originalAmount": 1,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Koka riset och sätt ugnen på 225°C.",
+      "Stek kycklingbitar och lägg i en ugnsform.",
+      "Vispa grädden och blanda med chilisås, bred över kycklingen.",
+      "Toppa med stekt bacon och bananskivor.",
+      "Gratinera 15–20 minuter. Servera med ris."
+    ],
+    "tags": [
+      "Middag",
+      "Gratäng",
+      "Klassiker",
+      "Fredagsmys"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 886,
+      "protein": 46.2,
+      "fat": 41,
+      "carbs": 79.2,
+      "fiber": 2
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-049-köttgryta-med-rotfrukter",
+    "name": "Köttgryta med rotfrukter",
+    "servings": 4,
+    "prepTime": 120,
+    "ingredients": [
+      {
+        "name": "högrev",
+        "originalText": "700 g högrev",
+        "amount": 700,
+        "originalAmount": 700,
+        "originalUnit": "g"
+      },
+      {
+        "name": "gul lök",
+        "originalText": "2 gul lök",
+        "amount": 300,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "morot",
+        "originalText": "3 morot",
+        "amount": 300,
+        "originalAmount": 3,
+        "originalUnit": "st"
+      },
+      {
+        "name": "potatis",
+        "originalText": "500 g potatis",
+        "amount": 500,
+        "originalAmount": 500,
+        "originalUnit": "g"
+      },
+      {
+        "name": "köttbuljong",
+        "originalText": "1 köttbuljong",
+        "amount": 10,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vatten",
+        "originalText": "6 dl vatten",
+        "amount": 600,
+        "originalAmount": 6,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "vetemjöl",
+        "originalText": "2 msk vetemjöl",
+        "amount": 18,
+        "originalAmount": 2,
+        "originalUnit": "msk"
+      },
+      {
+        "name": "salt",
+        "originalText": "1,5 tsk salt",
+        "amount": 8,
+        "originalAmount": 1.5,
+        "originalUnit": "tsk"
+      }
+    ],
+    "instructions": [
+      "Skär köttet i bitar och bryn i omgångar.",
+      "Fräs hackad lök, pudra över mjöl.",
+      "Tillsätt vatten, buljong och morot i bitar.",
+      "Låt sjuda under lock ca 1,5 timme tills köttet är mört.",
+      "Lägg i potatis sista 20 minuterna. Smaka av med salt."
+    ],
+    "tags": [
+      "Middag",
+      "Gryta",
+      "Helg",
+      "Matlåda"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 492,
+      "protein": 38.1,
+      "fat": 21.7,
+      "carbs": 34.7,
+      "fiber": 6.1
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-050-pulled-chicken-wraps",
+    "name": "Pulled chicken-wraps",
+    "servings": 4,
+    "prepTime": 35,
+    "ingredients": [
+      {
+        "name": "kycklingfilé",
+        "originalText": "600 g kycklingfilé",
+        "amount": 600,
+        "originalAmount": 600,
+        "originalUnit": "g"
+      },
+      {
+        "name": "bbq-sås",
+        "originalText": "1,5 dl bbq-sås",
+        "amount": 165,
+        "originalAmount": 1.5,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "tortilla",
+        "originalText": "8 tortilla",
+        "amount": 320,
+        "originalAmount": 8,
+        "originalUnit": "st"
+      },
+      {
+        "name": "sallad",
+        "originalText": "100 g sallad",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "tomat",
+        "originalText": "2 tomat",
+        "amount": 240,
+        "originalAmount": 2,
+        "originalUnit": "st"
+      },
+      {
+        "name": "riven ost",
+        "originalText": "100 g riven ost",
+        "amount": 100,
+        "originalAmount": 100,
+        "originalUnit": "g"
+      },
+      {
+        "name": "crème fraiche",
+        "originalText": "2 dl crème fraiche",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "dl"
+      }
+    ],
+    "instructions": [
+      "Koka eller stek kycklingen tills genomstekt och dra isär den med två gafflar.",
+      "Blanda kycklingen med bbq-sås.",
+      "Värm tortillabröden.",
+      "Fyll med kyckling, sallad, tomat, ost och crème fraiche. Rulla ihop."
+    ],
+    "tags": [
+      "Middag",
+      "Fredagsmys",
+      "Barnvänligt"
+    ],
+    "category": "Middag",
+    "nutritionPerServing": {
+      "kcal": 733,
+      "protein": 49.9,
+      "fat": 32.5,
+      "carbs": 60.4,
+      "fiber": 3.7
+    },
+    "createdAt": 0
+  },
+  {
+    "id": "lib-051-fisksoppa",
+    "name": "Fisksoppa",
+    "servings": 4,
+    "prepTime": 35,
+    "ingredients": [
+      {
+        "name": "laxfilé",
+        "originalText": "300 g laxfilé",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "torskfilé",
+        "originalText": "300 g torskfilé",
+        "amount": 300,
+        "originalAmount": 300,
+        "originalUnit": "g"
+      },
+      {
+        "name": "räkor",
+        "originalText": "150 g räkor",
+        "amount": 150,
+        "originalAmount": 150,
+        "originalUnit": "g"
+      },
+      {
+        "name": "matlagningsgrädde",
+        "originalText": "2 dl matlagningsgrädde",
+        "amount": 200,
+        "originalAmount": 2,
+        "originalUnit": "dl"
+      },
+      {
+        "name": "krossade tomater",
+        "originalText": "400 g krossade tomater",
+        "amount": 400,
+        "originalAmount": 400,
+        "originalUnit": "g"
+      },
+      {
+        "name": "fänkål",
+        "originalText": "1 fänkål",
+        "amount": 250,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "fiskbuljong",
+        "originalText": "1 fiskbuljong",
+        "amount": 10,
+        "originalAmount": 1,
+        "originalUnit": "st"
+      },
+      {
+        "name": "vatten",
+        "originalText": "5 dl vatten",
+        "amount": 500,
+        "originalAmount": 5,
+        "originalUnit": "dl"
+      }
+    ],
+    "instructions": [
+      "Fräs skivad fänkål i en gryta.",
+      "Tillsätt krossade tomater, vatten och buljong. Låt sjuda 10 minuter.",
+      "Rör ner grädde.",
+      "Lägg i fisken i bitar och sjud försiktigt 5 minuter.",
+      "Tillsätt räkorna sist och servera med bröd."
+    ],
+    "tags": [
+      "Soppa",
+      "Fisk",
+      "Fylligt",
+      "Nyttigt"
+    ],
+    "category": "Soppa",
+    "nutritionPerServing": {
+      "kcal": 383,
+      "protein": 39.9,
+      "fat": 18.9,
+      "carbs": 10.2,
+      "fiber": 3.4
+    },
+    "createdAt": 0
+  }
+]
