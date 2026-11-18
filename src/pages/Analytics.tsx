@@ -4,7 +4,7 @@ import {
   getMonthlyData, formatSEK, formatMonth,
   getSpendingCalendar, getCategoryTotals
 } from '../utils/calculations';
-import { CATEGORY_COLORS, EXPENSE_CATEGORIES } from '../utils/categorize';
+import { CATEGORY_COLORS, EXPENSE_CATEGORIES, diagnoseUncategorized } from '../utils/categorize';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Treemap, ComposedChart,
@@ -198,6 +198,11 @@ export default function Analytics() {
     };
   });
 
+  // ── Uncategorised spend diagnosis ("Övrigt" breakdown) ─────────────────────
+  const uncategorized = diagnoseUncategorized(yearTxs, 8);
+  const uncatTotal = uncategorized.reduce((s, u) => s + u.total, 0);
+  const uncatShare = totalExpenses > 0 ? (uncatTotal / totalExpenses) * 100 : 0;
+
   const kpis = [
     { label: `Totala utgifter ${selectedYear}`, value: formatSEK(totalExpenses), color: 'text-coral' },
     { label: 'Snitt per månad', value: formatSEK(Math.round(avgMonthly)), color: 'text-ink' },
@@ -361,6 +366,37 @@ export default function Analytics() {
               </div>
             </motion.div>
           </div>
+
+          {/* ── Uncategorised spend diagnosis ───────────────────────────────── */}
+          {uncategorized.length > 0 && (
+            <motion.div {...FADE} transition={{ duration: 0.3, delay: 0.16 }}>
+              <div className="vh-card p-5">
+                <div className="flex items-end justify-between gap-3 flex-wrap mb-4">
+                  <div>
+                    <h3 className="font-display text-ink text-[15px]">Okategoriserat (Övrigt)</h3>
+                    <p className="text-xs text-faint mt-0.5">
+                      {formatSEK(uncatTotal)} ({uncatShare.toFixed(0)}% av utgifterna) saknar kategori — störst först. Kategorisera dem i Transaktioner så lär sig appen framåt.
+                    </p>
+                  </div>
+                  <button onClick={() => setPage('transactions')}
+                    className="flex items-center gap-1.5 text-xs font-medium text-gold hover:text-gold-2">
+                    Till transaktioner <IArrowRight size={13} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                  {uncategorized.map(u => (
+                    <div key={u.merchant} className="flex items-center justify-between gap-3 py-1.5 border-b border-line">
+                      <span className="text-sm text-mut truncate" title={u.sample}>{u.merchant}</span>
+                      <span className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-[11px] text-faint tabular-nums">{u.count}×</span>
+                        <span className="text-sm text-ink tabular-nums">{formatSEK(u.total)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* ── Stacked category over time + radar ──────────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">

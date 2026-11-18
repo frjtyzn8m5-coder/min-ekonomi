@@ -499,6 +499,18 @@ export interface CalendarSource {
   lastFetched?: string; // ISO datetime
 }
 
+// Recurrence (regelbundna påminnelser / events)
+export type RecurrenceFreq = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+export interface RecurrenceRule {
+  freq: RecurrenceFreq;
+  interval?: number;    // var N:e enhet (default 1)
+  byWeekday?: number[]; // för weekly: 0=Mån .. 6=Sön
+  byMonthDay?: number;  // för monthly: 1..31, eller negativt (-1 = sista dagen)
+  count?: number;       // max antal tillfällen från seriens start
+  until?: string;       // YYYY-MM-DD, inklusivt slutdatum
+}
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -512,6 +524,11 @@ export interface CalendarEvent {
   description?: string;
   url?: string;
   uid?: string;         // iCal UID for deduplication
+  // ── Fas 8: regelbundna påminnelser + ICS-import ──
+  recurrence?: RecurrenceRule; // om satt expanderas eventet till flera tillfällen
+  active?: boolean;     // påminnelse av/på (default true)
+  imported?: boolean;   // importerad från ICS-fil/text
+  createdAt?: number;   // unix ms
 }
 
 // ── Training Program types (Fas 6) ────────────────────────────────────────────
