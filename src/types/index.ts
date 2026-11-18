@@ -93,6 +93,40 @@ export interface UserProfile {
   appVersion: string            // '1.0.0'
 }
 
+// ── Menscykel – rik loggning + historik-baserad prognos ──────────────────────
+
+export type CycleFlow = 'spotting' | 'light' | 'medium' | 'heavy'
+export type CycleMood = 'bra' | 'neutral' | 'låg' | 'irriterad' | 'ångest'
+export type CycleConfidence = 'low' | 'medium' | 'high'
+
+/** En loggpost per dag. id === date (YYYY-MM-DD) → ett dokument per dygn. */
+export interface CycleLog {
+  id: string                 // = date (YYYY-MM-DD)
+  date: string               // YYYY-MM-DD
+  periodStart?: boolean      // mens börjar denna dag (startpunkt för en ny cykel)
+  periodEnd?: boolean        // sista mensdagen
+  flow?: CycleFlow           // blödningsmängd
+  symptoms?: string[]        // t.ex. 'Kramp', 'Huvudvärk', 'Ömma bröst' …
+  mood?: CycleMood
+  energy?: number            // 1..5
+  bbt?: number               // basaltemperatur °C
+  notes?: string
+  updatedAt: number          // unix ms
+}
+
+/** Resultat av historik-baserad prognos (se utils/cyclePredict.ts). */
+export interface CyclePrediction {
+  avgCycleLength: number           // dagar (historik eller profil-fallback)
+  avgPeriodLength: number          // dagar
+  cycleLengthStdDev: number        // spridning i cykellängd (dagar)
+  sampleSize: number               // antal observerade cykler (gap mellan starter)
+  confidence: CycleConfidence
+  predictedNextStart: string | null // YYYY-MM-DD, framrullat till närmaste framtida
+  predictionWindow: number         // ± dagar runt prognosen
+  observedCycleLengths: number[]   // senaste observerade cykellängder (för trend)
+  source: 'history' | 'profile'    // vad prognosen vilar på
+}
+
 // ── Exercise types (Sprint 2) ─────────────────────────────────────────────────
 
 export type ExerciseCategory = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core' | 'cardio' | 'full_body'

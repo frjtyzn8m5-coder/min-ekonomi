@@ -14,6 +14,7 @@ import {
 import { IDumbbell, ITrend } from '../../components/ui/Icons';
 import { getExerciseByName, EQUIPMENT_LABELS } from '../../utils/exerciseUtils';
 import { saveWorkoutProgram } from '../../lib/fitnessDb';
+import { isDemoMode } from '../../lib/demoData';
 import {
   generateProgram, GROUP_LABELS,
   type GeneratedProgram, type GenerateProgramOptions, type ProgramFocus, type MuscleGroup,
@@ -477,7 +478,7 @@ export default function WorkoutProgramPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || isDemoMode()) { setLoading(false); return; }
     getDoc(doc(db, 'users', user.uid, 'fitness', 'workoutProgram')).then(snap => {
       if (snap.exists()) setProgram(snap.data() as WorkoutProgram);
       setLoading(false);
