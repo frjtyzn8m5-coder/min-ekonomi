@@ -1,6 +1,9 @@
 import type { FitnessProfile, NutritionSettings, FoodEntry } from '../types';
+import { mifflinBMR, katchBMR, computeAdaptiveTDEE, computeMacroTargets } from './nutritionEngine';
 
 // ─── BMR Formulas ─────────────────────────────────────────────────────────────
+// Mifflin + Katch delegeras till nutritionEngine (EN implementation). Harris-Benedict
+// finns bara här eftersom motorn medvetet bara modellerar Mifflin/Katch.
 
 interface BMRInput {
   gender: 'male' | 'female';
@@ -15,8 +18,7 @@ export function calcBMR(input: BMRInput, formula: NutritionSettings['bmrFormula'
 
   if (formula === 'katch' && bodyFatPercent != null) {
     // Katch-McArdle: needs lean body mass
-    const lbm = weight * (1 - bodyFatPercent / 100);
-    return 370 + 21.6 * lbm;
+    return katchBMR(weight * (1 - bodyFatPercent / 100));
   }
 
   if (formula === 'harris') {
@@ -27,9 +29,7 @@ export function calcBMR(input: BMRInput, formula: NutritionSettings['bmrFormula'
   }
 
   // Mifflin-St Jeor (default)
-  return gender === 'male'
-    ? 10 * weight + 6.25 * height - 5 * age + 5
-    : 10 * weight + 6.25 * height - 5 * age - 161;
+  return mifflinBMR(gender, weight, height, age);
 }
 
 export function calcTDEE(bmr: number, activityLevel: number): number {
@@ -37,9 +37,7 @@ export function calcTDEE(bmr: number, activityLevel: number): number {
 }
 
 // ─── Adaptive TDEE ────────────────────────────────────────────────────────────
-// Uses rolling 4-week average of actual intake + weight change to estimate true TDEE.
-// TDEE_adaptive = avgCalories - (weightChangePer7Days * 7700 / 7)
-// 7700 kcal ≈ 1 kg body fat
+// Rolling average intake + weight change → true TDEE. Formula lives in the engine.
 
 interface WeeklyData {
   avgCalories: number; // avg daily kcal over period
@@ -47,8 +45,7 @@ interface WeeklyData {
 }
 
 export function calcAdaptiveTDEE(data: WeeklyData): number {
-  const caloriesFromFat = data.weightChangePer7Days * 7700 / 7;
-  return Math.round(data.avgCalories - caloriesFromFat);
+  return computeAdaptiveTDEE(data.avgCalories, data.weightChangePer7Days);
 }
 
 // ─── Macro Targets ────────────────────────────────────────────────────────────
@@ -60,32 +57,19 @@ interface MacroTargets {
   fat: number;     // g
 }
 
+const GOAL_MAP: Record<NutritionSettings['goal'], 'lose_fat' | 'gain_muscle' | 'maintain'> = {
+  lose_fat: 'lose_fat',
+  gain_muscle: 'gain_muscle',
+  maintain: 'maintain',
+};
+
 export function calcMacroTargets(
   tdee: number,
   goal: NutritionSettings['goal'],
   weightKg: number
 ): MacroTargets {
-  let calories: number;
-
-  switch (goal) {
-    case 'lose_fat':
-      calories = Math.round(tdee * 0.8); // 20% deficit
-      break;
-    case 'gain_muscle':
-      calories = Math.round(tdee * 1.1); // 10% surplus
-      break;
-    default:
-      calories = tdee;
-  }
-
-  // Protein: 2.0g/kg body weight
-  const protein = Math.round(weightKg * 2.0);
-  // Fat: 25% of calories
-  const fat = Math.round((calories * 0.25) / 9);
-  // Carbs: remainder
-  const carbs = Math.round((calories - protein * 4 - fat * 9) / 4);
-
-  return { calories, protein, carbs: Math.max(0, carbs), fat };
+  const r = computeMacroTargets({ tdee, weightKg, goal: GOAL_MAP[goal] });
+  return { calories: r.calorieTarget, protein: r.proteinG, carbs: r.carbG, fat: r.fatG };
 }
 
 // ─── Daily Nutrition Summary ──────────────────────────────────────────────────

@@ -3,10 +3,11 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useStore } from '../../store/useStore';
 import { loadRecipes, loadPantry, loadPriceDB } from '../../lib/pantryDb';
 import { buildShoppingList, type PlannedRecipe } from '../../utils/shoppingEngine';
-import { RefreshCw, X, ShoppingCart, Settings, Check, Shuffle, Package } from 'lucide-react';
+import { RefreshCw, X, ShoppingCart, Settings, Check, Shuffle, Package, Box } from 'lucide-react';
 import { IFlame, IUtensils, IMoon } from '../../components/ui/Icons';
 import type { Recipe, PantryItem, PriceEntry } from '../../types';
 import PageBanner from '../../components/ui/PageBanner';
+import MatladorPlanner from '../../components/fitness/MatladorPlanner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -534,7 +535,7 @@ export default function MealPlan() {
   const [priceDB, setPriceDB] = useState<PriceEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<WeekPlan>(emptyWeek);
-  const [activeTab, setActiveTab] = useState<'plan' | 'shopping'>('plan');
+  const [activeTab, setActiveTab] = useState<'plan' | 'shopping' | 'matlador'>('plan');
   const [showSettings, setShowSettings] = useState(false);
   const [selectedDay, setSelectedDay] = useState(0);
 
@@ -604,7 +605,7 @@ export default function MealPlan() {
       {/* Tabs */}
       <div className="border-b border-line">
         <div className="flex max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
-          {(['plan', 'shopping'] as const).map(tab => (
+          {(['plan', 'shopping', 'matlador'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -612,7 +613,11 @@ export default function MealPlan() {
                 activeTab === tab ? 'border-gold text-gold' : 'border-transparent text-mut hover:text-ink'
               }`}
             >
-              {tab === 'plan' ? '📅 Plan' : <><ShoppingCart size={14} />Inköpslista</>}
+              {tab === 'plan'
+                ? '📅 Plan'
+                : tab === 'shopping'
+                  ? <><ShoppingCart size={14} />Inköpslista</>
+                  : <><Box size={14} />Matlådor</>}
             </button>
           ))}
         </div>
@@ -621,6 +626,10 @@ export default function MealPlan() {
       {activeTab === 'shopping' ? (
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
           <ShoppingList plan={plan} recipes={recipes} pantry={pantry} priceDB={priceDB} />
+        </div>
+      ) : activeTab === 'matlador' ? (
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
+          <MatladorPlanner recipes={recipes} />
         </div>
       ) : (
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 space-y-4">

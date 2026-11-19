@@ -6,6 +6,7 @@ import { useStore } from '../../store/useStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { saveFoodEntry, deleteFoodEntry, loadFoodLog, loadFoodLogRange, saveNutritionSettings } from '../../lib/foodDb';
 import { sumDayNutrition, tdeeFromProfile } from '../../utils/tdee';
+import { computeTargets } from '../../utils/nutritionEngine';
 import type { FoodEntry, NutritionSettings } from '../../types';
 import type { SelectedFood } from '../../components/fitness/FoodSearch';
 import PageBanner from '../../components/ui/PageBanner';
@@ -86,15 +87,28 @@ function NutritionSettingsPanel({
   onClose: () => void;
 }) {
   const [local, setLocal] = useState(settings);
-  const { fitnessProfile } = useStore();
+  const { fitnessProfile, userProfile } = useStore();
 
   function autoCalc() {
-    // Calculate suggested targets from profile
-    const tdee = tdeeFromProfile(fitnessProfile, local);
+    // Föredra den mål-drivna motorn när en full profil finns (samma matte överallt).
+    const engineTargets = userProfile ? computeTargets(userProfile, Date.now()) : null;
+    if (engineTargets) {
+      setLocal(l => ({
+        ...l,
+        targetCalories: engineTargets.calorieTarget,
+        proteinTarget: engineTargets.proteinG,
+        carbTarget: engineTargets.carbG,
+        fatTarget: engineTargets.fatG,
+      }));
+      return;
+    }
+    // Fallback: enklare uträkning från fitnessProfile + näringsinställningar.
+    const tdee = tdeeFromProfile(fitnessProfile, local, userProfile?.currentWeight, userProfile?.currentBodyFat);
+    const weight = userProfile?.currentWeight ?? 75;
     let kcal = tdee;
     if (local.goal === 'lose_fat') kcal = Math.round(tdee * 0.8);
     if (local.goal === 'gain_muscle') kcal = Math.round(tdee * 1.1);
-    const protein = Math.round(75 * 2.0); // 2g/kg of ~75kg default; in real app use current weight
+    const protein = Math.round(weight * 2.0);
     const fat = Math.round((kcal * 0.25) / 9);
     const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
     setLocal(l => ({ ...l, targetCalories: kcal, proteinTarget: protein, carbTarget: carbs, fatTarget: fat }));
@@ -302,7 +316,7 @@ function MealSection({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function FoodLog() {
-  const { setFitnessPage, nutritionSettings, setNutritionSettings, fitnessProfile } = useStore();
+  const { setFitnessPage, nutritionSettings, setNutritionSettings, fitnessProfile, userProfile } = useStore();
   const { user } = useAuthStore();
   const [currentDate, setCurrentDate] = useState(toDateStr(new Date()));
   const [entries, setEntries] = useState<FoodEntry[]>([]);
@@ -349,7 +363,13 @@ export default function FoodLog() {
   }, [user, weekLoaded]);
 
   const dayNutrition = sumDayNutrition(entries.map(e => ({ ...e, nutrition: scaleNutrition(e) })));
-  const { targetCalories, proteinTarget, carbTarget, fatTarget } = nutritionSettings;
+  // Föredra den mål-drivna profilens värden (satta av nutritionEngine via store) så
+  // Matdagboken, Dashboard och Målcentrum visar exakt samma mål. Fall tillbaka på
+  // näringsinställningarna när ingen profil finns.
+  const targetCalories = userProfile?.dailyCalorieTarget ?? nutritionSettings.targetCalories;
+  const proteinTarget = userProfile?.proteinTargetG ?? nutritionSettings.proteinTarget;
+  const carbTarget = userProfile?.carbTargetG ?? nutritionSettings.carbTarget;
+  const fatTarget = userProfile?.fatTargetG ?? nutritionSettings.fatTarget;
 
   // Calorie ring percentage
   const kcalPct = Math.min((dayNutrition.kcal / targetCalories) * 100, 100);

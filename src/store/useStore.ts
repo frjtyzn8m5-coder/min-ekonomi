@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, FitnessPage, FitnessProfile, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, NutritionSettings, UserProfile, NotificationSettings } from '../types';
 import { saveUserProfile } from '../lib/db';
-import { calculateBMR, calculateTDEE, calculateMacroTargets, getAgeFromBirthDate } from '../utils/calculations';
+import { computeTargets } from '../utils/nutritionEngine';
 
 const DEFAULT_BUDGETS: BudgetGoal[] = [
   { category: 'Mat', limit: 2000 },
@@ -146,27 +146,23 @@ export const useStore = create<AppState>()(
         if (!current) return;
         const updated: UserProfile = { ...current, ...partial, updatedAt: Date.now() };
 
-        // Auto-beräkna BMR/TDEE om relevanta fält ändrats
-        if (updated.height && updated.currentWeight && updated.birthDate && updated.gender) {
-          const age = getAgeFromBirthDate(updated.birthDate);
-          updated.bmr = Math.round(calculateBMR(updated.currentWeight, updated.height, age, updated.gender));
-          updated.estimatedTDEE = calculateTDEE(updated.bmr, updated.activityLevel);
-        }
-
-        // Auto-beräkna leanBodyMass
+        // Auto-beräkna leanBodyMass först (så motorn kan välja Katch–McArdle).
         if (updated.currentWeight && updated.currentBodyFat !== undefined) {
           updated.leanBodyMass = Math.round(updated.currentWeight * (1 - updated.currentBodyFat / 100) * 10) / 10;
         }
 
-        // Auto-beräkna makromål
-        if (updated.estimatedTDEE && updated.currentWeight) {
-          const macros = calculateMacroTargets(
-            updated.estimatedTDEE,
-            updated.currentWeight,
-            updated.primaryGoal,
-            updated.weeklyWeightChangeTarget,
-          );
-          Object.assign(updated, macros);
+        // EN källa för all BMR/TDEE/makro-matte: nutritionEngine.computeTargets.
+        // Persisterar bmr/estimatedTDEE/dagliga mål så Dashboard, FoodLog, MealPlan
+        // och Målcentrum läser exakt samma värden.
+        const targets = computeTargets(updated, Date.now());
+        if (targets) {
+          updated.bmr = targets.bmr;
+          updated.estimatedTDEE = targets.tdee;
+          updated.dailyCalorieTarget = targets.calorieTarget;
+          updated.proteinTargetG = targets.proteinG;
+          updated.fatTargetG = targets.fatG;
+          updated.carbTargetG = targets.carbG;
+          updated.tdeeLastUpdated = Date.now();
         }
 
         set({ userProfile: updated });

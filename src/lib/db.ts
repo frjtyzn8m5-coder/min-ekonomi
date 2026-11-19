@@ -2,6 +2,7 @@ import {
   collection, doc, setDoc, getDoc, getDocs, deleteDoc, writeBatch, query, orderBy, arrayUnion
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { isDemoMode } from './demoData';
 import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, UserProfile, NotificationSettings } from '../types';
 
 const userCol = (uid: string, col: string) => collection(db, 'users', uid, col);
@@ -175,6 +176,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 }
 
 export async function saveUserProfile(uid: string, profile: UserProfile): Promise<void> {
+  if (isDemoMode()) return; // demo: inga nätverksanrop, ändringar lever i store
   await setDoc(doc(db, 'users', uid, 'profile', 'data'), profile);
 }
 
