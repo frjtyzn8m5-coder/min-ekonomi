@@ -2,7 +2,7 @@ import {
   collection, doc, setDoc, getDoc, getDocs, deleteDoc, writeBatch, query, orderBy, arrayUnion
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, UserProfile } from '../types';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, UserProfile, NotificationSettings } from '../types';
 
 const userCol = (uid: string, col: string) => collection(db, 'users', uid, col);
 const userDoc = (uid: string, col: string, id: string) => doc(db, 'users', uid, col, id);
@@ -176,4 +176,16 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 
 export async function saveUserProfile(uid: string, profile: UserProfile): Promise<void> {
   await setDoc(doc(db, 'users', uid, 'profile', 'data'), profile);
+}
+
+// ── Notiser (notifikationsinställningar) ──────────────────────────────────────
+
+export async function loadNotificationSettings(uid: string): Promise<NotificationSettings | null> {
+  const snap = await getDoc(doc(db, 'users', uid, 'settings', 'notifications'));
+  if (!snap.exists()) return null;
+  return snap.data() as NotificationSettings;
+}
+
+export async function saveNotificationSettings(uid: string, settings: NotificationSettings): Promise<void> {
+  await setDoc(doc(db, 'users', uid, 'settings', 'notifications'), settings);
 }

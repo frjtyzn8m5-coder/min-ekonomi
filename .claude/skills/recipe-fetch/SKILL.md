@@ -50,10 +50,16 @@ Hard rules:
 
 ## Workflow
 
-1. **Find URLs.** Use WebSearch / WebFetch to collect recipe URLs from Swedish sources
-   (ica.se/recept, koket.se, arla.se/recept, coop.se/recept, tasteline.com, recept.se,
-   godare.se). For bulk, page through category/listing pages and collect individual
-   recipe links. Log how many you collected and from where.
+1. **Find URLs.** Use WebSearch / WebFetch to collect recipe URLs from Swedish sources.
+   **Source reliability (measured 2026-11-19):** `arla.se/recept` is the most reliable —
+   serves clean schema.org Recipe JSON-LD WITH per-portion nutrition (kcal/protein/fat/
+   carbs/fiber), so prefer it and lean on it for bulk. Known-bad at that time: `ica.se`
+   returned HTTP 403 (bot-blocked), `godare.se` 410, `coop.se` listing had no harvestable
+   links, and guessed `koket.se`/`tasteline.com` URLs 404'd (find real URLs via search
+   first, don't guess slugs). Re-probe these each run — blocks change. Also worth trying:
+   `recept.se`, `mittkok.expressen.se`, `koket.se` (via search), `zeta.nu`, `santamaria.se`.
+   For bulk, page through category/listing pages and collect individual recipe links.
+   Log how many you collected and from where.
 2. **Extract per URL.** WebFetch the page and pull the schema.org `Recipe` JSON-LD
    (`<script type="application/ld+json">`, possibly inside `@graph`). Mirror
    `app/api/import-recipe.ts`: read `name`, `recipeYield` (servings), `totalTime`/

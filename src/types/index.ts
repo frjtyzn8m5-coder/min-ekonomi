@@ -249,7 +249,21 @@ export interface Reminder {
   lastSentMonth?: string;
 }
 
-export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders' | 'settings' | 'portfolio';
+export type Page = 'overview' | 'transactions' | 'analytics' | 'budget' | 'networth' | 'import' | 'reminders' | 'notifications' | 'settings' | 'portfolio';
+
+// ── Notiser (notifikationsinställningar) ──────────────────────────────────────
+// Ett ställe för alla gratis-kanaler som kan leverera påminnelser.
+export type NotificationChannel = 'push' | 'telegram' | 'email' | 'sms';
+
+export interface NotificationSettings {
+  webPushEnabled?: boolean;        // webbläsar-/PWA-push aktiverad av användaren
+  telegramChatId?: string;         // användarens Telegram chat-id (från /start)
+  email?: string;                  // e-postadress för notiser
+  phone?: string;                  // telefonnummer (E.164, t.ex. +4670…) för SMS
+  channels?: NotificationChannel[]; // vilka kanaler som ska leverera påminnelser
+  quietHours?: { start: string; end: string }; // "HH:MM"–"HH:MM", stör ej
+  updatedAt?: number;              // unix ms
+}
 
 export type Module = 'home' | 'economy' | 'fitness' | 'calendar';
 

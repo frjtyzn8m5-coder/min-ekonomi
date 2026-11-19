@@ -15,6 +15,7 @@ const Budget       = lazy(() => import('./pages/Budget'));
 const NetWorth     = lazy(() => import('./pages/NetWorth'));
 const Import       = lazy(() => import('./pages/Import'));
 const Reminders    = lazy(() => import('./pages/Reminders'));
+const Notifications = lazy(() => import('./pages/Notifications'));
 const Settings     = lazy(() => import('./pages/Settings'));
 const Portfolio    = lazy(() => import('./pages/Portfolio'));
 const Login          = lazy(() => import('./pages/Login'));
@@ -57,6 +58,7 @@ const PAGE_LABELS: Record<string, string> = {
   networth:     'Förmögenhet',
   import:       'Importera',
   reminders:    'Påminnelser',
+  notifications:'Notiser',
   settings:     'Inställningar',
   portfolio:    'Portfölj',
 };
@@ -69,6 +71,7 @@ const ECONOMY_PAGES: Record<string, React.ComponentType> = {
   networth: NetWorth,
   import: Import,
   reminders: Reminders,
+  notifications: Notifications,
   settings: Settings,
   portfolio: Portfolio,
 };

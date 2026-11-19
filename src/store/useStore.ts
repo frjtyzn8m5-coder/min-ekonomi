@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, FitnessPage, FitnessProfile, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, NutritionSettings, UserProfile } from '../types';
+import type { Transaction, BudgetGoal, AssetSnapshot, DebtSnapshot, FilterState, Page, Module, FitnessPage, FitnessProfile, Category, Reminder, ImportBatch, Holding, TickerMapping, PriceData, PortfolioSnapshot, NutritionSettings, UserProfile, NotificationSettings } from '../types';
 import { saveUserProfile } from '../lib/db';
 import { calculateBMR, calculateTDEE, calculateMacroTargets, getAgeFromBirthDate } from '../utils/calculations';
 
@@ -44,6 +44,10 @@ const DEFAULT_FITNESS_PROFILE: FitnessProfile = {
   goal: 'maintain',
 };
 
+const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+  channels: ['push'],
+};
+
 const DEFAULT_NUTRITION_SETTINGS: NutritionSettings = {
   targetCalories: 2000,
   proteinTarget: 150,
@@ -76,6 +80,7 @@ interface AppState {
   fitnessPage: FitnessPage;
   fitnessProfile: FitnessProfile;
   nutritionSettings: NutritionSettings;
+  notificationSettings: NotificationSettings;
   filter: FilterState;
   pushSubscription: string | null;
 
@@ -110,6 +115,7 @@ interface AppState {
   setPendingWorkout: (w: { exercises: { name: string }[]; dayName: string } | null) => void;
   setFitnessProfile: (p: Partial<FitnessProfile>) => void;
   setNutritionSettings: (s: Partial<NutritionSettings>) => void;
+  setNotificationSettings: (s: Partial<NotificationSettings>) => void;
   setFilter: (f: Partial<FilterState>) => void;
   resetFilter: () => void;
   updateTransaction: (id: string, changes: Partial<Transaction>) => void;
@@ -186,6 +192,7 @@ export const useStore = create<AppState>()(
       pendingWorkout: null,
       fitnessProfile: DEFAULT_FITNESS_PROFILE,
       nutritionSettings: DEFAULT_NUTRITION_SETTINGS,
+      notificationSettings: DEFAULT_NOTIFICATION_SETTINGS,
       filter: DEFAULT_FILTER,
       pushSubscription: null,
 
@@ -246,6 +253,7 @@ export const useStore = create<AppState>()(
       setPendingWorkout: (pendingWorkout) => set({ pendingWorkout }),
       setFitnessProfile: (p) => set(s => ({ fitnessProfile: { ...s.fitnessProfile, ...p } })),
       setNutritionSettings: (s2) => set(s => ({ nutritionSettings: { ...s.nutritionSettings, ...s2 } })),
+      setNotificationSettings: (s2) => set(s => ({ notificationSettings: { ...s.notificationSettings, ...s2 } })),
       setFilter: (f) => set(s => ({ filter: { ...s.filter, ...f } })),
       resetFilter: () => set({ filter: DEFAULT_FILTER }),
 
@@ -296,6 +304,7 @@ export const useStore = create<AppState>()(
         pushSubscription: s.pushSubscription,
         fitnessProfile: s.fitnessProfile,
         nutritionSettings: s.nutritionSettings,
+        notificationSettings: s.notificationSettings,
       }),
     }
   )

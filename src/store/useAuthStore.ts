@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 
 import { auth } from '../lib/firebase';
-import { loadTransactions, loadImports, loadBudgets, loadAssets, loadDebts, getUserProfile, loadOwnAccounts } from '../lib/db';
+import { loadTransactions, loadImports, loadBudgets, loadAssets, loadDebts, getUserProfile, loadOwnAccounts, loadNotificationSettings } from '../lib/db';
 import { useStore } from './useStore';
 import { isDemoMode, demoProfile, demoTransactions } from '../lib/demoData';
 
@@ -23,7 +23,7 @@ interface AuthState {
 }
 
 async function loadUserData(uid: string) {
-  const [txs, imports, budgets, assets, debts, profile, ownAccounts] = await Promise.all([
+  const [txs, imports, budgets, assets, debts, profile, ownAccounts, notifSettings] = await Promise.all([
     loadTransactions(uid),
     loadImports(uid),
     loadBudgets(uid),
@@ -31,6 +31,7 @@ async function loadUserData(uid: string) {
     loadDebts(uid),
     getUserProfile(uid),
     loadOwnAccounts(uid),
+    loadNotificationSettings(uid),
   ]);
   const store = useStore.getState();
   if (txs.length)         store.setFirebaseTransactions(txs);
@@ -40,6 +41,7 @@ async function loadUserData(uid: string) {
   if (debts.length)       store.setFirebaseDebts(debts);
   if (profile)            store.setUserProfile(profile);
   if (ownAccounts.length) store.setOwnAccounts(ownAccounts);
+  if (notifSettings)      store.setNotificationSettings(notifSettings);
 }
 
 const handleSignInError = (e: any, set: (s: Partial<AuthState>) => void) => {
@@ -68,7 +70,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       // ?view=… lets a screenshot/preview jump straight to a module/page.
       const view = new URLSearchParams(window.location.search).get('view');
       if (view) {
-        const econ = ['overview', 'transactions', 'analytics', 'budget', 'networth', 'portfolio', 'import', 'reminders', 'settings'];
+        const econ = ['overview', 'transactions', 'analytics', 'budget', 'networth', 'portfolio', 'import', 'reminders', 'notifications', 'settings'];
         const fit = ['home', 'weightlog', 'foodlog', 'pantry', 'recipes', 'mealplan', 'program', 'workoutlog', 'exercises', 'development', 'cyclehub', 'pregnancy', 'goalcenter'];
         if (view === 'economy') store.setModule('economy');
         else if (view === 'calendar') store.setModule('calendar');

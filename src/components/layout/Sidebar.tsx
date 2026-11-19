@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import type { Page } from '../../types';
 import {
   LayoutDashboard, ListFilter, BarChart3, Target,
-  TrendingUp, Upload, Wallet, Bell, LogOut, X, Settings, PieChart,
+  TrendingUp, Upload, Wallet, Bell, BellRing, LogOut, X, Settings, PieChart,
 } from 'lucide-react';
 
 // ── Navigation groups ─────────────────────────────────────────────────────────
@@ -33,6 +33,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { page: 'import',    label: 'Importera',     icon: <Upload size={17} /> },
       { page: 'reminders', label: 'Påminnelser',   icon: <Bell size={17} /> },
+      { page: 'notifications', label: 'Notiser',   icon: <BellRing size={17} /> },
       { page: 'settings',  label: 'Inställningar', icon: <Settings size={17} /> },
     ],
   },
