@@ -15,6 +15,7 @@
 // All exported functions are PURE and typed so they can be unit-tested.
 
 import type { Recipe, RecipeIngredient, PantryItem, PriceEntry } from '../types';
+import { referencePricePerKg } from './referencePrices';
 import { toGrams } from './unitConverter';
 import { buildPriceLookup } from './recipeCost';
 
@@ -399,12 +400,14 @@ function resolvePricePerKg(
       if (k.includes(lower) || lower.includes(k)) { entry = v; break; }
     }
   }
-  if (!entry) return null;
-  if (entry.pricePerKg) return entry.pricePerKg;
-  if (entry.pricePerUnit && entry.unitWeightGrams) {
-    return (entry.pricePerUnit / entry.unitWeightGrams) * 1000;
+  if (entry) {
+    if (entry.pricePerKg) return entry.pricePerKg;
+    if (entry.pricePerUnit && entry.unitWeightGrams) {
+      return (entry.pricePerUnit / entry.unitWeightGrams) * 1000;
+    }
   }
-  return null;
+  // Last resort: bundled reference price so cost works before any receipts.
+  return referencePricePerKg(lower);
 }
 
 // ─── Display helpers ───────────────────────────────────────────────────────────

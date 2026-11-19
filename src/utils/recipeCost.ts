@@ -1,4 +1,5 @@
 import type { RecipeIngredient, PantryItem, PriceEntry } from '../types';
+import { referencePricePerKg } from './referencePrices';
 
 // Categories considered "spices/condiments" — lumped into a flat fee
 const SPICE_KEYWORDS = [
@@ -171,7 +172,13 @@ export function calcRecipeCost(
       continue;
     }
 
-    const entry = fuzzyLookup(ing.name, priceMap);
+    // Real price (pantry/receipt) first; fall back to a bundled reference price so
+    // cost estimates work before the user has scanned any receipts.
+    let entry = fuzzyLookup(ing.name, priceMap);
+    if (!entry || (entry.pricePerKg == null && entry.pricePerUnit == null)) {
+      const ref = referencePricePerKg(ing.name);
+      if (ref != null) entry = { pricePerKg: ref };
+    }
     const raw = calcRawCost(ing.amount, entry);
     const real = calcRealCost(ing.amount, entry);
 
