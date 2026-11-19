@@ -4,6 +4,20 @@ import { ISearch } from '../ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FoodItem } from '../../types';
 import BarcodeScanner from './BarcodeScanner';
+import { guessYieldKey, cookedNutritionPer100g, adjustForAddedWater, yieldFor, type Macros } from '../../utils/cookingFactors';
+
+// Meat/fish keys where an "added water / köttinnehåll %" adjustment is meaningful.
+const MEAT_KEYS = new Set(['chicken_breast', 'chicken_thigh', 'beef_mince', 'mixed_mince', 'pork', 'beef_steak', 'salmon', 'white_fish', 'bacon']);
+
+/** Apply cooked-basis + added-water adjustments to a food's per-100g nutrition. */
+function adjustItemNutrition(item: FoodItem, cooked: boolean, meatPercent: number): FoodItem {
+  const key = guessYieldKey(item.name);
+  if (!key) return item;
+  let m: Macros = { kcal: item.energy_kcal, protein: item.protein, fat: item.fat, carbs: item.carbs, fiber: item.fiber };
+  if (cooked) m = cookedNutritionPer100g(m, key);
+  if (MEAT_KEYS.has(key) && meatPercent > 0 && meatPercent < 100) m = adjustForAddedWater(m, meatPercent, true);
+  return { ...item, energy_kcal: m.kcal, protein: m.protein, fat: m.fat, carbs: m.carbs, fiber: m.fiber };
+}
 
 // ─── Livsmedelsverket local data ─────────────────────────────────────────────
 
@@ -108,12 +122,20 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
   const [showScanner, setShowScanner] = useState(false);
   const [selected, setSelected] = useState<FoodItem | null>(null);
   const [amount, setAmount] = useState('100');
+  const [cooked, setCooked] = useState(false);       // cooked vs raw weight
+  const [meatPct, setMeatPct] = useState('100');     // köttinnehåll % (water injection)
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Reset cooking adjustments whenever a different food is selected.
+  useEffect(() => {
+    setCooked(false);
+    setMeatPct('100');
+  }, [selected?.id]);
 
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim()) {
@@ -196,9 +218,15 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
     if (!selected) return;
     const g = parseFloat(amount);
     if (isNaN(g) || g <= 0) return;
-    onSelect({ item: selected, amount: g });
+    const item = adjustItemNutrition(selected, cooked, parseFloat(meatPct) || 100);
+    onSelect({ item, amount: g });
     onClose();
   }
+
+  const yKey = selected ? guessYieldKey(selected.name) : undefined;
+  const yInfo = yKey ? yieldFor(yKey) : undefined;
+  const isMeat = yKey ? MEAT_KEYS.has(yKey) : false;
+  const effItem = selected ? adjustItemNutrition(selected, cooked, parseFloat(meatPct) || 100) : null;
 
   if (showScanner) {
     return (
@@ -262,7 +290,10 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
             <div className="p-4 border-b border-line" style={{ background: 'rgba(233,193,120,.08)' }}>
               <p className="text-sm font-semibold text-ink mb-1">{selected.name}</p>
               <p className="text-xs text-mut mb-3">
-                {selected.energy_kcal} kcal / 100g · P {selected.protein}g · F {selected.fat}g · K {selected.carbs}g
+                {effItem!.energy_kcal} kcal / 100g · P {effItem!.protein}g · F {effItem!.fat}g · K {effItem!.carbs}g
+                {effItem && effItem.energy_kcal !== selected.energy_kcal && (
+                  <span className="text-faint"> (just. {selected.energy_kcal} rå)</span>
+                )}
               </p>
               <div className="flex items-center gap-3">
                 <div className="flex-1">
@@ -279,7 +310,7 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
                 <div className="text-right">
                   <p className="text-xs text-mut">Totalt</p>
                   <p className="text-sm font-bold text-gold tabular-nums">
-                    {Math.round(selected.energy_kcal * parseFloat(amount || '0') / 100)} kcal
+                    {Math.round(effItem!.energy_kcal * parseFloat(amount || '0') / 100)} kcal
                   </p>
                 </div>
               </div>
@@ -300,6 +331,32 @@ export default function FoodSearch({ onSelect, onClose }: FoodSearchProps) {
                   </button>
                 ))}
               </div>
+              {/* Tillagningsjustering — rå/tillagad vikt + köttinnehåll (insprutat vatten) */}
+              {yKey && (
+                <div className="mt-3 rounded-xl border border-line p-3" style={{ background: 'rgba(255,255,255,.02)' }}>
+                  <p className="text-[11px] text-mut mb-2">
+                    Vikten jag angav är{yInfo ? ` · ${yInfo.label}` : ''}:
+                  </p>
+                  <div className="flex gap-2">
+                    {([[false, 'Rå'], [true, 'Tillagad']] as const).map(([v, label]) => (
+                      <button key={label} onClick={() => setCooked(v)}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${cooked === v ? 'text-[#2a1d08]' : 'bg-card text-mut border border-line'}`}
+                        style={cooked === v ? { background: 'linear-gradient(135deg,#f4d79a,#cf9a3f)' } : undefined}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {isMeat && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <label className="text-[11px] text-mut flex-1">Köttinnehåll % <span className="text-faint">(insprutat vatten)</span></label>
+                      <input type="number" value={meatPct} min="10" max="100"
+                        onChange={e => setMeatPct(e.target.value)}
+                        className="w-20 px-2 py-1 bg-card rounded-lg border border-line text-xs text-ink text-right focus:outline-none focus:ring-2 focus:ring-gold/40" />
+                    </div>
+                  )}
+                  {yInfo?.note && cooked && <p className="text-[10px] text-faint mt-1.5">{yInfo.note} — makron justerade per 100 g tillagad.</p>}
+                </div>
+              )}
               <button
                 onClick={handleConfirm}
                 className="w-full mt-3 py-2.5 text-[#2a1d08] rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
